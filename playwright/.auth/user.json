@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "name": "refresh_token",
+      "value": "12362%7CGEpeB4bdfOF76UgpHBsOtX2tcZBOuuP7KB7fFeWde74cf419",
+      "domain": ".getlaunched.io",
+      "path": "/api/v1/auth/refresh",
+      "expires": 1779464957.063836,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": []
+}
