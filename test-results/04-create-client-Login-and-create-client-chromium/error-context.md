@@ -109,8 +109,8 @@
             - button "Open actions menu" [ref=e160] [cursor=pointer]:
               - img [ref=e162]
           - generic [ref=e166]:
-            - link "My Business 1779449116698" [ref=e167] [cursor=pointer]:
-              - /url: /project/019e4f6e-c0b6-72b7-830e-4708c47106b0
+            - link "My Business 1779459797962" [ref=e167] [cursor=pointer]:
+              - /url: /project/019e5011-bc72-737d-ad46-ddc09e04a0d2
             - paragraph [ref=e168]: Updated project description for edit project test
           - generic [ref=e169]:
             - generic [ref=e170]:
