@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e7]:
+        - button "Collapse sidebar" [ref=e8] [cursor=pointer]:
+          - generic [ref=e9]: Collapse
+          - img [ref=e11]
+        - link [ref=e12] [cursor=pointer]:
+          - /url: /
+          - img [ref=e14]
+      - generic [ref=e17]:
+        - button "Language" [ref=e19] [cursor=pointer]:
+          - generic [ref=e20]:
+            - img [ref=e22]
+            - generic [ref=e23]: Language
+            - img [ref=e26]
+        - button "Notifications" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]:
+            - img [ref=e34]
+            - generic [ref=e38]: Notifications
+            - img [ref=e41]
+        - button "KQ Karina QA kataratest573@gmail.com" [ref=e44] [cursor=pointer]:
+          - generic [ref=e45]:
+            - generic [ref=e47]: KQ
+            - generic [ref=e48]:
+              - generic [ref=e49]: Karina QA
+              - generic [ref=e50]: kataratest573@gmail.com
+          - img [ref=e53]
+    - main [ref=e56]:
+      - navigation "Breadcrumb" [ref=e57]:
+        - link "Select a project" [disabled] [ref=e58] [cursor=pointer]
+      - generic [ref=e59]:
+        - heading "Select a project" [level=1] [ref=e60]
+        - generic [ref=e62]:
+          - button "Projects templates" [ref=e63] [cursor=pointer]:
+            - img [ref=e65]
+            - generic [ref=e68]: Projects templates
+          - link "Create project" [ref=e69] [cursor=pointer]:
+            - /url: /project/create
+            - img [ref=e71]
+            - generic [ref=e73]: Create project
+      - list [ref=e76]:
+        - listitem [ref=e77]:
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - img "Tea logo" [ref=e81]
+              - generic [ref=e83] [cursor=pointer]:
+                - img [ref=e85]
+                - generic [ref=e91]: No URL
+            - button "Open actions menu" [ref=e93] [cursor=pointer]:
+              - img [ref=e95]
+          - generic [ref=e99]:
+            - link "Tea" [ref=e100] [cursor=pointer]:
+              - /url: /project/019de33a-0151-7335-bd36-e6b73ce314b7
+            - generic [ref=e101]: No description yet
+          - generic [ref=e102]:
+            - generic [ref=e103]:
+              - generic [ref=e104]: Currency
+              - generic [ref=e105]: CNY
+            - generic [ref=e106]:
+              - generic [ref=e107]: Legal form
+              - generic [ref=e108]: Public Limited Company
+          - generic [ref=e109]:
+            - generic [ref=e110]: "2024"
+            - generic "Karina QA" [ref=e112]:
+              - generic [ref=e113]: KQ
+        - listitem [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - img "Dior Brand logo" [ref=e118]
+              - link "https://dior.com" [ref=e120] [cursor=pointer]:
+                - /url: https://dior.com
+                - img [ref=e122]
+                - generic [ref=e124]: https://dior.com
+            - button "Open actions menu" [ref=e126] [cursor=pointer]:
+              - img [ref=e128]
+          - generic [ref=e132]:
+            - link "Dior Brand" [ref=e133] [cursor=pointer]:
+              - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9
+            - paragraph [ref=e134]: Відкрийте для себе розкішні косметичні продукти від Dior. Ознайомтеся з повним асортиментом високоякісної косметики, парфумів, засобів по догляду за шкірою.
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e137]: Currency
+              - generic [ref=e138]: UAH
+            - generic [ref=e139]:
+              - generic [ref=e140]: Legal form
+              - generic [ref=e141]: Public Limited Company
+          - generic [ref=e142]:
+            - generic [ref=e143]: "2026"
+            - generic "Karina QA" [ref=e145]:
+              - generic [ref=e146]: KQ
+  - region "Notifications Alt+T"
+```

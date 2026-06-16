@@ -1,6 +1,43 @@
 import { test, expect } from '@playwright/test';
 
-test('Login and create client', async ({ page }) => {
+const PROJECT_NAME = 'Dior Brand';
+
+// ДАНІ ЗІ СКРІНШОТІВ ДЛЯ СТВОРЕННЯ КЛІЄНТІВ
+const CLIENTS_DATA = [
+  {
+    name: 'Преміум-колекціонери ароматів (15-35)',
+    description: 'Охоче купують парфуми Dior, цікавляться новинками та лімітованими колекціями. Важливі стійкість аромату, оригінальність та "ефект вау" від знайомства з новими нотами.',
+    needs: [
+      { name: 'Парфуми 1 сегменту', priority: 'Low', satisfaction: 'Not Satisfied' },
+      { name: 'Парфуми 2-го сегменту', priority: 'High', satisfaction: 'Partially Satisfied' },
+      { name: 'Парфуми 3-го сегменту', priority: 'Critical', satisfaction: 'Fully Satisfied' },
+      { name: 'Парфуми 4-го сегменту', priority: 'Critical', satisfaction: 'Fully Satisfied' },
+      { name: 'Парфуми 5-го сегменту', priority: 'Critical', satisfaction: 'Fully Satisfied' }
+    ]
+  },
+  {
+    name: 'Засоби для догляду за "ідеальною" шкірою...',
+    description: 'Шукають креми/сироватки Dior для зволоження, відновлення та anti-age. Потрібні відчутний ефект, підбір під тип шкіри та консультація спеціаліста.',
+    needs: [
+      { name: 'Парфуми 1 сегменту', priority: 'High', satisfaction: 'Fully Satisfied' },
+      { name: 'Парфуми 2-го сегменту', priority: 'Critical', satisfaction: 'Not Satisfied' }
+    ]
+  },
+  {
+    name: 'Makeup-ентузіасти Dior (20-45)',
+    description: 'Вибирають тон, туш, помади/блиски для щодня та подій. Важливі відтінки, комфорт на шкірі, стійкість та якість текстур.',
+    needs: [
+      { name: 'Парфуми 1 сегменту', priority: 'High', satisfaction: 'Fully Satisfied' }
+    ]
+  },
+  {
+    name: 'Покупці "подарунків" (усі вікові)',
+    description: 'Купують Dior набори та gift-версії для свят і подій. Важливі комплектація, брендинг/упаковка, швидкий вибір і "гарантований вау-ефект".',
+    needs: [] // 0 Потреб — кнопка додавання клікатися не буде
+  }
+];
+
+async function login(page) {
   // LOGIN
   await page.goto('https://frontv2.getlaunched.io/sign-in', {
     waitUntil: 'domcontentloaded',
@@ -8,22 +45,35 @@ test('Login and create client', async ({ page }) => {
 
   const email = page.locator('input[type="email"]').first();
   const password = page.locator('input[type="password"]').first();
-  const signInButton = page.getByRole('button', { name: /sign in/i }).first();
+  const signInButton = page
+    .getByRole('button', { name: /sign in/i })
+    .first();
 
-  await expect(email).toBeVisible({ timeout: 15000 });
+  await expect(email).toBeVisible({
+    timeout: 15000,
+  });
+
   await email.fill('kataratest573@gmail.com');
 
-  await expect(password).toBeVisible({ timeout: 15000 });
+  await expect(password).toBeVisible({
+    timeout: 15000,
+  });
+
   await password.fill('Test_11K');
 
   await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
+    page.waitForNavigation({
+      waitUntil: 'domcontentloaded',
+    }).catch(() => {}),
     signInButton.click(),
   ]);
 
   await page.waitForLoadState('networkidle').catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
 
+  await expect(page).not.toHaveURL(/\/sign-in/i);
+}
+
+async function openClientsPage(page) {
   // OPEN PROJECTS PAGE
   await page.goto('https://frontv2.getlaunched.io/', {
     waitUntil: 'domcontentloaded',
@@ -33,86 +83,234 @@ test('Login and create client', async ({ page }) => {
 
   // OPEN PROJECT
   const projectCard = page.getByText(
-    'Updated Business 1779445669432',
+    PROJECT_NAME,
     { exact: true }
   ).first();
 
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
+  await expect(projectCard).toBeVisible({
+    timeout: 15000,
+  });
+
   await projectCard.scrollIntoViewIfNeeded();
   await projectCard.click();
 
   // OPEN MAGIC TRIANGLE
-  const magicTriangle = page.getByText(/magic triangle/i).first();
-  await expect(magicTriangle).toBeVisible({ timeout: 15000 });
+  const magicTriangle = page
+    .getByText(/magic triangle/i)
+    .first();
+
+  await expect(magicTriangle).toBeVisible({
+    timeout: 15000,
+  });
+
   await magicTriangle.click();
 
-  await expect(page).toHaveURL(/\/triangle/i, {
-    timeout: 15000,
-  });
+  await expect(page).toHaveURL(
+    /\/triangle/i,
+    {
+      timeout: 15000,
+    }
+  );
 
   // OPEN CLIENTS
-  const clientsButton = page.getByText(/^clients$/i).first();
-  await expect(clientsButton).toBeVisible({ timeout: 15000 });
+  const clientsButton = page
+    .getByText(/^clients$/i)
+    .first();
+
+  await expect(clientsButton).toBeVisible({
+    timeout: 15000,
+  });
+
   await clientsButton.click();
 
-  await expect(page).toHaveURL(/\/triangle\/clients/i, {
+  await expect(page).toHaveURL(
+    /\/triangle\/clients/i,
+    {
+      timeout: 15000,
+    }
+  );
+}
+
+async function openCreateClientModal(page) {
+  // OPEN CREATE CLIENT MODAL
+  const createClientButton = page.getByRole(
+    'button',
+    { name: /^create client$/i }
+  );
+
+  await expect(createClientButton).toBeVisible({
     timeout: 15000,
   });
 
-  // OPEN CREATE CLIENT MODAL
-  const createClientButton = page.getByRole('button', { name: /^create client$/i });
-  await expect(createClientButton).toBeVisible({ timeout: 15000 });
   await createClientButton.click();
 
-  const createClientModal = page.getByRole('dialog');
-  await expect(createClientModal).toBeVisible({ timeout: 15000 });
+  const modal = page.getByRole('dialog');
 
-  // FILL CLIENT NAME
-  const clientName = page.getByRole('textbox', { name: /name/i }).first();
-  const clientDescription = page.getByRole('textbox', { name: /description/i }).first();
-
-  const clientNameValue = `Client ${Date.now()}`;
-
-  await expect(clientName).toBeVisible({ timeout: 15000 });
-  await clientName.fill(clientNameValue);
-
-  if (await clientDescription.count()) {
-    await clientDescription.fill('Client description for autotest');
-  }
-
-  // ADD NEED
-  const addNeedButton = page.getByRole('button').filter({ hasText: '+' }).first();
-  await expect(addNeedButton).toBeVisible({ timeout: 15000 });
-  await addNeedButton.click();
-
-  // FILL NEED
-  const needInput = page.getByRole('textbox').last();
-  await expect(needInput).toBeVisible({ timeout: 15000 });
-  await needInput.fill('Fast support');
-
-  // PRIORITY
-  const priorityDropdown = page.getByText(/priority/i).first();
-  await expect(priorityDropdown).toBeVisible({ timeout: 15000 });
-  await priorityDropdown.click();
-
-  await page.getByRole('option', { name: /high/i }).click();
-
-  // SATISFACTION
-  const satisfactionDropdown = page.getByText(/satisfaction/i).first();
-  await expect(satisfactionDropdown).toBeVisible({ timeout: 15000 });
-  await satisfactionDropdown.click();
-
-  await page.getByRole('option', { name: /fully/i }).click();
-
-  // CREATE CLIENT
-  const submitButton = page.getByRole('button', { name: /^create$/i }).last();
-  await expect(submitButton).toBeVisible({ timeout: 15000 });
-  await submitButton.click();
-
-  // SUCCESS CHECK
-  await expect(page.locator('body')).toContainText(/client|success/i, {
+  await expect(modal).toBeVisible({
     timeout: 15000,
   });
 
-  await expect(page.locator('body')).toContainText(clientNameValue);
+  return modal;
+}
+
+async function selectDropdown(page, modal, needIndex, isSecond, optionName) {
+  // Знаходимо поле вводу назви потреби за індексом
+  const needNameInput = modal.getByPlaceholder('Type need name').nth(needIndex);
+  
+  // Знаходимо батьківський контейнер потреби, піднімаючись вверх по DOM через XPath
+  const needBlock = needNameInput.locator('xpath=ancestor::div[contains(@class, "flex")]');
+  
+  // Знаходимо всі кнопки Select всередину цього блоку потреби
+  const selectButtons = needBlock.getByRole('button').filter({ hasText: 'Select' });
+  
+  // Перший Select - це Priority, другий - Satisfaction
+  const selectIndex = isSecond ? 1 : 0;
+  const dropdown = selectButtons.nth(selectIndex);
+
+  await expect(dropdown).toBeVisible({
+    timeout: 15000,
+  });
+
+  await dropdown.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await dropdown.click();
+
+  await page.waitForTimeout(500);
+
+  const option = page.getByRole('option', {
+    name: new RegExp(optionName, 'i'),
+  });
+
+  await expect(option.first()).toBeVisible({
+    timeout: 15000,
+  });
+
+  await option.first().click();
+  
+  await page.waitForTimeout(300);
+}
+
+test.describe.serial('Create client flow', () => {
+
+  // ТВІЙ РОБОЧИЙ ПЕРШИЙ ТЕСТ
+  test('01. Validation for empty client form', async ({ page }) => {
+
+    await login(page);
+
+    await openClientsPage(page);
+
+    const modal = await openCreateClientModal(page);
+
+    // CLICK CREATE WITHOUT DATA
+    const createButton = modal
+      .getByRole('button', { name: /^create$/i })
+      .last();
+
+    await expect(createButton).toBeVisible({
+      timeout: 15000,
+    });
+
+    await createButton.click();
+
+    // VALIDATION CHECK
+    await expect(
+      page.getByText(
+        /must be at least 2 characters|required/i
+      ).first()
+    ).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Очищення сцени: закриваємо модалку кнопкою закриття
+    const closeButton = modal.getByRole('button', { name: /close/i }).first();
+    await closeButton.click();
+  });
+
+  // ТВІЙ ДРУГИЙ ТЕСТ (Оновлений під створення 4-х клієнтів з реальними даними)
+  for (const client of CLIENTS_DATA) {
+    test(`02. Create client: ${client.name}`, async ({ page }) => {
+
+      await login(page);
+
+      await openClientsPage(page);
+
+      const modal = await openCreateClientModal(page);
+
+      // CLIENT NAME
+      const clientName = modal
+        .getByPlaceholder('Type client name')
+        .first();
+
+      await expect(clientName).toBeVisible({
+        timeout: 15000,
+      });
+
+      // Залишаємо реальне ім'я зі скріншоту, але додаємо позначку тесту
+      const clientNameValue = `${client.name} _test`;
+
+      await clientName.fill(clientNameValue);
+
+      // DESCRIPTION
+      const description = modal
+        .getByPlaceholder('Write your story...')
+        .first();
+
+      await expect(description).toBeVisible({
+        timeout: 15000,
+      });
+
+      await description.fill(client.description);
+
+      // ДОДАВАННЯ ТА ЗАПОВНЕННЯ ПОТРЕБ ЗА СКРІНШОТАМИ
+      for (let i = 0; i < client.needs.length; i++) {
+        if (i === 0) {
+          // Для найпершої потреби клікаємо велику кнопку по центру (Скріншот 2)
+          const firstAddButton = modal.getByRole('button', { name: /Add needs/i });
+          await expect(firstAddButton).toBeVisible({ timeout: 15000 });
+          await firstAddButton.click();
+        } else {
+          // Для другої та наступних потреб — тиснемо на малий плюс (+) у правому кутку
+          const plusButton = modal.locator('button.text-primary:has(svg)').last();
+
+          await expect(plusButton).toBeVisible({
+            timeout: 15000,
+          });
+
+          await plusButton.click();
+        }
+
+        // Заповнюємо назву поточної потреби через її індекс
+        const needNameField = modal.getByPlaceholder('Type need name').nth(i);
+        await expect(needNameField).toBeVisible({ timeout: 15000 });
+        await needNameField.fill(client.needs[i].name);
+
+        // Пріоритет
+        await selectDropdown(page, modal, i, false, client.needs[i].priority);
+
+        // Задоволеність
+        await selectDropdown(page, modal, i, true, client.needs[i].satisfaction);
+      }
+
+      // CREATE CLIENT
+      const createButton = modal
+        .getByRole('button', { name: /^create$/i })
+        .last();
+
+      await expect(createButton).toBeVisible({
+        timeout: 15000,
+      });
+
+      await createButton.click();
+
+      // SUCCESS CHECK
+      await expect(
+        page.locator('body')
+      ).toContainText(
+        clientNameValue,
+        {
+          timeout: 15000,
+        }
+      );
+    });
+  }
 });
