@@ -60,7 +60,7 @@ async function login(page) {
     signInButton.click(),
   ]);
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page).not.toHaveURL(/\/sign-in/i);
 }
 
@@ -69,7 +69,7 @@ async function openProductsServicesPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
   await expect(projectCard).toBeVisible({ timeout: 15000 });
@@ -108,21 +108,32 @@ async function openCreateProductModal(page) {
   return modal;
 }
 
-async function selectRevenueType(page, modal, label) {
-  const revenueDropdown = modal.locator('button[data-open="false"]').first();
+async function selectFromCustomDropdown(page, scope, optionLabel) {
+  const dropdownButton = scope.locator('button[data-open="false"]').first();
 
-  await expect(revenueDropdown).toBeVisible({ timeout: 15000 });
-  await revenueDropdown.click();
+  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
+  await dropdownButton.click();
 
   const listbox = page.getByRole('listbox').last();
   await expect(listbox).toBeVisible({ timeout: 15000 });
 
   const option = listbox
-    .getByRole('option', { name: new RegExp(`^${label}$`, 'i') })
+    .getByRole('option', { name: optionLabel, exact: true })
     .first();
 
   await expect(option).toBeVisible({ timeout: 15000 });
   await option.click();
+}
+
+async function goToAttachClientsStep(modal) {
+  const nextButton = modal.getByRole('button', { name: /^next$/i }).first();
+
+  await expect(nextButton).toBeVisible({ timeout: 15000 });
+  await nextButton.click();
+
+  await expect(modal.getByText(/attach clients/i).first()).toBeVisible({
+    timeout: 15000,
+  });
 }
 
 async function addClientToProduct(modal, page) {
@@ -133,10 +144,17 @@ async function addClientToProduct(modal, page) {
   await expect(addClientButton).toBeVisible({ timeout: 15000 });
   await addClientButton.click();
 
-  const clientSelect = modal.locator('select').last();
-  await expect(clientSelect).toBeVisible({ timeout: 15000 });
+  // BUSINESS UNIT — dropdown used to attach the client to the product
+  await selectFromCustomDropdown(page, modal, CLIENT_NAME);
 
-  await clientSelect.selectOption({ label: CLIENT_NAME });
+  // QUANTITY PER YEAR — the form now shows two year columns, fill both
+  const qtyInputs = modal.getByPlaceholder(/type quantity/i);
+  const qtyCount = await qtyInputs.count();
+
+  for (let i = 0; i < qtyCount; i++) {
+    const randomQty = String(Math.floor(Math.random() * 5000) + 100);
+    await qtyInputs.nth(i).fill(randomQty);
+  }
 }
 
 async function fillProductBaseFields(modal, page, product) {
@@ -148,7 +166,7 @@ async function fillProductBaseFields(modal, page, product) {
   await expect(descriptionField).toBeVisible({ timeout: 15000 });
   await descriptionField.fill(product.description);
 
-  await selectRevenueType(page, modal, product.revenueType);
+  await selectFromCustomDropdown(page, modal, product.revenueType);
   await page.waitForTimeout(300);
 
   const sellingPriceField = modal.locator('#price');
@@ -167,9 +185,9 @@ test.describe.serial('Products / Services flow', () => {
 
     const modal = await openCreateProductModal(page);
 
-    const submitButton = modal.getByRole('button', { name: /^create$/i }).last();
-    await expect(submitButton).toBeVisible({ timeout: 15000 });
-    await submitButton.click();
+    const nextButton = modal.getByRole('button', { name: /^next$/i }).first();
+    await expect(nextButton).toBeVisible({ timeout: 15000 });
+    await nextButton.click();
 
     await expect(
       page.getByText(/required|can't be blank|must be at least/i).first()
@@ -184,17 +202,9 @@ test.describe.serial('Products / Services flow', () => {
 
     await fillProductBaseFields(modal, page, FIRST_PRODUCT);
 
+    await goToAttachClientsStep(modal);
+
     await addClientToProduct(modal, page);
-
-    const qtyYearInput = modal.locator(
-      'input[name="clients.0.qty_per_year"]'
-    );
-
-    await expect(qtyYearInput).toBeVisible({ timeout: 15000 });
-
-    const randomQtyYear = String(Math.floor(Math.random() * 1000) + 1);
-
-    await qtyYearInput.fill(randomQtyYear);
 
     const createButton = modal.getByRole('button', { name: /^create$/i }).last();
     await expect(createButton).toBeVisible({ timeout: 15000 });
@@ -213,6 +223,8 @@ test.describe.serial('Products / Services flow', () => {
       const modal = await openCreateProductModal(page);
 
       await fillProductBaseFields(modal, page, product);
+
+      await goToAttachClientsStep(modal);
 
       const createButton = modal
         .getByRole('button', { name: /^create$/i })

@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('Login and edit project', async ({ page }) => {
-  // LOGIN
+const sharedState = globalThis;
+
+test('Login, create, edit and delete project', async ({ page }) => {
   await page.goto('https://frontv2.getlaunched.io/sign-in', {
     waitUntil: 'domcontentloaded',
   });
@@ -16,122 +17,150 @@ test('Login and edit project', async ({ page }) => {
   await expect(password).toBeVisible({ timeout: 15000 });
   await password.fill('Test_11K');
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
+  await signInButton.click();
 
-  await page.waitForLoadState('networkidle').catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
+  await expect(
+    page.getByRole('heading', { name: /select a project/i }).first()
+  ).toBeVisible({ timeout: 30000 });
+  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 30000 });
 
-  // OPEN PROJECTS PAGE
+  let projectNameText = sharedState.__createdProjectName;
+
+  if (!projectNameText) {
+    await page.goto('https://frontv2.getlaunched.io/', {
+      waitUntil: 'domcontentloaded',
+    });
+
+    const createProjectButton = page
+      .getByRole('button', { name: /^create project$/i })
+      .or(page.getByText(/^create project$/i))
+      .first();
+
+    await expect(createProjectButton).toBeVisible({ timeout: 15000 });
+    await createProjectButton.click();
+
+    await expect(page.getByRole('heading', { name: /create project/i })).toBeVisible({ timeout: 15000 });
+
+    projectNameText = `Edit Test ${Date.now()}`;
+    const projectName = page.locator('input[placeholder*="Type name"]').first();
+    const website = page.locator('input[placeholder*="https://"]').first();
+    const description = page.locator('textarea[placeholder*="Write your story"]').first();
+    const incomeTax = page.locator('input[placeholder*="Type tax"]').first();
+
+    await expect(projectName).toBeVisible({ timeout: 15000 });
+    await projectName.fill(projectNameText);
+
+    await expect(website).toBeVisible({ timeout: 15000 });
+    await website.fill('https://mybusiness.com');
+
+    await expect(description).toBeVisible({ timeout: 15000 });
+    await description.fill('Project created for edit/delete flow');
+
+    const selects = page.locator('select');
+
+    await expect(selects.nth(0)).toBeVisible({ timeout: 15000 });
+    await selects.nth(0).selectOption({ index: 1 });
+
+    await expect(selects.nth(1)).toBeVisible({ timeout: 15000 });
+    await selects.nth(1).selectOption({ index: 1 });
+
+    const currencyField = page.locator('[role="combobox"]').nth(1);
+    await expect(currencyField).toBeVisible({ timeout: 15000 });
+    await currencyField.click();
+
+    const currencyOption = page.getByRole('option').first();
+    await expect(currencyOption).toBeVisible({ timeout: 15000 });
+    await currencyOption.click();
+
+    await expect(incomeTax).toBeVisible({ timeout: 15000 });
+    await incomeTax.fill('25');
+
+    await expect(selects.nth(2)).toBeVisible({ timeout: 15000 });
+    await selects.nth(2).selectOption('2022');
+
+    await expect(selects.nth(3)).toBeVisible({ timeout: 15000 });
+    await selects.nth(3).selectOption({ index: 1 });
+
+    await expect(selects.nth(4)).toBeVisible({ timeout: 15000 });
+    await selects.nth(4).selectOption({ index: 1 });
+
+    const submitButton = page.getByRole('button', { name: /^create project$/i }).last();
+    await expect(submitButton).toBeVisible({ timeout: 15000 });
+    await submitButton.click();
+
+    try {
+      await expect(page.locator('body')).toContainText(/project successfully created|created successfully/i, { timeout: 10000 });
+    } catch {
+      await expect(page).not.toHaveURL(/\/project\/create/i, { timeout: 15000 });
+    }
+
+    sharedState.__createdProjectName = projectNameText;
+  }
+
   await page.goto('https://frontv2.getlaunched.io/', {
     waitUntil: 'domcontentloaded',
   });
 
-  // FIND PROJECT CARD
-  const projectCard = page.locator('div').filter({
-    hasText: /My Business/i,
-  }).first();
+  const createdProjectCard = page.locator('li').filter({ hasText: projectNameText }).first();
+  await expect(createdProjectCard).toBeVisible({ timeout: 20000 });
 
-  await expect(projectCard).toBeVisible({
-    timeout: 15000,
-  });
+  await createdProjectCard.getByRole('button', { name: /open actions menu/i }).click();
 
-  // OPEN MENU (...)
-  const menuButton = projectCard.locator('button').last();
+  const editOption = page.getByText(/^edit$/i).first();
+  await expect(editOption).toBeVisible({ timeout: 10000 });
+  await editOption.click();
 
-  await expect(menuButton).toBeVisible({
-    timeout: 15000,
-  });
+  await expect(page.getByRole('heading', { name: /edit project|create project/i }).first()).toBeVisible({ timeout: 15000 });
 
-  await menuButton.click();
+  const editedWebsite = page.locator('input[placeholder*="https://"]').first();
+  await expect(editedWebsite).toBeVisible({ timeout: 15000 });
+  await editedWebsite.clear();
+  await editedWebsite.fill('https://updatedbusiness.com');
 
-  // CLICK EDIT
-  const editButton = page.getByText(/^edit$/i);
+  const editedDescription = page.locator('textarea[placeholder*="Write your story"]').first();
+  await expect(editedDescription).toBeVisible({ timeout: 15000 });
+  await editedDescription.clear();
+  await editedDescription.fill('Updated project description for edit project test');
 
-  await expect(editButton).toBeVisible({
-    timeout: 15000,
-  });
+  const editedIncomeTax = page.locator('input[placeholder*="Type tax"]').first();
+  await expect(editedIncomeTax).toBeVisible({ timeout: 15000 });
+  await editedIncomeTax.clear();
+  await editedIncomeTax.fill('30');
 
-  await editButton.click();
+  const editedSelects = page.locator('select');
+  await expect(editedSelects.nth(4)).toBeVisible({ timeout: 15000 });
+  await editedSelects.nth(4).selectOption({ index: 2 });
 
-  // CHECK EDIT PAGE
-  await expect(
-    page.getByRole('heading', {
-      name: /edit project|create project/i,
-    })
-  ).toBeVisible({
-    timeout: 15000,
-  });
-
-  
-
-  // EDIT WEBSITE
-  const website = page
-    .locator('input[placeholder*="https://"]')
-    .first();
-
-  await expect(website).toBeVisible({
-    timeout: 15000,
-  });
-
-  await website.clear();
-  await website.fill('https://updatedbusiness.com');
-
-  // EDIT DESCRIPTION
-  const description = page
-    .locator('textarea[placeholder*="Write your story"]')
-    .first();
-
-  await expect(description).toBeVisible({
-    timeout: 15000,
-  });
-
-  await description.clear();
-  await description.fill('Updated project description for edit project test');
-
-  // EDIT INCOME TAX
-  const incomeTax = page
-    .locator('input[placeholder*="Type tax"]')
-    .first();
-
-  await expect(incomeTax).toBeVisible({
-    timeout: 15000,
-  });
-
-  await incomeTax.clear();
-  await incomeTax.fill('30');
-
-  // CHANGE PLANNING YEARS
-  const selects = page.locator('select');
-
-  await expect(selects.nth(4)).toBeVisible({
-    timeout: 15000,
-  });
-
-  await selects.nth(4).selectOption({ index: 2 });
-
-  // UPDATE PROJECT
-  const updateButton = page
-    .getByRole('button', { name: /update project/i });
-
-  await expect(updateButton).toBeVisible({
-    timeout: 15000,
-  });
-
+  const updateButton = page.getByRole('button', { name: /update project/i }).last();
+  await expect(updateButton).toBeVisible({ timeout: 15000 });
   await updateButton.click();
 
-  // SUCCESS CHECK
   try {
-    await expect(page.locator('body')).toContainText(
-      /updated successfully|project successfully updated|success/i,
-      { timeout: 10000 }
-    );
+    await expect(page.locator('body')).toContainText(/updated successfully|project successfully updated|success/i, { timeout: 10000 });
   } catch {
-    await expect(page).not.toHaveURL(
-      /\/project\/edit/i,
-      { timeout: 15000 }
-    );
+    await expect(page).not.toHaveURL(/\/project\/edit/i, { timeout: 15000 });
   }
+
+  await page.goto('https://frontv2.getlaunched.io/', {
+    waitUntil: 'domcontentloaded',
+  });
+
+  const projectForDelete = page.locator('li').filter({ hasText: projectNameText }).first();
+  await expect(projectForDelete).toBeVisible({ timeout: 20000 });
+
+  await projectForDelete.getByRole('button', { name: /open actions menu/i }).click();
+
+  const deleteOption = page.getByText(/delete/i).first();
+  await expect(deleteOption).toBeVisible({ timeout: 10000 });
+  await deleteOption.click();
+
+  const dialog = page.locator('[role="dialog"], [role="alertdialog"]').first();
+  await expect(dialog).toBeVisible({ timeout: 10000 });
+
+  const confirmDeleteButton = dialog.getByRole('button', { name: /delete/i }).first();
+  await expect(confirmDeleteButton).toBeVisible({ timeout: 10000 });
+  await confirmDeleteButton.click();
+
+  await expect(page.locator('body')).toContainText(/deleted successfully|successfully deleted/i, { timeout: 10000 });
+  await expect(projectForDelete).not.toBeVisible({ timeout: 15000 });
 });

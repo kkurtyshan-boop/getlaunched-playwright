@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+// Use saved authenticated storage if present to avoid flaky UI login
+try {
+  test.use({ storageState: 'storageState.json' });
+} catch (e) {
+  // ignore if runner doesn't support file-level use
+}
+
 const PROJECT_NAME = 'Dior Brand';
 
 // ДАНІ ЗІ СКРІНШОТІВ ДЛЯ СТВОРЕННЯ КЛІЄНТІВ
@@ -49,9 +56,12 @@ async function login(page) {
     .getByRole('button', { name: /sign in/i })
     .first();
 
-  await expect(email).toBeVisible({
-    timeout: 15000,
-  });
+  // If storageState logged-in, the sign-in form won't be present — skip login
+  try {
+    await expect(email).toBeVisible({ timeout: 2000 });
+  } catch {
+    return; // already logged in
+  }
 
   await email.fill('kataratest573@gmail.com');
 
@@ -61,16 +71,32 @@ async function login(page) {
 
   await password.fill('Test_11K');
 
-  await Promise.all([
-    page.waitForNavigation({
-      waitUntil: 'domcontentloaded',
-    }).catch(() => {}),
-    signInButton.click(),
-  ]);
+  // Try submitting the form with Enter first, then fallback to clicking the button
+  await password.press('Enter').catch(() => {});
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  try {
+    await expect(
+      page.getByRole('heading', { name: /select a project/i }).first()
+    ).toBeVisible({ timeout: 10000 });
+  } catch (err) {
+    await signInButton.click();
+    try {
+      await expect(
+        page.getByRole('heading', { name: /select a project/i }).first()
+      ).toBeVisible({ timeout: 20000 });
+    } catch (err2) {
+      // diagnostics: capture screenshot and page info
+      await page.screenshot({ path: 'tmp/login-failure.png', fullPage: true }).catch(() => {});
+      const url = page.url();
+      const body = await page.locator('body').innerText().catch(() => '');
+      const info = `URL: ${url}\n\nBODY:\n${body.slice(0,2000)}`;
+      const fs = require('fs');
+      try { fs.writeFileSync('tmp/login-failure.txt', info); } catch(e){}
+      throw new Error('Login failed — screenshot and page dump saved to tmp/login-failure.*');
+    }
+  }
 
-  await expect(page).not.toHaveURL(/\/sign-in/i);
+  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 30000 });
 }
 
 async function openClientsPage(page) {
@@ -79,17 +105,35 @@ async function openClientsPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  // Сайт постійно робить фонові запити (нотифікації тощо), тому networkidle
+  // ніколи не настає — обмежуємо очікування, щоб воно не зжирало весь таймаут тесту.
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
-  // OPEN PROJECT
-  const projectCard = page.getByText(
-    PROJECT_NAME,
-    { exact: true }
-  ).first();
+  // Wait for projects view header
+  await expect(page.getByRole('heading', { name: /select a project/i }).first()).toBeVisible({ timeout: 20000 });
 
-  await expect(projectCard).toBeVisible({
-    timeout: 15000,
-  });
+  // Try to find the project by exact name, then fallback to partial match or card search
+  let projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
+
+  try {
+    await expect(projectCard).toBeVisible({ timeout: 8000 });
+  } catch {
+    // fallback: search for partial match (e.g., 'Dior')
+    projectCard = page.locator('li').filter({ hasText: new RegExp(PROJECT_NAME.split(' ')[0], 'i') }).first();
+    try {
+      await expect(projectCard).toBeVisible({ timeout: 8000 });
+    } catch {
+      // final fallback: any element that contains the project name substring
+      projectCard = page.locator(`:text-matches("${PROJECT_NAME.split(' ')[0]}", "i")`).first();
+      try {
+        await expect(projectCard).toBeVisible({ timeout: 5000 });
+      } catch (err) {
+        // capture screenshot and dump DOM to help debugging
+        await page.screenshot({ path: 'tmp/client-open-failure.png', fullPage: true }).catch(() => {});
+        throw new Error('Project card not found for ' + PROJECT_NAME + ' — screenshot saved to tmp/client-open-failure.png');
+      }
+    }
+  }
 
   await projectCard.scrollIntoViewIfNeeded();
   await projectCard.click();

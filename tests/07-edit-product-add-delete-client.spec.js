@@ -6,10 +6,6 @@ const PRODUCT_WITH_CLIENT = 'Eau de Parfum Dior — Signature';
 const PRODUCT_WITHOUT_CLIENT = "Parfum Intense Dior — L'Imperiale";
 const CLIENT_NAME = 'Преміум-колекціонери ароматів (15-35) _test';
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 async function login(page) {
   await page.goto('https://frontv2.getlaunched.io/sign-in', {
     waitUntil: 'domcontentloaded',
@@ -30,7 +26,7 @@ async function login(page) {
     signInButton.click(),
   ]);
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page).not.toHaveURL(/\/sign-in/i);
 }
 
@@ -39,7 +35,7 @@ async function openProductsServicesPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
   await expect(projectCard).toBeVisible({ timeout: 15000 });
@@ -88,13 +84,52 @@ async function openEditModal(page) {
   return modal;
 }
 
-async function deleteClientFromProduct(page, modal) {
-  const deleteClientButton = modal
-    .locator('button:has(svg path[d*="M21 5.98047"])')
+// Edit product form is now a 2-step wizard (same as Create product): "Product" and "Attach clients" tabs
+async function openAttachClientsTab(modal) {
+  const attachClientsTab = modal
+    .getByRole('button', { name: /attach clients/i })
     .first();
 
-  await expect(deleteClientButton).toBeVisible({ timeout: 15000 });
-  await deleteClientButton.click();
+  await expect(attachClientsTab).toBeVisible({ timeout: 15000 });
+  await attachClientsTab.click();
+
+  await expect(modal.getByText(/^clients \(/i).first()).toBeVisible({
+    timeout: 15000,
+  });
+}
+
+async function selectFromCustomDropdown(page, scope, optionLabel) {
+  const dropdownButton = scope.locator('button[data-open="false"]').first();
+
+  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
+  await dropdownButton.click();
+
+  const listbox = page.getByRole('listbox').last();
+  await expect(listbox).toBeVisible({ timeout: 15000 });
+
+  const option = listbox
+    .getByRole('option', { name: optionLabel, exact: true })
+    .first();
+
+  await expect(option).toBeVisible({ timeout: 15000 });
+  await option.click();
+}
+
+async function deleteClientFromProduct(page, modal) {
+  // Scope to the row that shows this client's name but not the "Quantity per year"
+  // block (a sibling section) — that isolates the row's own delete icon button.
+  const clientRow = modal
+    .locator('div')
+    .filter({ hasText: CLIENT_NAME })
+    .filter({ hasNotText: /quantity per year/i })
+    .first();
+
+  await expect(clientRow).toBeVisible({ timeout: 15000 });
+
+  const deleteRowButton = clientRow.getByRole('button').last();
+
+  await expect(deleteRowButton).toBeVisible({ timeout: 15000 });
+  await deleteRowButton.click();
 
   const confirmDeleteButton = page.getByRole('button', {
     name: /yes, delete this client/i,
@@ -112,26 +147,17 @@ async function addClientToProduct(page, modal) {
   await expect(addClientButton).toBeVisible({ timeout: 15000 });
   await addClientButton.click();
 
-  const clientDropdown = modal
-    .getByRole('button', { name: /^select$/i })
-    .last();
+  // BUSINESS UNIT — dropdown used to attach the client to the product
+  await selectFromCustomDropdown(page, modal, CLIENT_NAME);
 
-  await expect(clientDropdown).toBeVisible({ timeout: 15000 });
-  await clientDropdown.click();
+  // QUANTITY PER YEAR — the form shows two year columns, fill both
+  const qtyInputs = modal.getByPlaceholder(/type quantity/i);
+  const qtyCount = await qtyInputs.count();
 
-  const clientOption = page
-    .locator('[role="option"]')
-    .filter({ hasText: new RegExp(escapeRegExp(CLIENT_NAME), 'i') })
-    .first();
-
-  await expect(clientOption).toBeVisible({ timeout: 15000 });
-  await clientOption.click();
-
-  const qtyYearInput = modal.locator('input[name="clients.0.qty_per_year"]');
-  await expect(qtyYearInput).toBeVisible({ timeout: 15000 });
-
-  const randomQtyYear = String(Math.floor(Math.random() * 1000) + 1);
-  await qtyYearInput.fill(randomQtyYear);
+  for (let i = 0; i < qtyCount; i++) {
+    const randomQty = String(Math.floor(Math.random() * 5000) + 100);
+    await qtyInputs.nth(i).fill(randomQty);
+  }
 }
 
 async function updateProduct(modal) {
@@ -152,11 +178,13 @@ test.describe.serial('Products / Services edit flow', () => {
 
     const modal = await openEditModal(page);
 
+    await openAttachClientsTab(modal);
+
     await deleteClientFromProduct(page, modal);
 
     await updateProduct(modal);
 
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     await expect(page.locator('body')).toContainText(
       /updated|success|saved|edited/i,
       { timeout: 15000 }
@@ -171,11 +199,13 @@ test.describe.serial('Products / Services edit flow', () => {
 
     const modal = await openEditModal(page);
 
+    await openAttachClientsTab(modal);
+
     await addClientToProduct(page, modal);
 
     await updateProduct(modal);
 
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     await expect(page.locator('body')).toContainText(
       /updated|success|saved|edited/i,
       { timeout: 15000 }

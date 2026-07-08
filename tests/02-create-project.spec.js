@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+const sharedState = globalThis;
+
 test('Login and create project', async ({ page }) => {
-  // LOGIN
   await page.goto('https://frontv2.getlaunched.io/sign-in', {
     waitUntil: 'domcontentloaded',
   });
@@ -16,15 +17,13 @@ test('Login and create project', async ({ page }) => {
   await expect(password).toBeVisible({ timeout: 15000 });
   await password.fill('Test_11K');
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
+  await signInButton.click();
 
-  await page.waitForLoadState('networkidle').catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
+  await expect(
+    page.getByRole('heading', { name: /select a project/i }).first()
+  ).toBeVisible({ timeout: 30000 });
+  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 30000 });
 
-  // GO TO PROJECTS PAGE
   await page.goto('https://frontv2.getlaunched.io/', {
     waitUntil: 'domcontentloaded',
   });
@@ -37,17 +36,17 @@ test('Login and create project', async ({ page }) => {
   await expect(createProjectButton).toBeVisible({ timeout: 15000 });
   await createProjectButton.click();
 
-  // OPEN CREATE PROJECT FORM
   await expect(page.getByRole('heading', { name: /create project/i })).toBeVisible({ timeout: 15000 });
 
-  // FILL PROJECT FORM
   const projectName = page.locator('input[placeholder*="Type name"]').first();
   const website = page.locator('input[placeholder*="https://"]').first();
   const description = page.locator('textarea[placeholder*="Write your story"]').first();
   const incomeTax = page.locator('input[placeholder*="Type tax"]').first();
 
+  const projectNameText = `My Business ${Date.now()}`;
+
   await expect(projectName).toBeVisible({ timeout: 15000 });
-  await projectName.fill(`My Business ${Date.now()}`);
+  await projectName.fill(projectNameText);
 
   await expect(website).toBeVisible({ timeout: 15000 });
   await website.fill('https://mybusiness.com');
@@ -55,29 +54,19 @@ test('Login and create project', async ({ page }) => {
   await expect(description).toBeVisible({ timeout: 15000 });
   await description.fill('An intelligent business planning platform featuring AI');
 
-  // DROPDOWNS / SELECTS
   const selects = page.locator('select');
 
   await expect(selects.nth(0)).toBeVisible({ timeout: 15000 });
-  await selects.nth(0).selectOption({ index: 1 }); // Legal form
+  await selects.nth(0).selectOption({ index: 1 });
 
   await expect(selects.nth(1)).toBeVisible({ timeout: 15000 });
-  await selects.nth(1).selectOption({ index: 1 }); // Development stage
+  await selects.nth(1).selectOption({ index: 1 });
 
-  // CURRENCY - Input combobox (другий combobox - для валюти)
-  const currencyInput = page.locator('input[role="combobox"]').nth(1);
-  await expect(currencyInput).toBeVisible({ timeout: 15000 });
-  
-  // Клікаємо на input щоб відкрити dropdown
-  await currencyInput.click();
-  await page.waitForLoadState('networkidle').catch(() => {});
-  
-  // Вводимо текст "Australian Dollar"
-  await currencyInput.fill('Australian Dollar');
-  await page.waitForTimeout(500);
-  
-  // Вибираємо першу опцію
-  const currencyOption = page.getByRole('option').filter({ hasText: /australian dollar/i }).first();
+  const currencyField = page.locator('[role="combobox"]').nth(1);
+  await expect(currencyField).toBeVisible({ timeout: 15000 });
+  await currencyField.click();
+
+  const currencyOption = page.getByRole('option').first();
   await expect(currencyOption).toBeVisible({ timeout: 15000 });
   await currencyOption.click();
 
@@ -85,28 +74,27 @@ test('Login and create project', async ({ page }) => {
   await incomeTax.fill('25');
 
   await expect(selects.nth(2)).toBeVisible({ timeout: 15000 });
-  await selects.nth(2).selectOption({ index: 1 }); // Year of foundation
+  await selects.nth(2).selectOption('2022');
 
   await expect(selects.nth(3)).toBeVisible({ timeout: 15000 });
-  await selects.nth(3).selectOption({ index: 1 }); // Start calculation from
+  await selects.nth(3).selectOption({ index: 1 });
 
   await expect(selects.nth(4)).toBeVisible({ timeout: 15000 });
-  await selects.nth(4).selectOption({ index: 1 }); // Planning years
+  await selects.nth(4).selectOption({ index: 1 });
 
-  // CREATE PROJECT
-  const submitButton = page
-    .getByRole('button', { name: /^create project$/i })
-    .last();
-
+  const submitButton = page.getByRole('button', { name: /^create project$/i }).last();
   await expect(submitButton).toBeVisible({ timeout: 15000 });
   await submitButton.click();
 
-  // SUCCESS - чекаємо на перенаправлення або успіх повідомлення
   try {
-    // Чекаємо на успіх повідомлення
     await expect(page.locator('body')).toContainText(/project successfully created|created successfully/i, { timeout: 10000 });
   } catch {
-    // Якщо повідомлення не з'явилося, чекаємо на перенаправлення з /create
     await expect(page).not.toHaveURL(/\/project\/create/i, { timeout: 15000 });
   }
+
+  await expect(page.getByRole('heading', { name: /select a project/i }).first()).toBeVisible({ timeout: 20000 });
+  const createdProjectCard = page.locator('li').filter({ hasText: projectNameText }).first();
+  await expect(createdProjectCard).toBeVisible({ timeout: 20000 });
+
+  sharedState.__createdProjectName = projectNameText;
 });

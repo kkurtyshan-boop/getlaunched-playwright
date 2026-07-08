@@ -43,7 +43,7 @@ async function login(page) {
     signInButton.click(),
   ]);
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page).not.toHaveURL(/\/sign-in/i);
 }
 
@@ -52,7 +52,7 @@ async function openCompetitorsPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
   await expect(projectCard).toBeVisible({ timeout: 15000 });

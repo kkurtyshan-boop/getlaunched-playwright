@@ -54,7 +54,7 @@ async function login(page) {
     signInButton.click(),
   ]);
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page).not.toHaveURL(/\/sign-in/i);
 }
 
@@ -63,7 +63,7 @@ async function openCompetitorsPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
   await expect(projectCard).toBeVisible({ timeout: 15000 });
@@ -188,7 +188,7 @@ async function createCompetitor(page, competitor) {
   await expect(createButton).toBeVisible({ timeout: 15000 });
   await createButton.click();
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page.locator('body')).toContainText(
     /created|success|saved|added|updated/i,
     { timeout: 15000 }
@@ -205,6 +205,9 @@ test.describe.serial('Competitors flow', () => {
   });
 
   test('02. Create competitors', async ({ page }) => {
+    // 5 competitors created sequentially in one test exceed the default 30s timeout
+    test.setTimeout(120_000);
+
     await login(page);
     await openCompetitorsPage(page);
 

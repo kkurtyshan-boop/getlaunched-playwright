@@ -24,7 +24,7 @@ async function login(page) {
     signInButton.click(),
   ]);
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   await expect(page).not.toHaveURL(/\/sign-in/i);
 }
 
@@ -33,7 +33,7 @@ async function openClientsPage(page) {
     waitUntil: 'domcontentloaded',
   });
 
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
   await expect(projectCard).toBeVisible({ timeout: 15000 });
@@ -108,7 +108,7 @@ test('Login, edit client and delete need', async ({ page }) => {
   await updateButton.click();
 
   // Чекаємо завершення запиту
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   // Перевіряємо що форма редагування закрилась
   await expect(
@@ -127,7 +127,7 @@ test('Login, edit client and delete need', async ({ page }) => {
 
   // Оновлюємо сторінку щоб побачити оновлені дані
   await page.reload();
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   // CHECK - старе ім'я з _test більше не видно (або можемо просто перевірити що ми на сторінці)
   await expect(page).toHaveURL(

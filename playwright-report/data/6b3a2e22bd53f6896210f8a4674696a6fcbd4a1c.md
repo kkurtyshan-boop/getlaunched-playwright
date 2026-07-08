@@ -1,0 +1,154 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - button "Collapse sidebar" [ref=e8] [cursor=pointer]:
+            - generic [ref=e9]: Collapse
+            - img [ref=e11]
+          - link [ref=e12] [cursor=pointer]:
+            - /url: /
+            - img [ref=e14]
+        - generic [ref=e16]:
+          - generic [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]:
+              - img "Dior Brand logo" [ref=e22]
+              - paragraph [ref=e23]: Dior Brand
+            - img [ref=e26]
+          - generic [ref=e30]:
+            - link "Dashboard" [ref=e33] [cursor=pointer]:
+              - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9
+              - generic [ref=e34]:
+                - img [ref=e36]
+                - text: Dashboard
+            - generic [ref=e40]:
+              - link "Magic triangle" [ref=e41] [cursor=pointer]:
+                - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9/triangle
+                - generic [ref=e42]:
+                  - img [ref=e44]
+                  - text: Magic triangle
+              - button [ref=e47] [cursor=pointer]:
+                - img [ref=e49]
+            - link "Operations" [ref=e53] [cursor=pointer]:
+              - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9/operations
+              - generic [ref=e54]:
+                - img [ref=e56]
+                - text: Operations
+            - generic [ref=e64]:
+              - link "Financial" [ref=e65] [cursor=pointer]:
+                - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9/financial
+                - generic [ref=e66]:
+                  - img [ref=e68]
+                  - text: Financial
+              - button [ref=e72] [cursor=pointer]:
+                - img [ref=e74]
+            - link "Implementation" [ref=e78] [cursor=pointer]:
+              - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9/implementation
+              - generic [ref=e79]:
+                - img [ref=e81]
+                - text: Implementation
+      - generic [ref=e84]:
+        - button "Language" [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]:
+            - img [ref=e89]
+            - generic [ref=e90]: Language
+            - img [ref=e93]
+        - button "7 Notifications" [ref=e96] [cursor=pointer]:
+          - generic [ref=e97]:
+            - generic [ref=e99]:
+              - img [ref=e101]
+              - generic [ref=e104]: "7"
+            - generic [ref=e105]: Notifications
+            - img [ref=e108]
+        - button "KQ Karina QA kataratest573@gmail.com" [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]:
+            - generic [ref=e114]: KQ
+            - generic [ref=e115]:
+              - generic [ref=e116]: Karina QA
+              - generic [ref=e117]: kataratest573@gmail.com
+          - img [ref=e120]
+    - main [ref=e123]:
+      - navigation "Breadcrumb" [ref=e124]:
+        - link "Dashboard" [ref=e125] [cursor=pointer]:
+          - /url: /project/019dfc93-1e50-70f3-ac16-7c8c5dd1e6c9
+        - img [ref=e127]
+        - link "Operations" [disabled] [ref=e129] [cursor=pointer]
+      - generic [ref=e130]:
+        - heading "Operations" [level=1] [ref=e132]
+        - button "Assist me" [ref=e135] [cursor=pointer]:
+          - img [ref=e137]
+          - generic [ref=e139]: Assist me
+      - generic [ref=e142]:
+        - tablist [ref=e144]:
+          - tab "Marketing channels" [ref=e145] [cursor=pointer]
+          - tab "Team and staff" [ref=e146] [cursor=pointer]
+          - tab "Resources" [ref=e147] [cursor=pointer]
+          - tab "Other" [selected] [ref=e148] [cursor=pointer]
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - heading "Intellectual Property Rights Protect and document your business assets." [level=3] [ref=e152]:
+              - button "Intellectual Property Rights Protect and document your business assets." [expanded] [ref=e153] [cursor=pointer]:
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Intellectual Property Rights
+                  - generic [ref=e156]: Protect and document your business assets.
+                - img
+            - region "Intellectual Property Rights Protect and document your business assets." [ref=e157]:
+              - generic [ref=e159]:
+                - navigation [ref=e160]:
+                  - button "Trademark Planned" [ref=e161] [cursor=pointer]:
+                    - img [ref=e163]
+                    - generic [ref=e166]:
+                      - text: Trademark
+                      - generic [ref=e167]: Planned
+                  - button "Patent Planned" [ref=e168] [cursor=pointer]:
+                    - img [ref=e170]
+                    - generic [ref=e173]:
+                      - text: Patent
+                      - generic [ref=e174]: Planned
+                  - button "Copyright Planned" [ref=e175] [cursor=pointer]:
+                    - img [ref=e177]
+                    - generic [ref=e180]:
+                      - text: Copyright
+                      - generic [ref=e181]: Planned
+                  - button "Design Planned" [ref=e182] [cursor=pointer]:
+                    - img [ref=e184]
+                    - generic [ref=e193]:
+                      - text: Design
+                      - generic [ref=e194]: Planned
+                - generic [ref=e195]:
+                  - generic [ref=e196]:
+                    - generic [ref=e197]:
+                      - generic [ref=e198]: Trademark
+                      - generic [ref=e199]: Brand name & logo protection
+                    - generic [ref=e200]:
+                      - generic [ref=e201]: Tracked
+                      - switch "Tracked" [checked] [ref=e202] [cursor=pointer]
+                  - generic [ref=e203]:
+                    - generic [ref=e204]: Registration status
+                    - button "Registered" [ref=e206]:
+                      - button "Registered" [ref=e207] [cursor=pointer]:
+                        - generic [ref=e209]: Registered
+                        - img [ref=e211]
+                  - generic [ref=e213]:
+                    - generic [ref=e214]: Notes & Strategy
+                    - textbox "Type text" [ref=e215]: Торгова марка Dior та логотип зареєстровані у ЄС, США та Японії, регулярно оновлюється захист у нових регіонах.
+                  - button "Save" [ref=e217] [cursor=pointer]:
+                    - img [ref=e219]
+                    - generic [ref=e221]: Save
+          - heading "Location Analysis Compare potential locations using weighted evaluation criteria." [level=3] [ref=e223]:
+            - button "Location Analysis Compare potential locations using weighted evaluation criteria." [ref=e224] [cursor=pointer]:
+              - generic [ref=e225]:
+                - generic [ref=e226]: Location Analysis
+                - generic [ref=e227]: Compare potential locations using weighted evaluation criteria.
+              - img
+          - heading "Supplier Analysis Compare potential locations using weighted evaluation criteria." [level=3] [ref=e229]:
+            - button "Supplier Analysis Compare potential locations using weighted evaluation criteria." [ref=e230] [cursor=pointer]:
+              - generic [ref=e231]:
+                - generic [ref=e232]: Supplier Analysis
+                - generic [ref=e233]: Compare potential locations using weighted evaluation criteria.
+              - img
+  - region "Notifications Alt+T"
+```
