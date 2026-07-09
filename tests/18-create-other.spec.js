@@ -151,7 +151,9 @@ async function selectFromCustomDropdown(page, scope, optionLabel) {
 // button (Trademark/Patent/Copyright/Design), so only one panel is ever
 // rendered — page-level selectors are unambiguous.
 async function fillIpType(page, ipType) {
-  const typeButton = page.getByRole('button', { name: ipType.name, exact: true }).first();
+  const typeButton = page
+    .getByRole('button', { name: new RegExp(`^${ipType.name}\\b`) })
+    .first();
   await expect(typeButton).toBeVisible({ timeout: 15000 });
   await typeButton.click();
   await page.waitForTimeout(300);

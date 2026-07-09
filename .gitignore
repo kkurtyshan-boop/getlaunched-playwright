@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Playwright artifacts
+test-results/
+playwright-report/
+playwright/.auth/
+blob-report/
+
+# Session / auth state (contains live tokens — never commit)
+storageState.json
+
+# Debug/scratch output
+tmp/
+debug*.png
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
