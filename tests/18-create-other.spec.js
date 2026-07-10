@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { login, PROJECT_NAME } from './helpers';
 
-const PROJECT_NAME = 'Dior Brand';
 
 const IP_TYPES = [
   {
@@ -65,33 +65,8 @@ const SUPPLIER_MATRIX_SCORES = [
   ['5', '7', '6'],
   ['8', '6', '7'],
 ];
-
-async function login(page) {
-  await page.goto('https://frontv2.getlaunched.io/sign-in', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  const email = page.locator('input[type="email"]').first();
-  const password = page.locator('input[type="password"]').first();
-  const signInButton = page.getByRole('button', { name: /sign in/i }).first();
-
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await email.fill('kataratest573@gmail.com');
-
-  await expect(password).toBeVisible({ timeout: 15000 });
-  await password.fill('Test_11K');
-
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
-}
-
 async function openOtherTab(page) {
-  await page.goto('https://frontv2.getlaunched.io/', {
+  await page.goto('/', {
     waitUntil: 'domcontentloaded',
   });
 

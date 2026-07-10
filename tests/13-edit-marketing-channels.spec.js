@@ -1,39 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { login, PROJECT_NAME } from './helpers';
 
-const PROJECT_NAME = 'Dior Brand';
 
 const CLIENT_MAKEUP = 'Makeup-ентузіасти Dior (20-45) _test';
 
 const UPDATED_INSTAGRAM_NAME = 'Dior Instagram Campaign — Reels Push';
 const UPDATED_EVENT_STRATEGY =
   'Оновлена стратегія: pop-up тур трьома містами з ексклюзивною подарунковою колекцією Dior.';
-
-async function login(page) {
-  await page.goto('https://frontv2.getlaunched.io/sign-in', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  const email = page.locator('input[type="email"]').first();
-  const password = page.locator('input[type="password"]').first();
-  const signInButton = page.getByRole('button', { name: /sign in/i }).first();
-
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await email.fill('kataratest573@gmail.com');
-
-  await expect(password).toBeVisible({ timeout: 15000 });
-  await password.fill('Test_11K');
-
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
-}
-
 async function openOperationsPage(page) {
-  await page.goto('https://frontv2.getlaunched.io/', {
+  await page.goto('/', {
     waitUntil: 'domcontentloaded',
   });
 

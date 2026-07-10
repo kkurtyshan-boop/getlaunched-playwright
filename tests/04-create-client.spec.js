@@ -1,13 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { login, PROJECT_NAME } from './helpers';
 
-// Use saved authenticated storage if present to avoid flaky UI login
-try {
-  test.use({ storageState: 'storageState.json' });
-} catch (e) {
-  // ignore if runner doesn't support file-level use
-}
-
-const PROJECT_NAME = 'Dior Brand';
 
 // ДАНІ ЗІ СКРІНШОТІВ ДЛЯ СТВОРЕННЯ КЛІЄНТІВ
 const CLIENTS_DATA = [
@@ -43,65 +36,9 @@ const CLIENTS_DATA = [
     needs: [] // 0 Потреб — кнопка додавання клікатися не буде
   }
 ];
-
-async function login(page) {
-  // LOGIN
-  await page.goto('https://frontv2.getlaunched.io/sign-in', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  const email = page.locator('input[type="email"]').first();
-  const password = page.locator('input[type="password"]').first();
-  const signInButton = page
-    .getByRole('button', { name: /sign in/i })
-    .first();
-
-  // If storageState logged-in, the sign-in form won't be present — skip login
-  try {
-    await expect(email).toBeVisible({ timeout: 2000 });
-  } catch {
-    return; // already logged in
-  }
-
-  await email.fill('kataratest573@gmail.com');
-
-  await expect(password).toBeVisible({
-    timeout: 15000,
-  });
-
-  await password.fill('Test_11K');
-
-  // Try submitting the form with Enter first, then fallback to clicking the button
-  await password.press('Enter').catch(() => {});
-
-  try {
-    await expect(
-      page.getByRole('heading', { name: /select a project/i }).first()
-    ).toBeVisible({ timeout: 10000 });
-  } catch (err) {
-    await signInButton.click();
-    try {
-      await expect(
-        page.getByRole('heading', { name: /select a project/i }).first()
-      ).toBeVisible({ timeout: 20000 });
-    } catch (err2) {
-      // diagnostics: capture screenshot and page info
-      await page.screenshot({ path: 'tmp/login-failure.png', fullPage: true }).catch(() => {});
-      const url = page.url();
-      const body = await page.locator('body').innerText().catch(() => '');
-      const info = `URL: ${url}\n\nBODY:\n${body.slice(0,2000)}`;
-      const fs = require('fs');
-      try { fs.writeFileSync('tmp/login-failure.txt', info); } catch(e){}
-      throw new Error('Login failed — screenshot and page dump saved to tmp/login-failure.*');
-    }
-  }
-
-  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 30000 });
-}
-
 async function openClientsPage(page) {
   // OPEN PROJECTS PAGE
-  await page.goto('https://frontv2.getlaunched.io/', {
+  await page.goto('/', {
     waitUntil: 'domcontentloaded',
   });
 

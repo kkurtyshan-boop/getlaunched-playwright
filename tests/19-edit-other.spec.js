@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { login, PROJECT_NAME } from './helpers';
 
-const PROJECT_NAME = 'Dior Brand';
 
 const UPDATED_PATENT_NOTES =
   'Патент на технологію стійкої формули аромату успішно отримано, охорона дії — 20 років.';
@@ -10,33 +10,8 @@ const UPDATED_LOCATION_ADDRESS = '30 Avenue Montaigne, 2nd Floor, Paris, France'
 
 const UPDATED_SUPPLIER_EMAIL = 'partnerships@grasseessence.fr';
 const UPDATED_SUPPLIER_COUNTRY = 'France (EU)';
-
-async function login(page) {
-  await page.goto('https://frontv2.getlaunched.io/sign-in', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  const email = page.locator('input[type="email"]').first();
-  const password = page.locator('input[type="password"]').first();
-  const signInButton = page.getByRole('button', { name: /sign in/i }).first();
-
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await email.fill('kataratest573@gmail.com');
-
-  await expect(password).toBeVisible({ timeout: 15000 });
-  await password.fill('Test_11K');
-
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
-}
-
 async function openOtherTab(page) {
-  await page.goto('https://frontv2.getlaunched.io/', {
+  await page.goto('/', {
     waitUntil: 'domcontentloaded',
   });
 
