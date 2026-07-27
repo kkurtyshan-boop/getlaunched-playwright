@@ -1,39 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { login, PROJECT_NAME } from './helpers';
 
-const PROJECT_NAME = 'Dior Brand';
 const ORIGINAL_COMPETITOR_NAME = 'Champ Tea';
 const UPDATED_COMPETITOR_NAME = 'Champ Tea Edited';
 
 function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
-async function login(page) {
-  await page.goto('https://frontv2.getlaunched.io/sign-in', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  const email = page.locator('input[type="email"]').first();
-  const password = page.locator('input[type="password"]').first();
-  const signInButton = page.getByRole('button', { name: /sign in/i }).first();
-
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await email.fill('kataratest573@gmail.com');
-
-  await expect(password).toBeVisible({ timeout: 15000 });
-  await password.fill('Test_11K');
-
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }).catch(() => {}),
-    signInButton.click(),
-  ]);
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i);
-}
-
 async function openCompetitorsPage(page) {
-  await page.goto('https://frontv2.getlaunched.io/', {
+  await page.goto('/', {
     waitUntil: 'domcontentloaded',
   });
 

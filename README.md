@@ -1,50 +1,70 @@
 # GetLaunched Autotest
 
-Playwright end-to-end test suite for the GetLaunched app (`https://frontv2.getlaunched.io`). All tests exercise a single live demo project, **"Dior Brand"**, walking through Magic Triangle, Operations, and Implementation end to end.
+Playwright end-to-end test suite for the GetLaunched app. All tests exercise a single live demo project, **"Dior Brand"**, walking through Magic Triangle, Operations, and Implementation end to end.
 
 ## Install dependencies
 
 ```bash
 npm install
+npx playwright install chromium
 ```
+
+## Choosing the target environment (prod vs local)
+
+The app under test is selected by the `BASE_URL` env var (see `playwright.config.ts`). It defaults to **prod** when unset:
+
+```bash
+# Prod (default) — https://frontv2.getlaunched.io
+npx playwright test --project=chromium
+
+# Local dev build
+BASE_URL=https://local.getlaunched.io:3000 npx playwright test --project=chromium
+```
+
+### Running against a local frontend
+
+The local frontend still needs a backend. It reads its API base from `VITE_BACK_API_LINK` (in the `web` repo's `.env`). Point that at the **prod API** so the "Dior Brand" project and the test account exist:
+
+1. In the `web` repo: `bun run dev` (serves `https://local.getlaunched.io:3000`).
+2. Use `BASE_URL=https://local.getlaunched.io:3000`.
+
+> Use the `local.getlaunched.io` host, **not** `localhost`. The prod API scopes its auth cookie to `.getlaunched.io` and its CORS allow-list to `*.getlaunched.io`, so `localhost` would fail auth/CORS. `local.getlaunched.io` must resolve to `127.0.0.1` (hosts file). The dev server uses a self-signed cert; `ignoreHTTPSErrors` is already set in the config.
 
 ## Running tests
 
-Run the whole suite exactly as used day-to-day:
-
 ```bash
-npx playwright test --project=chromium --headed --workers=1
-```
+npm test              # whole suite, prod
+npm run test:headed   # whole suite, headed
 
-`playwright.config.ts` already defaults to `workers: 1` and `headless: false`, so these flags are mostly explicit reinforcement — they can be omitted and the behavior stays the same.
-
-Other useful invocations:
-
-```bash
-# Whole suite via npm scripts
-npm test              # headless
-npm run test:headed   # headed
-
-# A single file
+# Single file
 npx playwright test tests/04-create-client.spec.js --project=chromium
 
-# A single test by title (grep)
+# Single test by title
 npx playwright test --project=chromium -g "01. Validation"
+
+# Headless (CI)
+HEADLESS=1 npx playwright test --project=chromium
 ```
+
+`playwright.config.ts` defaults to `workers: 1` and headed mode (set `HEADLESS=1` for CI).
 
 ## Authentication
 
-Each spec file logs in through the UI itself via its own `login()` helper (credentials are hardcoded: `kataratest573@gmail.com`). There is no shared `auth.setup.js` — every file is self-contained.
-
-`storageState.json` is a saved session used to skip the login screen where a spec file opts into it. Regenerate it with:
+Login is centralized in `tests/helpers.js` (`login()` + `EMAIL`/`PASSWORD`/`PROJECT_NAME`). Credentials default to the shared test account but can be overridden without touching code:
 
 ```bash
-node scripts/saveStorageState.js
+TEST_EMAIL=... TEST_PASSWORD=... TEST_PROJECT="Dior Brand" npx playwright test
 ```
+
+A `setup` project (`tests/auth.setup.js`) logs in **once** through the UI and saves `storageState.json`; the `chromium` project then reuses that session, so individual specs don't re-login through the UI. Each spec still calls `login(page)`, which is a no-op when already authenticated.
+
+`01-login.spec.js` intentionally opts out of the shared session (`test.use({ storageState: { cookies: [], origins: [] } })`) so it can exercise the sign-in form from a clean state.
+
+To regenerate the session manually (rarely needed): `node scripts/saveStorageState.js`.
 
 ## Test data and idempotency
 
-Every test runs against the **live** "Dior Brand" project — there is no seeded/disposable test environment and no teardown step. Most "create" flows are **not idempotent**: re-running the full suite from a fresh state adds new clients, products, competitors, channels, etc. on top of whatever already exists. This is the accepted behavior for this suite; don't be surprised by duplicate-looking records when re-running tests that were already run before.
+Every test runs against the **live** "Dior Brand" project — there is no seeded/disposable test environment and no teardown. Most "create" flows are **not idempotent**: re-running the suite adds new clients, products, competitors, channels, etc. on top of whatever exists. Expect duplicate-looking records on re-runs. See `TESTING_IMPROVEMENTS.md` for the plan to address this.
 
 ## Test structure
 
@@ -104,5 +124,5 @@ These are real behaviors found while writing the suite — worth knowing before 
 
 - Playwright `^1.58.2`, Chromium only (`playwright.config.ts`)
 - Reporter: HTML, written to `playwright-report/`
-- Each spec file is self-contained (its own `login()`, navigation helpers, etc.) — there are no shared imports between spec files, by convention
-- `storageState.json` and `test-results/`/`playwright-report/` output are currently committed to git; consider adding a `.gitignore` before pushing new session tokens or churn-y report artifacts
+- `.gitignore` excludes `storageState.json`, `test-results/`, and `playwright-report/` — session tokens and report churn are not committed.
+- `.claude/` holds Claude Code rules, a skill, and a subagent to make writing/maintaining these tests easier.
