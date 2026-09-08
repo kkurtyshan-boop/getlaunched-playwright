@@ -1,201 +1,97 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, CHANNEL_NAME } from './config';
+import { createClient } from './helpers/client.helper';
+import { createProduct } from './helpers/product.helper';
+import {
+  createMarketingChannel,
+  editMarketingChannel,
+  getChannelRow,
+} from './helpers/marketing.helper';
 
-
-const CLIENT_MAKEUP = 'Makeup-ентузіасти Dior (20-45) _test';
-
-const UPDATED_INSTAGRAM_NAME = 'Dior Instagram Campaign — Reels Push';
-const UPDATED_EVENT_STRATEGY =
-  'Оновлена стратегія: pop-up тур трьома містами з ексклюзивною подарунковою колекцією Dior.';
-async function openOperationsPage(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const operationsLink = page.getByRole('link', { name: /^operations$/i }).first();
-  await expect(operationsLink).toBeVisible({ timeout: 15000 });
-  await operationsLink.click();
-
-  await expect(
-    page.getByRole('heading', { name: /^operations$/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-}
-
-async function openEditModalForChannel(page, channelName) {
-  const row = page.locator('tr').filter({ hasText: channelName }).first();
-  await expect(row).toBeVisible({ timeout: 15000 });
-  await row.scrollIntoViewIfNeeded();
-
-  const actionButton = row.locator('button').last();
-  await expect(actionButton).toBeVisible({ timeout: 15000 });
-  await actionButton.click();
-
-  const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
-  await expect(editItem).toBeVisible({ timeout: 15000 });
-  await editItem.click();
-
-  const modal = page.getByRole('dialog');
-  await expect(modal).toBeVisible({ timeout: 15000 });
-
-  return modal;
-}
-
-async function selectFromCustomDropdown(page, scope, dropdownIndex, optionLabel) {
-  const dropdownButton = scope
-    .locator('button[data-open="false"]')
-    .nth(dropdownIndex);
-
-  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
-  await dropdownButton.click();
-
-  const listbox = page.getByRole('listbox').last();
-  await expect(listbox).toBeVisible({ timeout: 15000 });
-
-  const option = listbox
-    .getByRole('option', { name: optionLabel, exact: true })
-    .first();
-
-  await expect(option).toBeVisible({ timeout: 15000 });
-  await option.click();
-}
-
-// Only touches the fields present in `changes`, leaving the rest of the
-// pre-filled edit form untouched.
-async function applyChannelStepEdits(page, modal, changes) {
-  if (changes.name) {
-    const nameField = modal.getByPlaceholder('Type channel name').first();
-    await expect(nameField).toBeVisible({ timeout: 15000 });
-    await nameField.fill(changes.name);
-  }
-
-  if (changes.category) {
-    await selectFromCustomDropdown(page, modal, 0, changes.category);
-    await page.waitForTimeout(200);
-
-    const customCategoryField = modal.getByPlaceholder(/type category name/i).first();
-    if (changes.customCategoryName && (await customCategoryField.count())) {
-      await customCategoryField.fill(changes.customCategoryName);
-    }
-  }
-
-  if (changes.client) {
-    await selectFromCustomDropdown(page, modal, 1, changes.client);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.strategy) {
-    const strategyField = modal.getByPlaceholder('Write your story...').first();
-    await expect(strategyField).toBeVisible({ timeout: 15000 });
-    await strategyField.fill(changes.strategy);
-  }
-}
-
-async function goToSalesFunnelsStep(modal) {
-  const nextButton = modal.getByRole('button', { name: /^next$/i }).first();
-
-  await expect(nextButton).toBeVisible({ timeout: 15000 });
-  await nextButton.click();
-
-  await expect(modal.getByPlaceholder(/type budget/i).first()).toBeVisible({
-    timeout: 15000,
-  });
-}
-
-async function applySalesFunnelsEdits(modal, changes) {
-  if (changes.monthlyBudget) {
-    const budgetField = modal.getByPlaceholder(/type budget/i).first();
-    await expect(budgetField).toBeVisible({ timeout: 15000 });
-    await budgetField.fill(changes.monthlyBudget);
-  }
-
-  if (changes.reach) {
-    const reachField = modal.getByPlaceholder(/type reach/i).first();
-    await expect(reachField).toBeVisible({ timeout: 15000 });
-    await reachField.fill(changes.reach);
-  }
-
-  if (changes.conversionToLead) {
-    const leadField = modal.getByPlaceholder(/type lead/i).first();
-    await expect(leadField).toBeVisible({ timeout: 15000 });
-    await leadField.fill(changes.conversionToLead);
-  }
-
-  if (changes.conversionToCustomer) {
-    const conversionField = modal.getByPlaceholder(/type conversion/i).first();
-    await expect(conversionField).toBeVisible({ timeout: 15000 });
-    await conversionField.fill(changes.conversionToCustomer);
-  }
-}
-
-async function updateChannel(modal) {
-  const updateButton = modal.getByRole('button', { name: /^update$/i }).first();
-
-  await expect(updateButton).toBeVisible({ timeout: 15000 });
-  await updateButton.click();
-}
-
+// Self-contained: creates its own channels instead of depending on
+// 12-create-marketing-channels.spec.js having run first and left specific
+// named channels behind. Follows the tests/07-edit-product-add-delete-client
+// pattern — a "00. Set up" test creates the records, later tests each edit
+// one aspect and re-assign their own `let` var if the channel gets renamed.
 test.describe.serial('Edit marketing channels flow', () => {
-  test('01. Edit channel name and monthly budget', async ({ page }) => {
+  let channelAName;
+  let channelBName;
+  let channelCName;
+  let switchProductName;
+  let switchClientName;
+
+  test('00. Set up channels to edit', async ({ page, project }) => {
+    test.setTimeout(120_000);
     await login(page);
-    await openOperationsPage(page);
 
-    const modal = await openEditModalForChannel(page, 'Dior Instagram Campaign');
+    const channelA = await createMarketingChannel(page, project, { name: unique(CHANNEL_NAME) });
+    channelAName = channelA.name;
 
-    await applyChannelStepEdits(page, modal, { name: UPDATED_INSTAGRAM_NAME });
-    await goToSalesFunnelsStep(modal);
-    await applySalesFunnelsEdits(modal, { monthlyBudget: '52000' });
+    const channelB = await createMarketingChannel(page, project, { name: unique(CHANNEL_NAME) });
+    channelBName = channelB.name;
 
-    await updateChannel(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(UPDATED_INSTAGRAM_NAME, {
-      timeout: 15000,
+    // A second, pre-existing Product+Client pair to switch channel B onto
+    // in test 02. Live-checked (see marketing.helper.js): the channel
+    // wizard's "Client connection" dropdown only lists clients already
+    // attached to the currently selected Product ("Business unit"), so
+    // switching the client also requires switching to a Product that
+    // already has that client attached — built here via createProduct's
+    // own client-attach step (live-checked: attaching a second client to
+    // an already-populated product via a separate Edit product action
+    // does not reliably land on the intended row).
+    const switchClient = await createClient(page, project, {
+      name: unique('Autotest Edit Channel Client'),
     });
+    switchClientName = switchClient.name;
+
+    const switchProduct = await createProduct(page, project, {
+      name: unique('Autotest Edit Channel Product'),
+      clientName: switchClientName,
+    });
+    switchProductName = switchProduct.name;
+
+    const channelC = await createMarketingChannel(page, project, { name: unique(CHANNEL_NAME) });
+    channelCName = channelC.name;
   });
 
-  test('02. Edit channel client connection and conversion to lead', async ({ page }) => {
+  test('01. Edit channel name and cost', async ({ page, project }) => {
     await login(page);
-    await openOperationsPage(page);
 
-    const modal = await openEditModalForChannel(
-      page,
-      'Dior Google Ads — Parfum Search'
-    );
+    const updatedName = `${channelAName} Edited`;
 
-    await applyChannelStepEdits(page, modal, { client: CLIENT_MAKEUP });
-    await goToSalesFunnelsStep(modal);
-    await applySalesFunnelsEdits(modal, { conversionToLead: '9' });
-
-    await updateChannel(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
+    await editMarketingChannel(page, project, channelAName, {
+      name: updatedName,
+      cost: '5200',
     });
+    channelAName = updatedName;
+
+    await expect(await getChannelRow(page, channelAName)).toBeVisible({ timeout: 15000 });
   });
 
-  test('03. Edit channel strategy description and estimated reach', async ({ page }) => {
+  test('02. Edit channel client connection and conversion rate', async ({ page, project }) => {
     await login(page);
-    await openOperationsPage(page);
 
-    const modal = await openEditModalForChannel(page, 'Dior Pop-up Event Paris');
-
-    await applyChannelStepEdits(page, modal, { strategy: UPDATED_EVENT_STRATEGY });
-    await goToSalesFunnelsStep(modal);
-    await applySalesFunnelsEdits(modal, { reach: '20000' });
-
-    await updateChannel(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
+    // Switching the Client connection also requires switching to the
+    // Product it's attached to (see setup test's comment).
+    await editMarketingChannel(page, project, channelBName, {
+      product: switchProductName,
+      client: switchClientName,
+      conversionRate: '9',
     });
+
+    const row = await getChannelRow(page, channelBName);
+    await expect(row).toBeVisible({ timeout: 15000 });
+  });
+
+  test('03. Edit channel strategy and quantity', async ({ page, project }) => {
+    await login(page);
+
+    await editMarketingChannel(page, project, channelCName, {
+      strategy: 'Updated strategy created by the automated test suite.',
+      quantity: '20000',
+    });
+
+    await expect(await getChannelRow(page, channelCName)).toBeVisible({ timeout: 15000 });
   });
 });

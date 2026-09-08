@@ -1,150 +1,20 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, COMPETITOR_NAME } from './config';
+import { createCompetitor, editCompetitorName, deleteCompetitor } from './helpers/competitor.helper';
 
-const ORIGINAL_COMPETITOR_NAME = 'Champ Tea';
-const UPDATED_COMPETITOR_NAME = 'Champ Tea Edited';
+// Self-contained: creates its own competitor instead of depending on
+// 08-create-competitor-analysis.spec.js having run first and left a
+// competitor named "Champ Tea" behind. This is the flow the request calls
+// out by name (Dior Brand → Magic Triangle → Competitors → edit "Champ Tea
+// (champtea.ch)" → "Champ Tea" → delete) — now driven entirely against the
+// bootstrapped Autotest project with a generic, unique name.
+test('Edit competitor name, then delete it', async ({ page, project }) => {
+  await login(page);
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-async function openCompetitorsPage(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
+  const originalName = await createCompetitor(page, project, { name: unique(COMPETITOR_NAME) }).then((c) => c.name);
+  const updatedName = `${originalName} Edited`;
 
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const magicTriangle = page.getByText(/magic triangle/i).first();
-  await expect(magicTriangle).toBeVisible({ timeout: 15000 });
-  await magicTriangle.click();
-
-  await expect(page).toHaveURL(/\/triangle/i, { timeout: 15000 });
-
-  const competitorsButton = page.getByText(/competitors/i).first();
-  await expect(competitorsButton).toBeVisible({ timeout: 15000 });
-  await competitorsButton.click();
-
-  await expect(page.locator('body')).toContainText(/competitors/i, {
-    timeout: 15000,
-  });
-}
-
-async function getCompetitorRow(page, competitorName) {
-  const safeName = escapeRegExp(competitorName);
-
-  const competitorsSection = page.locator('section').filter({
-    has: page.getByRole('heading', { name: /competitors/i }),
-  }).first();
-
-  await expect(competitorsSection).toBeVisible({ timeout: 15000 });
-
-  const row = competitorsSection
-    .locator('li')
-    .filter({
-      has: page.getByRole('heading', { name: new RegExp(`^${safeName}$`, 'i') }),
-    })
-    .first();
-
-  if (await row.count()) {
-    await expect(row).toBeVisible({ timeout: 15000 });
-    return row;
-  }
-
-  const fallbackRow = competitorsSection
-    .locator('li')
-    .filter({
-      has: page.getByText(new RegExp(`^${safeName}$`, 'i')),
-    })
-    .first();
-
-  await expect(fallbackRow).toBeVisible({ timeout: 15000 });
-  return fallbackRow;
-}
-
-async function openRowActionsMenu(page, competitorName) {
-  const row = await getCompetitorRow(page, competitorName);
-
-  const menuButton = row
-    .locator('button[aria-label="Open actions menu"]')
-    .first();
-
-  await expect(menuButton).toBeVisible({ timeout: 15000 });
-  await menuButton.click();
-
-  return row;
-}
-
-async function editCompetitorName(page, competitorName, updatedName) {
-  await openRowActionsMenu(page, competitorName);
-
-  const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
-  await expect(editItem).toBeVisible({ timeout: 15000 });
-  await editItem.click();
-
-  const modal = page.getByRole('dialog');
-  await expect(modal).toBeVisible({ timeout: 15000 });
-
-  const nameInput = modal.locator('input').first();
-  await expect(nameInput).toBeVisible({ timeout: 15000 });
-  await nameInput.fill(updatedName);
-
-  const updateButton = modal.getByRole('button', { name: /^update$/i }).first();
-  await expect(updateButton).toBeVisible({ timeout: 15000 });
-  await updateButton.click();
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page.locator('body')).toContainText(updatedName, {
-    timeout: 15000,
-  });
-}
-
-async function deleteCompetitor(page, competitorName) {
-  await openRowActionsMenu(page, competitorName);
-
-  const deleteItem = page.getByRole('menuitem', { name: /^delete$/i }).first();
-  await expect(deleteItem).toBeVisible({ timeout: 15000 });
-  await deleteItem.click();
-
-  const confirmDeleteButton = page.getByRole('button', {
-    name: /yes, delete this competitor/i,
-  });
-
-  await expect(confirmDeleteButton).toBeVisible({ timeout: 15000 });
-  await confirmDeleteButton.click();
-
-  await expect(page.getByText(/item deleted successfully/i)).toBeVisible({
-    timeout: 15000,
-  });
-
-  const competitorsSection = page.locator('section').filter({
-    has: page.getByRole('heading', { name: /competitors/i }),
-  }).first();
-
-  await expect(
-    competitorsSection.locator(`h3[title="${competitorName}"]`)
-  ).toHaveCount(0, { timeout: 15000 });
-
-  console.log(`✅ Competitor "${competitorName}" deleted successfully`);
-}
-
-test.describe.serial('Competitors edit and delete flow', () => {
-  test('01. Edit competitor and then delete it', async ({ page }) => {
-    await login(page);
-    await openCompetitorsPage(page);
-
-    await editCompetitorName(
-      page,
-      ORIGINAL_COMPETITOR_NAME,
-      UPDATED_COMPETITOR_NAME
-    );
-
-    await deleteCompetitor(page, UPDATED_COMPETITOR_NAME);
-
-    console.log('✅ TEST PASSED: edit and delete competitor flow completed');
-  });
+  await editCompetitorName(page, originalName, updatedName);
+  await deleteCompetitor(page, updatedName);
 });

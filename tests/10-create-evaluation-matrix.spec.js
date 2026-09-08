@@ -1,134 +1,56 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique } from './config';
+import { createCompetitor } from './helpers/competitor.helper';
+import {
+  createEvaluationCriterion,
+  getMatrixColumnIndex,
+  setMatrixScore,
+  verifyWeightedScore,
+} from './helpers/evaluation.helper';
 
-
-const MATRIX_ROWS = [
-  {
-    criterion: 'Відповідність ринку/позиціонуванню',
-    scores: [1, 3, 9, 4, 3],
-  },
-  {
-    criterion: 'Продуктова цінність',
-    scores: [4, 7, 9, 9, 6],
-  },
-  {
-    criterion: 'Зручність для користувача (UX)',
-    scores: [10, 6, 8, 1, 1],
-  },
+// Self-contained: creates its own competitors + criteria instead of
+// depending on 08/09 having run first. Verification recomputes the
+// weighted-score formula (Σ(weight × score) / Σ(weights) — confirmed,
+// PROJECT_KNOWLEDGE.md §3.2) from every row actually on screen, not just
+// this fixture's own rows/columns — the matrix's competitor columns are not
+// guaranteed to start at index 0 on a shared/adopted project that already
+// carries other competitors and criteria (see helpers/project.js).
+const COMPETITORS = [
+  { name: unique('Autotest Matrix Competitor A'), type: 'Direct' },
+  { name: unique('Autotest Matrix Competitor B'), type: 'Indirect' },
+  { name: unique('Autotest Matrix Competitor C'), type: 'Potential' },
 ];
 
-const EXPECTED_WEIGHTED_SCORES = ['6.6', '5.9', '8.5', '4.3', '3.1'];
+const CRITERIA = [
+  { name: unique('Autotest Matrix Criterion 1'), weight: 3, scores: [1, 3, 9] },
+  { name: unique('Autotest Matrix Criterion 2'), weight: 6, scores: [4, 7, 9] },
+  { name: unique('Autotest Matrix Criterion 3'), weight: 10, scores: [10, 6, 8] },
+];
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-async function openCompetitorsPage(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
+test('Set and verify evaluation matrix scores', async ({ page, project }) => {
+  test.setTimeout(150_000);
+  await login(page);
 
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const magicTriangle = page.getByText(/magic triangle/i).first();
-  await expect(magicTriangle).toBeVisible({ timeout: 15000 });
-  await magicTriangle.click();
-
-  await expect(page).toHaveURL(/\/triangle/i, { timeout: 15000 });
-
-  const competitorsButton = page.getByText(/competitors/i).first();
-  await expect(competitorsButton).toBeVisible({ timeout: 15000 });
-  await competitorsButton.click();
-
-  await expect(page.locator('body')).toContainText(/competitors/i, {
-    timeout: 15000,
-  });
-}
-
-async function getEvaluationMatrixSection(page) {
-  const section = page.locator('section').filter({
-    has: page.getByRole('heading', { name: /evaluation matrix/i }),
-  }).first();
-
-  await expect(section).toBeVisible({ timeout: 15000 });
-  await section.scrollIntoViewIfNeeded();
-
-  return section;
-}
-
-async function selectDropdownScore(page, trigger, score) {
-  await trigger.scrollIntoViewIfNeeded();
-  await trigger.click();
-
-  const listbox = page.getByRole('listbox').first();
-  await expect(listbox).toBeVisible({ timeout: 15000 });
-
-  const optionByRole = listbox.getByRole('option', {
-    name: new RegExp(`^${escapeRegExp(String(score))}$`),
-  }).first();
-
-  if (await optionByRole.count()) {
-    await optionByRole.scrollIntoViewIfNeeded();
-    await optionByRole.click();
-    return;
+  for (const competitor of COMPETITORS) {
+    await createCompetitor(page, project, competitor);
+  }
+  for (const criterion of CRITERIA) {
+    await createEvaluationCriterion(page, project, { name: criterion.name, score: String(criterion.weight) });
   }
 
-  const optionByText = listbox
-    .getByText(new RegExp(`^${escapeRegExp(String(score))}$`), { exact: true })
-    .first();
-
-  await optionByText.scrollIntoViewIfNeeded();
-  await optionByText.click();
-}
-
-async function setMatrixScore(page, criterionName, columnIndex, score) {
-  const matrixSection = await getEvaluationMatrixSection(page);
-
-  const row = matrixSection.locator('tbody tr').filter({
-    has: page.getByText(criterionName, { exact: true }),
-  }).first();
-
-  await expect(row).toBeVisible({ timeout: 15000 });
-
-  const cell = row.locator('td').nth(columnIndex + 1);
-  const trigger = cell.locator('button').first();
-
-  await expect(trigger).toBeVisible({ timeout: 15000 });
-  await selectDropdownScore(page, trigger, score);
-
-  await expect(trigger).toContainText(String(score), { timeout: 15000 });
-}
-
-async function verifyWeightedScores(page) {
-  const matrixSection = await getEvaluationMatrixSection(page);
-  const footerRow = matrixSection.locator('tfoot tr').first();
-
-  await expect(footerRow).toBeVisible({ timeout: 15000 });
-
-  const scoreCells = footerRow.locator('td');
-
-  for (let i = 0; i < EXPECTED_WEIGHTED_SCORES.length; i++) {
-    const expectedScore = EXPECTED_WEIGHTED_SCORES[i];
-    const cell = scoreCells.nth(i + 1);
-    await expect(cell).toContainText(expectedScore, { timeout: 15000 });
+  const columnIndexes = [];
+  for (const competitor of COMPETITORS) {
+    columnIndexes.push(await getMatrixColumnIndex(page, competitor.name));
   }
-}
 
-test.describe.serial('Evaluation matrix scores flow', () => {
-  test('01. Set all evaluation matrix scores', async ({ page }) => {
-    await login(page);
-    await openCompetitorsPage(page);
-
-    for (const row of MATRIX_ROWS) {
-      for (let i = 0; i < row.scores.length; i++) {
-        await setMatrixScore(page, row.criterion, i, row.scores[i]);
-      }
+  for (const criterion of CRITERIA) {
+    for (let col = 0; col < COMPETITORS.length; col++) {
+      await setMatrixScore(page, criterion.name, columnIndexes[col], criterion.scores[col]);
     }
+  }
 
-    await verifyWeightedScores(page);
-  });
+  for (const competitor of COMPETITORS) {
+    await verifyWeightedScore(page, competitor.name);
+  }
 });

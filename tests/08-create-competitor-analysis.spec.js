@@ -1,193 +1,35 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, COMPETITOR_NAME } from './config';
+import { createCompetitor } from './helpers/competitor.helper';
+import { openSectionCreateModal, assertEmptyFormValidation } from './helpers/dom';
+import { gotoCompetitors } from './helpers/navigation';
 
-
+// Generic fixture data covering all three Competitor Types (Direct /
+// Indirect / Potential) — see PROJECT_KNOWLEDGE.md §3.2. Other specs that
+// need competitors (10, 11) create their own via createCompetitor() rather
+// than depending on this file having run first.
 const COMPETITORS_TO_CREATE = [
-  {
-    name: 'Champ Tea',
-    url: 'https://champtea.ch',
-    type: 'Direct',
-  },
-  {
-    name: 'Pickwick Tea',
-    url: 'https://pickwicktea.com',
-    type: 'Indirect',
-  },
-  {
-    name: 'Twinings Tea',
-    url: 'https://twinings.com',
-    type: 'Potential',
-  },
-  {
-    name: 'K-Tea',
-    url: 'https://k-tea.ch',
-    type: 'Direct',
-  },
-  {
-    name: 'Lipton',
-    url: 'https://lipton.com',
-    type: 'Indirect',
-  },
+  { name: unique(COMPETITOR_NAME), type: 'Direct' },
+  { name: unique(`${COMPETITOR_NAME} Indirect`), type: 'Indirect' },
+  { name: unique(`${COMPETITOR_NAME} Potential`), type: 'Potential' },
 ];
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-async function openCompetitorsPage(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const magicTriangle = page.getByText(/magic triangle/i).first();
-  await expect(magicTriangle).toBeVisible({ timeout: 15000 });
-  await magicTriangle.click();
-
-  await expect(page).toHaveURL(/\/triangle/i, { timeout: 15000 });
-
-  const competitorsButton = page.getByText(/competitors/i).first();
-  await expect(competitorsButton).toBeVisible({ timeout: 15000 });
-  await competitorsButton.click();
-
-  await expect(page.locator('body')).toContainText(/competitors/i, {
-    timeout: 15000,
-  });
-}
-
-async function openCreateModalFromBlock(page, blockTitle) {
-  const block = page.locator('section').filter({
-    has: page.getByRole('heading', {
-      name: new RegExp(`^${escapeRegExp(blockTitle)}$`, 'i'),
-    }),
-  }).first();
-
-  await expect(block).toBeVisible({ timeout: 15000 });
-
-  const addButton = block.locator('div.pb-4 > button').first();
-  await expect(addButton).toBeVisible({ timeout: 15000 });
-  await addButton.click();
-
-  const modal = page.getByRole('dialog');
-  await expect(modal).toBeVisible({ timeout: 15000 });
-
-  return modal;
-}
-
-async function validateCreateForm(modal) {
-  const createButton = modal.getByRole('button', { name: /^create$/i }).first();
-
-  await expect(createButton).toBeVisible({ timeout: 15000 });
-  await createButton.click();
-
-  await expect(modal).toBeVisible({ timeout: 5000 });
-
-  const validationMessage = modal
-    .locator('text=/required|invalid|error|please fill|must/i')
-    .first();
-
-  await expect(validationMessage).toBeVisible({ timeout: 5000 });
-}
-
-async function fillFirstMatchingInput(modal, selectors, value) {
-  for (const selector of selectors) {
-    const field = modal.locator(selector).first();
-    if (await field.count()) {
-      await expect(field).toBeVisible({ timeout: 15000 });
-      await field.fill(value);
-      return;
-    }
-  }
-
-  throw new Error(`Could not find input for value: ${value}`);
-}
-
-async function selectCompetitorType(page, modal, type) {
-  const selectButton = modal.getByRole('button', { name: /^select$/i }).first();
-  await expect(selectButton).toBeVisible({ timeout: 15000 });
-  await selectButton.click();
-
-  const optionByRole = page.getByRole('option', {
-    name: new RegExp(`^${escapeRegExp(type)}$`, 'i'),
-  }).first();
-
-  if (await optionByRole.count()) {
-    await expect(optionByRole).toBeVisible({ timeout: 15000 });
-    await optionByRole.click();
-    return;
-  }
-
-  const optionByText = page
-    .getByText(new RegExp(`^${escapeRegExp(type)}$`, 'i'))
-    .first();
-
-  await expect(optionByText).toBeVisible({ timeout: 15000 });
-  await optionByText.click();
-}
-
-async function createCompetitor(page, competitor) {
-  const modal = await openCreateModalFromBlock(page, 'Competitors');
-
-  await fillFirstMatchingInput(
-    modal,
-    [
-      'input[name*=".name"]',
-      'input[name*="name"]',
-      'input[placeholder*="Name"]',
-      'input[type="text"]',
-    ],
-    competitor.name
-  );
-
-  await fillFirstMatchingInput(
-    modal,
-    [
-      'input[name*=".url"]',
-      'input[name*="url"]',
-      'input[name*="website"]',
-      'input[placeholder*="URL"]',
-      'input[placeholder*="Website"]',
-      'input[type="url"]',
-    ],
-    competitor.url
-  );
-
-  await selectCompetitorType(page, modal, competitor.type);
-
-  const createButton = modal.getByRole('button', { name: /^create$/i }).first();
-  await expect(createButton).toBeVisible({ timeout: 15000 });
-  await createButton.click();
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page.locator('body')).toContainText(
-    /created|success|saved|added|updated/i,
-    { timeout: 15000 }
-  );
-}
-
 test.describe.serial('Competitors flow', () => {
-  test('01. Competitors - validation on create', async ({ page }) => {
+  test('01. Competitors - validation on create', async ({ page, project }) => {
     await login(page);
-    await openCompetitorsPage(page);
+    await gotoCompetitors(page, project);
 
-    const modal = await openCreateModalFromBlock(page, 'Competitors');
-    await validateCreateForm(modal);
+    const modal = await openSectionCreateModal(page, 'Competitors');
+    await assertEmptyFormValidation(modal);
   });
 
-  test('02. Create competitors', async ({ page }) => {
-    // 5 competitors created sequentially in one test exceed the default 30s timeout
-    test.setTimeout(120_000);
-
+  test('02. Create competitors', async ({ page, project }) => {
+    test.setTimeout(90_000);
     await login(page);
-    await openCompetitorsPage(page);
 
     for (const competitor of COMPETITORS_TO_CREATE) {
-      await createCompetitor(page, competitor);
+      await createCompetitor(page, project, competitor);
     }
   });
 });

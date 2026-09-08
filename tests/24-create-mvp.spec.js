@@ -1,220 +1,141 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, MVP_NAME } from './config';
+import { createClient } from './helpers/client.helper';
+import {
+  gotoMvpTab,
+  openCreateMvpForm,
+  fillMvpForm,
+  submitMvpCreateExpectRejection,
+  createMvp,
+} from './helpers/mvp.helper';
 
-
-const MVPS = [
+// Generic (non-branded) fixture data covering distinct MVP Types. Each entry
+// always carries a Core Key Feature — see BUG_PATTERNS.md "MVP Submission
+// Requires At Least One 'Core' Feature". Names are generated at runtime
+// inside each test body via unique(), not at module load (a title built
+// from unique()/Date.now() at module scope fails with "Test not found in
+// the worker process" — see CLAUDE.md / hard-won lessons).
+const MVP_TYPE_SCENARIOS = [
   {
-    name: 'AR Virtual Try-On Prototype',
     type: 'Prototype',
-    segment: 'Makeup-ентузіасти Dior (20-45) _test',
-    hypothesisIf:
-      'we build an AR virtual try-on tool for lipstick and foundation shades',
-    hypothesisThen:
-      'users will engage more with the product catalog and add more items to their wishlist',
-    hypothesisBecause:
-      'customers hesitate to purchase makeup online without seeing how shades look on their skin',
+    hypothesisIf: 'we build a working prototype of the proposed feature',
+    hypothesisThen: 'target users will complete the core task without assistance',
+    hypothesisBecause: 'early user interviews suggest this workflow is currently too slow',
     feature: {
-      name: 'AR shade matching',
+      name: 'Core workflow',
       type: 'Core',
-      description: 'Real-time camera-based shade try-on for lips and face products.',
+      description: 'The primary workflow this prototype validates end to end.',
     },
-    validation: {
-      successMetric: 'Wishlist add rate',
-      targetValue: '> 15%',
-      timeFrame: '30 days',
-    },
+    validation: { successMetric: 'Task completion rate', targetValue: '> 70%', timeFrame: '14 days' },
   },
   {
-    name: 'Limited Edition Fragrance Pre-Order',
     type: 'Test sales',
-    segment: 'Преміум-колекціонери ароматів (15-35) _test',
-    hypothesisIf:
-      'we open pre-orders for a limited edition fragrance before the full launch',
-    hypothesisThen:
-      'a meaningful share of loyal customers will commit to a purchase in advance',
-    hypothesisBecause:
-      'premium fragrance collectors respond strongly to exclusivity and scarcity',
+    hypothesisIf: 'we open a limited pre-order window for the new offering',
+    hypothesisThen: 'a meaningful share of visitors will commit to a purchase before launch',
+    hypothesisBecause: 'demand signals suggest this could be commercially viable',
     feature: {
-      name: 'Pre-order landing page',
+      name: 'Pre-order flow',
       type: 'Core',
-      description: 'Dedicated page to collect pre-orders with a deposit payment.',
+      description: 'Dedicated flow to collect pre-orders with a deposit payment.',
     },
-    validation: {
-      successMetric: 'Pre-order conversion rate',
-      targetValue: '> 10%',
-      timeFrame: '14 days',
-    },
+    validation: { successMetric: 'Pre-order conversion rate', targetValue: '> 10%', timeFrame: '14 days' },
   },
   {
-    name: 'Boutique Personal Styling Pilot',
     type: 'Pilot project',
-    segment: 'Покупці "подарунків" (усі вікові) _test',
-    hypothesisIf:
-      'we offer a free personal styling consultation in two flagship boutiques',
-    hypothesisThen:
-      'customers will increase their average basket size during the visit',
-    hypothesisBecause:
-      'personalized guidance increases confidence in higher-value purchases',
+    hypothesisIf: 'we run a small-scale pilot of the new service with a limited group',
+    hypothesisThen: 'participants will report higher satisfaction than the current process',
+    hypothesisBecause: 'qualitative feedback suggests the current process under-serves this segment',
     feature: {
-      name: 'In-store styling booking',
+      name: 'Pilot onboarding',
       type: 'Core',
-      description: 'Appointment booking system for personal styling sessions.',
+      description: 'Guided onboarding flow used only during the pilot.',
     },
-    validation: {
-      successMetric: 'Average basket size',
-      targetValue: '+20%',
-      timeFrame: '60 days',
-    },
+    validation: { successMetric: 'Participant satisfaction score', targetValue: '> 8/10', timeFrame: '30 days' },
   },
   {
-    name: 'Sustainable Packaging Awareness Landing Page',
     type: 'Landing page',
-    segment: 'Покупці "подарунків" (усі вікові) _test',
-    hypothesisIf:
-      'we publish a landing page highlighting our new recyclable packaging initiative',
-    hypothesisThen:
-      'visitors will sign up for updates on the sustainable product line',
-    hypothesisBecause:
-      'gift buyers increasingly value environmentally responsible brands',
+    hypothesisIf: 'we publish a landing page describing the new offering',
+    hypothesisThen: 'visitors will sign up to be notified when it becomes available',
+    hypothesisBecause: 'there is currently no low-cost way to gauge interest ahead of a full build',
     feature: {
-      name: 'Email signup form',
+      name: 'Signup form',
       type: 'Core',
-      description: 'Capture emails for updates on the sustainable packaging launch.',
+      description: 'Capture interested visitors ahead of the full launch.',
     },
-    validation: {
-      successMetric: 'Signup conversion rate',
-      targetValue: '> 8%',
-      timeFrame: '21 days',
-    },
+    validation: { successMetric: 'Signup conversion rate', targetValue: '> 8%', timeFrame: '21 days' },
   },
   {
-    name: 'Fragrance Notes Explainer Video',
     type: 'Explanatory video',
-    segment: 'Засоби для догляду за "ідеальною" шкірою... _test',
-    hypothesisIf:
-      'we publish a short video explaining how to choose fragrance notes for your skin type',
-    hypothesisThen:
-      'viewers will spend more time browsing the perfume catalog afterward',
-    hypothesisBecause:
-      'customers often feel overwhelmed by fragrance terminology',
+    hypothesisIf: 'we publish a short video explaining how the new offering works',
+    hypothesisThen: 'viewers will spend more time exploring the related content afterward',
+    hypothesisBecause: 'users currently report confusion about how this capability works',
     feature: {
       name: 'Embedded video widget',
       type: 'Core',
-      description: 'Short explainer video embedded on the perfume category page.',
+      description: 'Short explainer video embedded on the relevant page.',
     },
-    validation: {
-      successMetric: 'Post-video catalog engagement',
-      targetValue: '> 25%',
-      timeFrame: '30 days',
-    },
+    validation: { successMetric: 'Post-video engagement', targetValue: '> 25%', timeFrame: '30 days' },
   },
 ];
-async function openMvpTab(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const operationsLink = page.getByRole('link', { name: /^operations$/i }).first();
-  await expect(operationsLink).toBeVisible({ timeout: 15000 });
-  await operationsLink.click();
-
-  await expect(
-    page.getByRole('heading', { name: /^operations$/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const implementationTab = page.getByRole('tab', { name: /^implementation$/i }).first();
-  if (await implementationTab.isVisible().catch(() => false)) {
-    await implementationTab.click();
-  } else {
-    const implementationLink = page.getByRole('link', { name: /^implementation$/i }).first();
-    await expect(implementationLink).toBeVisible({ timeout: 15000 });
-    await implementationLink.click();
-  }
-
-  await expect(
-    page.getByRole('heading', { name: /implementation/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const mvpTab = page.getByRole('tab', { name: /^mvp$/i }).first();
-  await expect(mvpTab).toBeVisible({ timeout: 15000 });
-  await mvpTab.click();
-  await page.waitForTimeout(500);
-}
-
-async function selectFromCustomDropdown(page, scope, dropdownIndex, optionLabel, exact = true) {
-  const dropdownButton = scope.locator('button[data-open="false"]').nth(dropdownIndex);
-
-  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
-  await dropdownButton.scrollIntoViewIfNeeded();
-  await dropdownButton.click();
-
-  const listbox = page.getByRole('listbox').last();
-  await expect(listbox).toBeVisible({ timeout: 15000 });
-
-  const option = listbox.getByRole('option', { name: optionLabel, exact }).first();
-  await expect(option).toBeVisible({ timeout: 15000 });
-  await option.click();
-}
-
-// Create MVP is a dedicated page (not a modal). "Create MVP" stays visible on
-// the MVP list page after each creation, so it can be re-clicked for the next one.
-async function createMvp(page, mvp) {
-  const createMvpButton = page.getByRole('button', { name: /^create mvp$/i }).first();
-  await expect(createMvpButton).toBeVisible({ timeout: 15000 });
-  await createMvpButton.click();
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await page.waitForTimeout(300);
-
-  const nameField = page.getByPlaceholder('Type MVP Name...').first();
-  await expect(nameField).toBeVisible({ timeout: 15000 });
-  await nameField.fill(mvp.name);
-
-  // Dropdown positions: Type(0), Target segment(1), Feature Type(2)
-  await selectFromCustomDropdown(page, page, 0, mvp.type);
-  await selectFromCustomDropdown(page, page, 1, mvp.segment, false);
-
-  await page.getByPlaceholder('If we build/test...').first().fill(mvp.hypothesisIf);
-  await page.getByPlaceholder('Then users will...').first().fill(mvp.hypothesisThen);
-  await page.getByPlaceholder('Because we believe...').first().fill(mvp.hypothesisBecause);
-
-  await page.getByPlaceholder('Type feature name...').first().fill(mvp.feature.name);
-  await selectFromCustomDropdown(page, page, 2, mvp.feature.type);
-  await page.getByPlaceholder('Write your story...').first().fill(mvp.feature.description);
-
-  // Target value / Time frame share the same "Select" placeholder — match by
-  // accessible name instead, they are plain text fields despite the icon.
-  await page.getByPlaceholder('e.g. Conversation rate').first().fill(mvp.validation.successMetric);
-  await page.getByRole('textbox', { name: 'Target value' }).first().fill(mvp.validation.targetValue);
-  await page.getByRole('textbox', { name: 'Time frame' }).first().fill(mvp.validation.timeFrame);
-
-  const submitButton = page.getByRole('button', { name: /^create mvp$/i }).last();
-  await expect(submitButton).toBeVisible({ timeout: 15000 });
-  await submitButton.click();
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await page.waitForTimeout(500);
-
-  await expect(
-    page.getByRole('heading', { name: mvp.name, exact: true }).first()
-  ).toBeVisible({ timeout: 15000 });
-}
 
 test.describe.serial('MVP flow', () => {
-  test('01. Create an MVP for all 5 types', async ({ page }) => {
-    // 5 MVPs, each a long multi-section form — well beyond the default 30s timeout
+  let segmentName;
+
+  test('00. Set up a target segment client for the MVPs', async ({ page, project }) => {
+    await login(page);
+
+    const client = await createClient(page, project, { name: unique('Autotest MVP Client') });
+    segmentName = client.name;
+  });
+
+  test('01. Create an MVP for each type', async ({ page, project }) => {
+    // 5 MVPs, each a long multi-section full-page form — well beyond the default 30s timeout
     test.setTimeout(300_000);
 
     await login(page);
-    await openMvpTab(page);
 
-    for (const mvp of MVPS) {
-      await createMvp(page, mvp);
+    for (const scenario of MVP_TYPE_SCENARIOS) {
+      await createMvp(page, project, {
+        name: unique(`${MVP_NAME} ${scenario.type}`),
+        type: scenario.type,
+        segment: segmentName,
+        hypothesisIf: scenario.hypothesisIf,
+        hypothesisThen: scenario.hypothesisThen,
+        hypothesisBecause: scenario.hypothesisBecause,
+        feature: scenario.feature,
+        validation: scenario.validation,
+      });
     }
+  });
+
+  // Real, currently-untested business rule (RELEASE_CHECKLIST.md §16 /
+  // BUG_PATTERNS.md "MVP Submission Requires At Least One 'Core' Feature"):
+  // an MVP whose only Key Feature is "Optional" must be rejected on submit.
+  test('02. Reject an MVP whose only Key Feature is Optional', async ({ page, project }) => {
+    await login(page);
+    await gotoMvpTab(page, project);
+    await openCreateMvpForm(page);
+
+    const mvp = {
+      name: unique(`${MVP_NAME} All-Optional`),
+      type: 'Prototype',
+      segment: segmentName,
+      hypothesisIf: 'we add a nice-to-have enhancement to the existing flow',
+      hypothesisThen: 'a few users notice the enhancement',
+      hypothesisBecause: 'it is low effort to build',
+      feature: {
+        name: 'Nice-to-have widget',
+        type: 'Optional',
+        description: 'A non-essential enhancement with no Core feature backing it.',
+      },
+      validation: { successMetric: 'Usage rate', targetValue: '> 1%', timeFrame: '30 days' },
+    };
+
+    await fillMvpForm(page, mvp);
+    await submitMvpCreateExpectRejection(page);
+
+    // Confirm the rejected MVP never actually landed in the list.
+    await expect(page.getByRole('heading', { name: mvp.name, exact: true })).toHaveCount(0);
   });
 });

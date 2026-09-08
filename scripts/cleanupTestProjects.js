@@ -8,11 +8,25 @@
 //
 //   BASE_URL=... node scripts/cleanupTestProjects.js
 //   DRY_RUN=1 ... node scripts/cleanupTestProjects.js   # list only, delete nothing
+require('dotenv').config();
 const { chromium } = require('playwright');
 
+// Same variable names/precedence as tests/config.js (a separate copy since
+// that file is ESM and this script is a plain CommonJS Node script).
 const BASE_URL = process.env.BASE_URL || 'https://frontv2.getlaunched.io';
-const EMAIL = process.env.TEST_EMAIL || 'kataratest573@gmail.com';
-const PASSWORD = process.env.TEST_PASSWORD || 'Test_11K';
+
+// No hardcoded fallback account — see tests/config.js for the same rule.
+function requiredEnv(varName, fallbackVarName) {
+  const value = process.env[varName] || process.env[fallbackVarName];
+  if (!value) {
+    console.error(`Missing required env var ${varName} (or fallback ${fallbackVarName}). Copy .env.example to .env and fill in a real test account.`);
+    process.exit(1);
+  }
+  return value;
+}
+
+const EMAIL = requiredEnv('TEST_USER_EMAIL', 'TEST_EMAIL');
+const PASSWORD = requiredEnv('TEST_USER_PASSWORD', 'TEST_PASSWORD');
 const DRY_RUN = process.env.DRY_RUN === '1';
 const MARKER = /^(Autotest|My Business)\b/;
 

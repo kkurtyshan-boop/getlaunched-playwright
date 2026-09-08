@@ -1,87 +1,26 @@
 import { test, expect } from '@playwright/test';
 import { login } from './helpers';
+import { unique } from './config';
+import { createProjectViaUi, ProjectLimitReachedError } from './helpers/project';
 
-const sharedState = globalThis;
-
-test('Login, create, edit and delete project', async ({ page }) => {
+// Self-contained: creates its own project rather than depending on
+// 02-create-project.spec.js having run first (the old globalThis coupling
+// only worked in a single serial process).
+test('Edit and delete project', async ({ page }) => {
+  test.setTimeout(60_000);
   await login(page);
 
-  let projectNameText = sharedState.__createdProjectName;
-
-  if (!projectNameText) {
-    await page.goto('/', {
-      waitUntil: 'domcontentloaded',
-    });
-
-    const createProjectButton = page
-      .getByRole('button', { name: /^create project$/i })
-      .or(page.getByText(/^create project$/i))
-      .first();
-
-    await expect(createProjectButton).toBeVisible({ timeout: 15000 });
-    await createProjectButton.click();
-
-    await expect(page.getByRole('heading', { name: /create project/i })).toBeVisible({ timeout: 15000 });
-
-    projectNameText = `Edit Test ${Date.now()}`;
-    const projectName = page.locator('input[placeholder*="Type name"]').first();
-    const website = page.locator('input[placeholder*="https://"]').first();
-    const description = page.locator('textarea[placeholder*="Write your story"]').first();
-    const incomeTax = page.locator('input[placeholder*="Type tax"]').first();
-
-    await expect(projectName).toBeVisible({ timeout: 15000 });
-    await projectName.fill(projectNameText);
-
-    await expect(website).toBeVisible({ timeout: 15000 });
-    await website.fill('https://mybusiness.com');
-
-    await expect(description).toBeVisible({ timeout: 15000 });
-    await description.fill('Project created for edit/delete flow');
-
-    const selects = page.locator('select');
-
-    await expect(selects.nth(0)).toBeVisible({ timeout: 15000 });
-    await selects.nth(0).selectOption({ index: 1 });
-
-    await expect(selects.nth(1)).toBeVisible({ timeout: 15000 });
-    await selects.nth(1).selectOption({ index: 1 });
-
-    const currencyField = page.locator('[role="combobox"]').nth(1);
-    await expect(currencyField).toBeVisible({ timeout: 15000 });
-    await currencyField.click();
-
-    const currencyOption = page.getByRole('option').first();
-    await expect(currencyOption).toBeVisible({ timeout: 15000 });
-    await currencyOption.click();
-
-    await expect(incomeTax).toBeVisible({ timeout: 15000 });
-    await incomeTax.fill('25');
-
-    await expect(selects.nth(2)).toBeVisible({ timeout: 15000 });
-    await selects.nth(2).selectOption('2022');
-
-    await expect(selects.nth(3)).toBeVisible({ timeout: 15000 });
-    await selects.nth(3).selectOption({ index: 1 });
-
-    await expect(selects.nth(4)).toBeVisible({ timeout: 15000 });
-    await selects.nth(4).selectOption({ index: 1 });
-
-    const submitButton = page.getByRole('button', { name: /^create project$/i }).last();
-    await expect(submitButton).toBeVisible({ timeout: 15000 });
-    await submitButton.click();
-
-    try {
-      await expect(page.locator('body')).toContainText(/project successfully created|created successfully/i, { timeout: 10000 });
-    } catch {
-      await expect(page).not.toHaveURL(/\/project\/create/i, { timeout: 15000 });
+  const projectNameText = unique('Edit Test');
+  try {
+    await createProjectViaUi(page, { name: projectNameText, description: 'Project created for edit/delete flow' });
+  } catch (err) {
+    if (err instanceof ProjectLimitReachedError) {
+      test.skip(true, `Account is at its project limit (${err.message}) — cannot create a throwaway project to test Edit/Delete.`);
     }
-
-    sharedState.__createdProjectName = projectNameText;
+    throw err;
   }
 
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const createdProjectCard = page.locator('li').filter({ hasText: projectNameText }).first();
   await expect(createdProjectCard).toBeVisible({ timeout: 20000 });
@@ -123,10 +62,8 @@ test('Login, create, edit and delete project', async ({ page }) => {
     await expect(page).not.toHaveURL(/\/project\/edit/i, { timeout: 15000 });
   }
 
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
+  // Persistence check: reload the list and confirm the edited card is still there.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   const projectForDelete = page.locator('li').filter({ hasText: projectNameText }).first();
   await expect(projectForDelete).toBeVisible({ timeout: 20000 });
 

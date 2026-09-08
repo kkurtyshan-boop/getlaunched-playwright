@@ -1,15 +1,30 @@
 // Creates a disposable project (named by TEST_PROJECT) via the UI, mirroring
 // the working create-project flow from tests/02-create-project.spec.js.
-// Used to run the whole suite against a throwaway project so nothing touches
-// the real "Dior Brand" data. Cleanup is done by scripts/cleanupTestProjects.js.
+// Superseded for routine use by the automatic bootstrap in
+// tests/auth.setup.js (see tests/helpers/project.js's ensureTestProject) —
+// this remains as a standalone manual utility.
 //
 //   BASE_URL=... TEST_PROJECT="Autotest 123" node scripts/createTestProject.js
+require('dotenv').config();
 const { chromium } = require('playwright');
 
+// Same variable names/precedence as tests/config.js (a separate copy since
+// that file is ESM and this script is a plain CommonJS Node script).
 const BASE_URL = process.env.BASE_URL || 'https://frontv2.getlaunched.io';
-const EMAIL = process.env.TEST_EMAIL || 'kataratest573@gmail.com';
-const PASSWORD = process.env.TEST_PASSWORD || 'Test_11K';
-const PROJECT = process.env.TEST_PROJECT;
+
+// No hardcoded fallback account — see tests/config.js for the same rule.
+function requiredEnv(varName, fallbackVarName) {
+  const value = process.env[varName] || process.env[fallbackVarName];
+  if (!value) {
+    console.error(`Missing required env var ${varName} (or fallback ${fallbackVarName}). Copy .env.example to .env and fill in a real test account.`);
+    process.exit(1);
+  }
+  return value;
+}
+
+const EMAIL = requiredEnv('TEST_USER_EMAIL', 'TEST_EMAIL');
+const PASSWORD = requiredEnv('TEST_USER_PASSWORD', 'TEST_PASSWORD');
+const PROJECT = process.env.TEST_PROJECT_NAME || process.env.TEST_PROJECT;
 
 if (!PROJECT) {
   console.error('TEST_PROJECT env var is required');

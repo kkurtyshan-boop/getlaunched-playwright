@@ -1,12 +1,26 @@
+require('dotenv').config();
 const { chromium } = require('playwright');
 
 // Standalone helper to regenerate storageState.json manually.
 // The test run now does this automatically via tests/auth.setup.js, so you
 // rarely need this — but it's handy for a quick one-off session refresh.
-//   BASE_URL, TEST_EMAIL, TEST_PASSWORD override the defaults below.
+//   BASE_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD override the defaults below
+//   (same variable names/precedence as tests/config.js — a separate copy
+//   here since that file is ESM and this script is a plain CommonJS script).
 const BASE_URL = process.env.BASE_URL || 'https://frontv2.getlaunched.io';
-const EMAIL = process.env.TEST_EMAIL || 'kataratest573@gmail.com';
-const PASSWORD = process.env.TEST_PASSWORD || 'Test_11K';
+
+// No hardcoded fallback account — see tests/config.js for the same rule.
+function requiredEnv(varName, fallbackVarName) {
+  const value = process.env[varName] || process.env[fallbackVarName];
+  if (!value) {
+    console.error(`Missing required env var ${varName} (or fallback ${fallbackVarName}). Copy .env.example to .env and fill in a real test account.`);
+    process.exit(1);
+  }
+  return value;
+}
+
+const EMAIL = requiredEnv('TEST_USER_EMAIL', 'TEST_EMAIL');
+const PASSWORD = requiredEnv('TEST_USER_PASSWORD', 'TEST_PASSWORD');
 
 (async () => {
   const browser = await chromium.launch({ headless: false });

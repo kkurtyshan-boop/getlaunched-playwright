@@ -1,155 +1,129 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, RISK_NAME } from './config';
+import {
+  createRisk,
+  openRiskAnalysisTab,
+  openEditModalForRisk,
+  applyRiskEdits,
+  submitRiskUpdate,
+  getRiskRow,
+  getPestelDropdown,
+} from './helpers/risk.helper';
 
-
-const UPDATED_TYPO_RISK_DESCRIPTION =
-  'Internal risk: a labeling typo slipped past the first review pass and was only caught during final quality review before shipment.';
-
-const UPDATED_CURRENCY_RISK_DESCRIPTION =
-  'External risk: sustained EUR/USD volatility now materially raises the cost of imported raw materials and packaging components each quarter.';
-async function openImplementationTab(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const operationsLink = page.getByRole('link', { name: /^operations$/i }).first();
-  await expect(operationsLink).toBeVisible({ timeout: 15000 });
-  await operationsLink.click();
-
-  await expect(
-    page.getByRole('heading', { name: /^operations$/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const implementationTab = page.getByRole('tab', { name: /^implementation$/i }).first();
-  if (await implementationTab.isVisible().catch(() => false)) {
-    await implementationTab.click();
-  } else {
-    const implementationLink = page.getByRole('link', { name: /^implementation$/i }).first();
-    await expect(implementationLink).toBeVisible({ timeout: 15000 });
-    await implementationLink.click();
-  }
-
-  await expect(
-    page.getByRole('heading', { name: /implementation/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-}
-
-async function openEditModalForRisk(page, riskNameSubstring) {
-  const row = page.locator('tr').filter({ hasText: riskNameSubstring }).first();
-  await expect(row).toBeVisible({ timeout: 15000 });
-  await row.scrollIntoViewIfNeeded();
-
-  const menuButton = row.getByRole('button', { name: /open actions menu/i }).first();
-  await expect(menuButton).toBeVisible({ timeout: 15000 });
-  await menuButton.click();
-
-  const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
-  await expect(editItem).toBeVisible({ timeout: 15000 });
-  await editItem.click();
-
-  const modal = page.getByRole('dialog');
-  await expect(modal).toBeVisible({ timeout: 15000 });
-
-  return modal;
-}
-
-// Only touches the fields present in `changes`, leaving the rest of the
-// pre-filled edit form untouched.
-async function applyRiskEdits(modal, changes) {
-  if (changes.name) {
-    const field = modal.getByPlaceholder('Type risk name').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.name);
-  }
-
-  if (changes.description) {
-    const field = modal.getByPlaceholder('Write your story...').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.description);
-  }
-
-  if (changes.type) {
-    const radio = modal.getByRole('radio', { name: new RegExp(`^${changes.type}$`, 'i') }).first();
-    await expect(radio).toBeVisible({ timeout: 15000 });
-    await radio.click();
-  }
-
-  if (changes.consequences) {
-    const radio = modal
-      .getByRole('radio', { name: new RegExp(`^${changes.consequences}$`, 'i') })
-      .first();
-    await expect(radio).toBeVisible({ timeout: 15000 });
-    await radio.click();
-  }
-
-  if (changes.probability) {
-    const radio = modal
-      .getByRole('radio', { name: new RegExp(`^${changes.probability}$`, 'i') })
-      .first();
-    await expect(radio).toBeVisible({ timeout: 15000 });
-    await radio.click();
-  }
-}
-
-async function updateRisk(modal) {
-  const updateButton = modal.getByRole('button', { name: /^update$/i }).first();
-
-  await expect(updateButton).toBeVisible({ timeout: 15000 });
-  await updateButton.click();
-}
-
+// Self-contained: creates its own Internal and External risks (test.describe.serial
+// + `let`, per tests/07-edit-product-add-delete-client.spec.js) instead of
+// depending on 20-create-risk-analysis.spec.js having run first and left
+// specific risks behind.
 test.describe.serial('Edit risk analysis flow', () => {
-  test('01. Edit an internal risk consequences and description', async ({ page }) => {
+  let internalRiskName;
+  let externalRiskName;
+
+  test('00. Set up an Internal and an External risk to edit', async ({ page, project }) => {
+    test.setTimeout(60_000);
     await login(page);
-    await openImplementationTab(page);
 
-    const modal = await openEditModalForRisk(page, 'minor packaging label typo');
+    const internalRisk = await createRisk(page, project, {
+      name: unique(`${RISK_NAME} Edit Internal`),
+      type: 'Internal',
+      description: 'Internal risk created for edit-flow coverage.',
+      consequences: 'Insignificant',
+      probability: 'Rare',
+    });
+    internalRiskName = internalRisk.name;
 
-    await applyRiskEdits(modal, {
+    const externalRisk = await createRisk(page, project, {
+      name: unique(`${RISK_NAME} Edit External`),
+      type: 'External',
+      pestelCategory: 'Economic',
+      description: 'External risk created for edit-flow coverage.',
+      consequences: 'Moderate',
+      probability: 'Moderate',
+    });
+    externalRiskName = externalRisk.name;
+  });
+
+  test('01. Edit an internal risk consequences and description', async ({ page, project }) => {
+    const updatedDescription = 'Internal risk: description updated by the edit-flow test.';
+
+    await login(page);
+    await openRiskAnalysisTab(page, project);
+    const modal = await openEditModalForRisk(page, internalRiskName);
+
+    await applyRiskEdits(page, modal, {
       consequences: 'Minor',
-      description: UPDATED_TYPO_RISK_DESCRIPTION,
+      description: updatedDescription,
     });
+    await submitRiskUpdate(modal);
 
-    await updateRisk(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
+    const row = getRiskRow(page, internalRiskName);
+    await expect(row).toContainText(updatedDescription, { timeout: 15000 });
+    await expect(row).toContainText('Minor', { timeout: 15000 });
   });
 
-  test('02. Edit an external risk probability and description', async ({ page }) => {
+  test('02. Edit an external risk probability and description', async ({ page, project }) => {
+    const updatedDescription = 'External risk: description updated by the edit-flow test.';
+
     await login(page);
-    await openImplementationTab(page);
+    await openRiskAnalysisTab(page, project);
+    const modal = await openEditModalForRisk(page, externalRiskName);
 
-    const modal = await openEditModalForRisk(page, 'currency fluctuation on imports');
-
-    await applyRiskEdits(modal, {
+    await applyRiskEdits(page, modal, {
       probability: 'Likely',
-      description: UPDATED_CURRENCY_RISK_DESCRIPTION,
+      description: updatedDescription,
     });
+    await submitRiskUpdate(modal);
 
-    await updateRisk(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
+    const row = getRiskRow(page, externalRiskName);
+    await expect(row).toContainText(updatedDescription, { timeout: 15000 });
+    await expect(row).toContainText('Likely', { timeout: 15000 });
   });
 
-  test('03. Hovering a risk matrix marker shows a risk details tooltip', async ({ page }) => {
+  // Negative scenario from RELEASE_CHECKLIST.md §14: switching an existing
+  // External risk (with a PESTEL category already chosen) to Internal must
+  // hide/clear the now-irrelevant PESTEL value rather than submitting a
+  // stale one.
+  test('03. Switching an existing External risk to Internal clears the PESTEL field', async ({ page, project }) => {
+    test.setTimeout(60_000);
     await login(page);
-    await openImplementationTab(page);
 
-    // Risk matrix markers are truncated labels like "Internal…" / "External…"
-    const marker = page.getByText(/^(Internal|External)…$/).first();
+    const risk = await createRisk(page, project, {
+      name: unique(`${RISK_NAME} Edit Type Switch`),
+      type: 'External',
+      pestelCategory: 'Legal',
+      consequences: 'Moderate',
+      probability: 'Moderate',
+    });
+
+    await openRiskAnalysisTab(page, project);
+    const modal = await openEditModalForRisk(page, risk.name);
+
+    const pestelDropdown = getPestelDropdown(modal);
+    await expect(pestelDropdown).toBeVisible({ timeout: 15000 });
+
+    await applyRiskEdits(page, modal, { type: 'Internal' });
+    await expect(pestelDropdown).not.toBeVisible({ timeout: 15000 });
+
+    await submitRiskUpdate(modal);
+
+    const row = getRiskRow(page, risk.name);
+    await expect(row).toContainText('Internal', { timeout: 15000 });
+    await expect(row).not.toContainText('Legal', { timeout: 15000 });
+  });
+
+  test('04. Hovering a risk matrix marker shows a risk details tooltip', async ({ page, project }) => {
+    await login(page);
+    await openRiskAnalysisTab(page, project);
+
+    // Risk matrix markers show a truncated fragment of the risk's own name
+    // followed by a single "…" ellipsis character (confirmed live — this is
+    // fixed-width truncation of the name field, not a "Internal…"/
+    // "External…" type prefix as the original spec's selector assumed; that
+    // only worked before because the original fixture names all happened to
+    // start with the word "Internal"/"External"). The "…" character isn't
+    // used anywhere else on this page, so it reliably finds *some* marker
+    // without depending on any specific risk's exact name or position.
+    const marker = page.getByText(/…$/).first();
     await expect(marker).toBeVisible({ timeout: 15000 });
     await marker.hover();
 

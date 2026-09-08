@@ -1,6 +1,17 @@
 # Testing improvements — data isolation & test independence
 
-**Status: plan only. Nothing here is implemented yet.**
+**Status (2026-08): Phase 1 and Phase 2 are implemented.** `globalThis.__createdProjectName`
+is gone; every spec gets its target project from the `project` fixture
+(`tests/fixtures/project.fixture.js`), backed by a run context
+(`tests/.auth/run-context.json`) written once by `tests/auth.setup.js` via
+`tests/helpers/project.js`'s `ensureTestProject` — which creates the project
+via the UI on a brand-new account, or adopts+renames an existing leftover
+project if the account can't create a new one (see that file for the
+project-limit fallback). Edit/delete specs create their own prerequisite
+records via `tests/helpers/*.helper.js` instead of depending on a numbered
+sibling file having run first. Phase 3 (marker-based cleanup of leaf
+entities) and Phase 4 (further `data-testid` adoption) remain open — see
+below, now historical context for what led here.
 
 ## The two problems
 

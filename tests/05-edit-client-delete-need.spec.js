@@ -1,114 +1,66 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique, CLIENT_NAME } from './config';
+import { createClient } from './helpers/client.helper';
+import { gotoClients } from './helpers/navigation';
 
-const CLIENT_NAME = 'Преміум-колекціонери ароматів (15-35) _test';
-const UPDATED_CLIENT_NAME = 'Преміум-колекціонери ароматів (15-35)';
-async function openClientsPage(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const magicTriangle = page.getByText(/magic triangle/i).first();
-  await expect(magicTriangle).toBeVisible({ timeout: 15000 });
-  await magicTriangle.click();
-
-  await expect(page).toHaveURL(/\/triangle/i, { timeout: 15000 });
-
-  const clientsButton = page.getByText(/^clients$/i).first();
-  await expect(clientsButton).toBeVisible({ timeout: 15000 });
-  await clientsButton.click();
-
-  await expect(page).toHaveURL(/\/triangle\/clients/i, { timeout: 15000 });
-}
-
-test('Login, edit client and delete need', async ({ page }) => {
+// Self-contained: creates its own client (with a need to delete) instead of
+// depending on 04-create-client.spec.js having run first.
+test('Edit client and delete a need', async ({ page, project }) => {
   await login(page);
-  await openClientsPage(page);
 
-  // OPEN CLIENT
-  const clientCard = page.getByText(CLIENT_NAME, { exact: true }).first();
+  const client = await createClient(page, project, {
+    name: unique(`${CLIENT_NAME} Edit`),
+    needs: [{ name: 'Need to delete', priority: 'High', satisfaction: 'Partially Satisfied' }],
+  });
+  const updatedName = `${client.name} Updated`;
+
+  await gotoClients(page, project);
+
+  const clientCard = page.getByText(client.name, { exact: true }).first();
   await expect(clientCard).toBeVisible({ timeout: 15000 });
   await clientCard.click();
 
-  // CLICK EDIT
   const editButton = page
     .locator('button')
-    .filter({
-      has: page.locator('svg path[d*="M13.26 3.59924"]'),
-    })
+    .filter({ has: page.locator('svg path[d*="M13.26 3.59924"]') })
     .first();
-
   await expect(editButton).toBeVisible({ timeout: 15000 });
   await editButton.click();
 
-  // EDIT FORM OPENED - CHANGE NAME
-  const nameField = page.getByRole('textbox', { name: /name/i }).first();
-  await expect(nameField).toBeVisible({ timeout: 15000 });
-
-  await nameField.fill(UPDATED_CLIENT_NAME);
-
-  // DELETE NEED
   const deleteNeedButton = page
     .locator('button')
-    .filter({
-      has: page.locator('svg path[d*="M21 5.98047"]'),
-    })
+    .filter({ has: page.locator('svg path[d*="M21 5.98047"]') })
     .first();
-
   await expect(deleteNeedButton).toBeVisible({ timeout: 15000 });
   await deleteNeedButton.click();
 
-  // DELETE CONFIRM POPUP
-  const confirmDeleteButton = page.getByRole('button', {
-    name: /yes, delete this need/i,
-  });
-
+  const confirmDeleteButton = page.getByRole('button', { name: /yes, delete this need/i });
   await expect(confirmDeleteButton).toBeVisible({ timeout: 15000 });
   await confirmDeleteButton.click();
 
-  // UPDATE CLIENT
+  // Fill the name AFTER the need-delete confirmation, not before: deleting a
+  // need refetches the form's data and silently discards an uncommitted name
+  // edit made earlier in the same session (confirmed live — see
+  // BUG_PATTERNS.md "Client Edit Form Discards an Uncommitted Name Change
+  // After Deleting a Need").
+  const nameField = page.getByRole('textbox', { name: /name/i }).first();
+  await expect(nameField).toBeVisible({ timeout: 15000 });
+  await nameField.fill(updatedName);
+
   const updateButton = page.getByRole('button', { name: /^update$/i }).first();
-
-  await expect(updateButton).toBeVisible({
-    timeout: 15000,
-  });
-
+  await expect(updateButton).toBeVisible({ timeout: 15000 });
   await updateButton.click();
 
-  // Чекаємо завершення запиту
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  await expect(page.getByRole('dialog')).toBeHidden({ timeout: 15000 });
+  await expect(page).toHaveURL(/\/triangle\/clients/i, { timeout: 15000 });
 
-  // Перевіряємо що форма редагування закрилась
-  await expect(
-    page.getByRole('dialog')
-  ).toBeHidden({
-    timeout: 15000,
-  });
-
-  // Додаткова перевірка що ми залишились на сторінці Clients
-  await expect(page).toHaveURL(
-    /\/triangle\/clients/i,
-    {
-      timeout: 15000,
-    }
-  );
-
-  // Оновлюємо сторінку щоб побачити оновлені дані
+  // Persistence check: reload and confirm the new name stuck and the old
+  // (pre-edit) name is gone.
   await page.reload();
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  // CHECK - старе ім'я з _test більше не видно (або можемо просто перевірити що ми на сторінці)
-  await expect(page).toHaveURL(
-    /\/triangle\/clients/i,
-    {
-      timeout: 15000,
-    }
-  );
+  await expect(page).toHaveURL(/\/triangle\/clients/i, { timeout: 15000 });
+  await expect(page.getByText(updatedName, { exact: true }).first()).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(client.name, { exact: true })).toHaveCount(0);
 });

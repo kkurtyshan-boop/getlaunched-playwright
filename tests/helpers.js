@@ -1,11 +1,10 @@
 import { expect } from '@playwright/test';
 
-// Single source of truth for test credentials and the target project.
-// Override per-environment without touching code:
-//   TEST_EMAIL, TEST_PASSWORD, TEST_PROJECT
-export const EMAIL = process.env.TEST_EMAIL || 'kataratest573@gmail.com';
-export const PASSWORD = process.env.TEST_PASSWORD || 'Test_11K';
-export const PROJECT_NAME = process.env.TEST_PROJECT || 'Dior Brand';
+// Credentials/project name now live in tests/config.js (also home to every
+// other reusable fixture-data value); re-exported here so existing imports
+// (`import { login, PROJECT_NAME } from './helpers'`) keep working.
+export { EMAIL, PASSWORD, PROJECT_NAME } from './config';
+import { EMAIL, PASSWORD } from './config';
 
 /**
  * Log in through the UI.

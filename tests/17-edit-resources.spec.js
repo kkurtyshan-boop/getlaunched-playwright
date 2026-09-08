@@ -1,198 +1,113 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { RESOURCE_NAME, unique } from './config';
+import {
+  createResource,
+  openResourcesTab,
+  switchResourceListTab,
+  openEditModalForResource,
+  applyResourceEdits,
+  updateResourceForm,
+} from './helpers/resource.helper';
 
-async function openResourcesTab(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const operationsLink = page.getByRole('link', { name: /^operations$/i }).first();
-  await expect(operationsLink).toBeVisible({ timeout: 15000 });
-  await operationsLink.click();
-
-  await expect(
-    page.getByRole('heading', { name: /^operations$/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const resourcesTab = page.getByRole('tab', { name: /^resources$/i }).first();
-  await expect(resourcesTab).toBeVisible({ timeout: 15000 });
-  await resourcesTab.click();
-}
-
-// The list-level filter toggle — "Investments" (plural) / "Running costs"
-async function switchResourceListTab(page, tabLabel) {
-  const radio = page.getByRole('radio', { name: tabLabel, exact: true }).first();
-  await expect(radio).toBeVisible({ timeout: 15000 });
-  await radio.click();
-}
-
-async function openEditModalForRow(page, rowText) {
-  const row = page.locator('tr').filter({ hasText: rowText }).first();
-  await expect(row).toBeVisible({ timeout: 15000 });
-  await row.scrollIntoViewIfNeeded();
-
-  const menuButton = row.getByRole('button', { name: /open actions menu/i }).first();
-  await expect(menuButton).toBeVisible({ timeout: 15000 });
-  await menuButton.click();
-
-  const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
-  await expect(editItem).toBeVisible({ timeout: 15000 });
-  await editItem.click();
-
-  const modal = page.getByRole('dialog');
-  await expect(modal).toBeVisible({ timeout: 15000 });
-
-  return modal;
-}
-
-async function selectFromCustomDropdown(page, scope, dropdownIndex, optionLabel) {
-  const dropdownButton = scope
-    .locator('button[data-open="false"]')
-    .nth(dropdownIndex);
-
-  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
-  await dropdownButton.scrollIntoViewIfNeeded();
-  await dropdownButton.click();
-
-  const listbox = page.getByRole('listbox').last();
-  await expect(listbox).toBeVisible({ timeout: 15000 });
-
-  const option = listbox
-    .getByRole('option', { name: optionLabel, exact: true })
-    .first();
-
-  await expect(option).toBeVisible({ timeout: 15000 });
-  await option.click();
-}
-
-// Only touches the fields present in `changes`, leaving the rest of the
-// pre-filled edit form untouched. Dropdown positions: Category(0), Payment type(1), Start year(2).
-async function applyInvestmentEdits(page, modal, changes) {
-  if (changes.name) {
-    const field = modal.getByPlaceholder('Type resource name').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.name);
-  }
-
-  if (changes.category) {
-    await selectFromCustomDropdown(page, modal, 0, changes.category);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.cost) {
-    const field = modal.getByPlaceholder(/type cost/i).first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.cost);
-  }
-
-  if (changes.amortizationPeriod) {
-    const field = modal.getByPlaceholder(/type amortization period/i).first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.amortizationPeriod);
-  }
-
-  if (changes.startYear) {
-    await selectFromCustomDropdown(page, modal, 2, changes.startYear);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.description) {
-    const field = modal.getByPlaceholder('Write your story...').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.description);
-  }
-}
-
-async function applyRunningCostEdits(page, modal, changes) {
-  if (changes.name) {
-    const field = modal.getByPlaceholder('Type resource name').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.name);
-  }
-
-  if (changes.category) {
-    await selectFromCustomDropdown(page, modal, 0, changes.category);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.paymentType) {
-    await selectFromCustomDropdown(page, modal, 1, changes.paymentType);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.costsPerYear) {
-    const costInputs = modal.getByPlaceholder(/type cost/i);
-    const costCount = await costInputs.count();
-    for (let i = 0; i < costCount; i++) {
-      if (changes.costsPerYear[i] !== undefined) {
-        await costInputs.nth(i).fill(changes.costsPerYear[i]);
-      }
-    }
-  }
-
-  if (changes.startYear) {
-    await selectFromCustomDropdown(page, modal, 2, changes.startYear);
-    await page.waitForTimeout(200);
-  }
-
-  if (changes.description) {
-    const field = modal.getByPlaceholder('Write your story...').first();
-    await expect(field).toBeVisible({ timeout: 15000 });
-    await field.fill(changes.description);
-  }
-}
-
-async function updateResource(modal) {
-  const updateButton = modal.getByRole('button', { name: /^update$/i }).first();
-
-  await expect(updateButton).toBeVisible({ timeout: 15000 });
-  await updateButton.click();
-}
-
+// Self-contained: creates its own Investment and Running-cost resources
+// instead of depending on 16-create-resources.spec.js having run first —
+// same test.describe.serial + `let` pattern as
+// tests/07-edit-product-add-delete-client.spec.js.
+//
+// Confirmed live 2026-08-24 by inspecting the Edit Resource modal directly:
+// Investment resources no longer have a single "Cost" field or an
+// "Amortization period" field — both Investment and Running costs share
+// the same "Cost per year" shape (one input per planning-horizon year), so
+// both edit tests below exercise Category + Cost-per-year (Investment) /
+// Payment type + Cost-per-year (Running costs) rather than the pre-change
+// Cost/Amortization fields the original file edited.
 test.describe.serial('Edit resources flow', () => {
-  test('01. Edit investment resource cost and amortization period', async ({ page }) => {
+  let investmentResource;
+  let runningCostResource;
+
+  test('00. Set up an investment and a running cost resource', async ({ page, project }) => {
+    test.setTimeout(90_000);
+
     await login(page);
-    await openResourcesTab(page);
 
-    const modal = await openEditModalForRow(page, 'Парфумерне виробниче обладнання');
-
-    await applyInvestmentEdits(page, modal, {
-      cost: '275000',
-      amortizationPeriod: '72',
+    investmentResource = await createResource(page, project, {
+      type: 'investment',
+      name: unique(`${RESOURCE_NAME} Edit Investment`),
     });
 
-    await updateResource(modal);
-
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
+    runningCostResource = await createResource(page, project, {
+      type: 'running',
+      name: unique(`${RESOURCE_NAME} Edit Running`),
     });
   });
 
-  test('02. Edit running costs resource cost per year and payment type', async ({ page }) => {
+  test('01. Edit investment resource category and cost per year', async ({ page, project }) => {
     await login(page);
-    await openResourcesTab(page);
+    await openResourcesTab(page, project);
+    await switchResourceListTab(page, 'Investments');
+
+    const modal = await openEditModalForResource(page, investmentResource.name);
+
+    const costCount = await modal.getByPlaceholder(/type cost/i).count();
+    const updatedCostsPerYear = Array.from({ length: costCount }, (_, i) => String(15000 + i * 1000));
+    const updatedCategory = 'Office space';
+
+    await applyResourceEdits(page, modal, {
+      category: updatedCategory,
+      costsPerYear: updatedCostsPerYear,
+    });
+
+    await updateResourceForm(modal);
+
+    // Verify persistence: reopen the edit modal and confirm the new values
+    // stuck, rather than trusting a body-text toast (lesson: body-scoped
+    // "success" text can false-positive — see CLAUDE.md).
+    await switchResourceListTab(page, 'Investments');
+    const verifyModal = await openEditModalForResource(page, investmentResource.name);
+
+    const categoryButton = verifyModal.locator('button[data-open="false"]').nth(0);
+    await expect(categoryButton).toContainText(updatedCategory);
+
+    // Cost inputs re-format their value with thousands separators (e.g.
+    // "15 000"), so compare with whitespace stripped rather than exact text.
+    const costInputs = verifyModal.getByPlaceholder(/type cost/i);
+    for (let i = 0; i < updatedCostsPerYear.length; i++) {
+      const raw = await costInputs.nth(i).inputValue();
+      expect(raw.replace(/\s/g, '')).toBe(updatedCostsPerYear[i]);
+    }
+  });
+
+  test('02. Edit running costs resource payment type and cost per year', async ({ page, project }) => {
+    await login(page);
+    await openResourcesTab(page, project);
     await switchResourceListTab(page, 'Running costs');
 
-    const modal = await openEditModalForRow(page, 'Сировина для парфумів');
+    const modal = await openEditModalForResource(page, runningCostResource.name);
 
-    await applyRunningCostEdits(page, modal, {
-      costsPerYear: ['420000', '460000'],
-      paymentType: 'Annually',
+    const costCount = await modal.getByPlaceholder(/type cost/i).count();
+    const updatedCostsPerYear = Array.from({ length: costCount }, (_, i) => String(21000 + i * 1000));
+    const updatedPaymentType = 'Annually';
+
+    await applyResourceEdits(page, modal, {
+      paymentType: updatedPaymentType,
+      costsPerYear: updatedCostsPerYear,
     });
 
-    await updateResource(modal);
+    await updateResourceForm(modal);
 
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
+    // Verify persistence: reopen the edit modal and confirm the new values
+    // stuck (cost-per-year inputs + the Payment type dropdown's selection).
+    await switchResourceListTab(page, 'Running costs');
+    const verifyModal = await openEditModalForResource(page, runningCostResource.name);
+
+    const costInputs = verifyModal.getByPlaceholder(/type cost/i);
+    for (let i = 0; i < updatedCostsPerYear.length; i++) {
+      const raw = await costInputs.nth(i).inputValue();
+      expect(raw.replace(/\s/g, '')).toBe(updatedCostsPerYear[i]);
+    }
+
+    const paymentTypeButton = verifyModal.locator('button[data-open="false"]').nth(1);
+    await expect(paymentTypeButton).toContainText(updatedPaymentType);
   });
 });

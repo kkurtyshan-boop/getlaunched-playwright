@@ -4,15 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "test": "playwright test --project=chromium",
-  "test:headed": "npx playwright test --project=chromium --headed"
-},
+    "test": "playwright test --project=chromium",
+    "test:headed": "npx playwright test --project=chromium --headed",
+    "lint": "eslint ."
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
-    "@types/node": "^25.5.0"
+    "@types/node": "^25.5.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0"
   }
 }

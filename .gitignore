@@ -9,10 +9,12 @@ blob-report/
 
 # Session / auth state (contains live tokens — never commit)
 storageState.json
+tests/.auth/
 
 # Debug/scratch output
 tmp/
 debug*.png
+.playwright-mcp/
 
 # Env
 .env

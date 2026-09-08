@@ -1,73 +1,19 @@
-import { test, expect } from '@playwright/test';
-import { login, PROJECT_NAME } from './helpers';
+import { test, expect } from './fixtures/project.fixture';
+import { login } from './helpers';
+import { unique } from './config';
+import {
+  gotoActionPlanBoard,
+  getColumnByStageName,
+  selectFromCustomDropdown,
+  selectDueDate,
+  createStage,
+  createTask,
+  dragCardToColumn,
+  createKeyMemberForAssignee,
+} from './helpers/action-plan.helper';
 
-
-const UPDATED_CATALOG_DESCRIPTION =
-  'Add newly launched SKUs from the Spring collection to the internal and B2B product catalogs.';
-async function openActionPlanTab(page) {
-  await page.goto('/', {
-    waitUntil: 'domcontentloaded',
-  });
-
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-
-  const projectCard = page.getByText(PROJECT_NAME, { exact: true }).first();
-  await expect(projectCard).toBeVisible({ timeout: 15000 });
-  await projectCard.scrollIntoViewIfNeeded();
-  await projectCard.click();
-
-  const operationsLink = page.getByRole('link', { name: /^operations$/i }).first();
-  await expect(operationsLink).toBeVisible({ timeout: 15000 });
-  await operationsLink.click();
-
-  await expect(
-    page.getByRole('heading', { name: /^operations$/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const implementationTab = page.getByRole('tab', { name: /^implementation$/i }).first();
-  if (await implementationTab.isVisible().catch(() => false)) {
-    await implementationTab.click();
-  } else {
-    const implementationLink = page.getByRole('link', { name: /^implementation$/i }).first();
-    await expect(implementationLink).toBeVisible({ timeout: 15000 });
-    await implementationLink.click();
-  }
-
-  await expect(
-    page.getByRole('heading', { name: /implementation/i }).first()
-  ).toBeVisible({ timeout: 15000 });
-
-  const actionPlanTab = page.getByRole('tab', { name: /^action plan$/i }).first();
-  await expect(actionPlanTab).toBeVisible({ timeout: 15000 });
-  await actionPlanTab.click();
-  await page.waitForTimeout(500);
-}
-
-async function selectFromCustomDropdown(page, scope, dropdownIndex, optionLabel, exact = true) {
-  const dropdownButton = scope.locator('button[data-open="false"]').nth(dropdownIndex);
-
-  await expect(dropdownButton).toBeVisible({ timeout: 15000 });
-  await dropdownButton.scrollIntoViewIfNeeded();
-  await dropdownButton.click();
-
-  const listbox = page.getByRole('listbox').last();
-  await expect(listbox).toBeVisible({ timeout: 15000 });
-
-  const option = listbox.getByRole('option', { name: optionLabel, exact }).first();
-  await expect(option).toBeVisible({ timeout: 15000 });
-  await option.click();
-}
-
-async function selectDueDate(page, modal, day) {
-  const dueDateButton = modal.getByRole('button', { name: /select date/i }).first();
-  await dueDateButton.click();
-  await page.waitForTimeout(400);
-
-  const dayButton = page.getByRole('button', { name: day, exact: true }).first();
-  await expect(dayButton).toBeVisible({ timeout: 15000 });
-  await dayButton.click();
-  await page.waitForTimeout(300);
-}
+const UPDATED_DESCRIPTION =
+  unique('Autotest updated description') + ' — added while editing the task.';
 
 async function openEditModalForTask(page, taskName) {
   const cardContainer = page.getByRole('button', { name: new RegExp(taskName, 'i') }).first();
@@ -107,8 +53,14 @@ async function applyTaskEdits(page, modal, changes) {
     await selectFromCustomDropdown(page, modal, 0, changes.priority);
   }
 
-  // Note: the Stage dropdown (index 1) in this form visually updates but does
-  // not persist the change on Update — moving stages only works via drag-and-drop.
+  if (changes.stage) {
+    // CONFIRMED, currently-open app bug (see BUG_PATTERNS.md "Action Plan
+    // Edit Form Does Not Persist Stage Changes"): this visually updates the
+    // dropdown but the change does not persist on Update. Only
+    // drag-and-drop actually moves a task between stages. Callers exercising
+    // this field must assert the CURRENT (broken) behavior, not that it works.
+    await selectFromCustomDropdown(page, modal, 1, changes.stage);
+  }
 
   if (changes.dueDateDay) {
     await selectDueDate(page, modal, changes.dueDateDay);
@@ -124,67 +76,143 @@ async function updateTask(modal) {
 
   await expect(updateButton).toBeVisible({ timeout: 15000 });
   await updateButton.click();
+  // The modal closing is a far more specific success signal than matching
+  // loose "updated/success/saved" text anywhere in the body.
+  await expect(modal).not.toBeVisible({ timeout: 15000 });
 }
 
+// Self-contained: creates its own Key Member (assignee source), its own
+// tasks, and its own extra stage instead of depending on the create-spec
+// file having run first — see CLAUDE.md data-hygiene note (no teardown, no
+// idempotent create flows on the shared live project).
 test.describe.serial('Edit action plan flow', () => {
-  test('01. Edit a minimal task: add due date, assignee, raise priority', async ({ page }) => {
+  let member;
+  let minimalTaskName;
+  let catalogTaskName;
+  let auditTaskName;
+  let extraStageName;
+
+  test('00. Set up Key Member and tasks to edit', async ({ page, project }) => {
+    // 3 tasks + 1 key member created sequentially exceeds the default 30s timeout
+    test.setTimeout(120_000);
+
     await login(page);
-    await openActionPlanTab(page);
 
-    const modal = await openEditModalForTask(page, 'Review Q3 marketing budget');
+    member = await createKeyMemberForAssignee(page, project);
 
+    const minimalTask = await createTask(page, project, 'To Do', { priority: 'Medium' });
+    minimalTaskName = minimalTask.name;
+
+    const catalogTask = await createTask(page, project, 'To Do', { priority: 'Low' });
+    catalogTaskName = catalogTask.name;
+
+    const auditTask = await createTask(page, project, 'To Do', { priority: 'High' });
+    auditTaskName = auditTask.name;
+
+    const extraStage = await createStage(page, project, { name: unique('Autotest Review') });
+    extraStageName = extraStage.name;
+  });
+
+  test('01. Edit a minimal task: add due date, assignee, raise priority', async ({ page, project }) => {
+    await login(page);
+    await gotoActionPlanBoard(page, project);
+
+    const modal = await openEditModalForTask(page, minimalTaskName);
     await applyTaskEdits(page, modal, {
       priority: 'High',
       dueDateDay: '28',
-      assignee: 'Julien Moreau',
+      assignee: member.fullName,
     });
-
     await updateTask(modal);
 
+    // Verify persistence after reload rather than trusting the closed modal alone.
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
+
+    const verifyModal = await openEditModalForTask(page, minimalTaskName);
+    await expect(verifyModal.locator('button[data-open="false"]').nth(0)).toContainText('High', { timeout: 15000 });
+    await expect(verifyModal.locator('button[data-open="false"]').nth(2)).toContainText(member.firstName, { timeout: 15000 });
+    await expect(
+      verifyModal.getByRole('button', { name: /28\s+\p{L}+\s+\d{4}/iu }).first()
+    ).toBeVisible({ timeout: 15000 });
+
   });
 
-  test('02. Edit a task priority and add description', async ({ page }) => {
+  test('02. Edit a task priority and add description', async ({ page, project }) => {
     await login(page);
-    await openActionPlanTab(page);
+    await gotoActionPlanBoard(page, project);
 
-    const modal = await openEditModalForTask(page, 'Update product catalog for new SKUs');
-
+    const modal = await openEditModalForTask(page, catalogTaskName);
     await applyTaskEdits(page, modal, {
       priority: 'Critical',
-      description: UPDATED_CATALOG_DESCRIPTION,
+      description: UPDATED_DESCRIPTION,
     });
-
     await updateTask(modal);
 
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
-  });
 
-  test('03. Edit a task priority and assignee', async ({ page }) => {
-    await login(page);
-    await openActionPlanTab(page);
-
-    const modal = await openEditModalForTask(
-      page,
-      'Schedule supplier audit for Grasse Essence Co.'
+    const verifyModal = await openEditModalForTask(page, catalogTaskName);
+    await expect(verifyModal.locator('button[data-open="false"]').nth(0)).toContainText('Critical', { timeout: 15000 });
+    await expect(verifyModal.getByPlaceholder('Write your story...').first()).toHaveValue(
+      UPDATED_DESCRIPTION,
+      { timeout: 15000 }
     );
 
+  });
+
+  test('03. Edit a task priority and assignee', async ({ page, project }) => {
+    await login(page);
+    await gotoActionPlanBoard(page, project);
+
+    const modal = await openEditModalForTask(page, auditTaskName);
     await applyTaskEdits(page, modal, {
       priority: 'Critical',
-      assignee: 'Sophie Bernard',
+      assignee: member.fullName,
     });
-
     await updateTask(modal);
 
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await expect(page.locator('body')).toContainText(/updated|success|saved/i, {
-      timeout: 15000,
-    });
+
+    const verifyModal = await openEditModalForTask(page, auditTaskName);
+    await expect(verifyModal.locator('button[data-open="false"]').nth(0)).toContainText('Critical', { timeout: 15000 });
+    await expect(verifyModal.locator('button[data-open="false"]').nth(2)).toContainText(member.firstName, { timeout: 15000 });
+
+  });
+
+  // Confirmed, currently-open app bug — see BUG_PATTERNS.md "Action Plan
+  // Edit Form Does Not Persist Stage Changes". This test deliberately
+  // asserts the CURRENT (broken) behavior so a real fix shows up as a
+  // failure here (prompting the entry to be updated to Fixed) instead of
+  // silently drifting out of coverage. Drag-and-drop, exercised right after,
+  // confirms the only working way to move a task between stages still works.
+  test('04. Editing Stage via the form does not persist; drag-and-drop still does', async ({ page, project }) => {
+    test.setTimeout(60_000);
+
+    await login(page);
+    await gotoActionPlanBoard(page, project);
+
+    const modal = await openEditModalForTask(page, minimalTaskName);
+    await applyTaskEdits(page, modal, { stage: extraStageName });
+    await updateTask(modal);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+
+    const originalColumn = getColumnByStageName(page, 'To Do');
+    await expect(originalColumn).toContainText(minimalTaskName, { timeout: 15000 });
+
+    const extraStageColumn = getColumnByStageName(page, extraStageName);
+    await expect(extraStageColumn).not.toContainText(minimalTaskName, { timeout: 5000 }).catch(() => {});
+
+    // Now move it the way that actually works.
+    await dragCardToColumn(page, minimalTaskName, extraStageName);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+
+    const movedColumn = getColumnByStageName(page, extraStageName);
+    await expect(movedColumn).toContainText(minimalTaskName, { timeout: 15000 });
   });
 });
