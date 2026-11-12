@@ -1,17 +1,12 @@
 import { expect } from '@playwright/test';
-import { gotoImplementation } from './navigation';
+import { gotoMvp } from './navigation';
 import { createClient } from './client.helper';
 import { MVP_NAME, unique } from '../config';
 
-// Implementation is tabbed: Risk analysis (default) / Action plan / MVP.
-// `gotoImplementation` lands on the default tab; click "MVP" from there.
+// MVP moved under Magic triangle (/triangle/mvp) — it used to be a tab of
+// the former Implementation page.
 export async function gotoMvpTab(page, project) {
-  await gotoImplementation(page, project);
-
-  const mvpTab = page.getByRole('tab', { name: /^mvp$/i }).first();
-  await expect(mvpTab).toBeVisible({ timeout: 15000 });
-  await mvpTab.click();
-
+  await gotoMvp(page, project);
   await expect(page.getByRole('button', { name: /^create mvp$/i }).first()).toBeVisible({ timeout: 15000 });
 }
 
@@ -262,4 +257,47 @@ export async function submitMvpUpdate(page, expectedName) {
   await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
   await findMvpHeading(page, expectedName);
+}
+
+// Deletes one MVP via its card's actions menu (Edit / Delete) and the
+// "Delete this MVP?" confirmation, asserting the DELETE succeeded and the
+// card is gone. The MVP list only renders the first 15 MVPs (no pagination —
+// BUG_PATTERNS.md "MVP List Shows Only the First 15 MVPs"), so specs that
+// create MVPs must delete them again to keep the test project under that
+// limit.
+export async function deleteMvp(page, project, mvpName) {
+  await gotoMvpTab(page, project);
+  const heading = await findMvpHeading(page, mvpName);
+
+  // The card's "Open actions menu" button is the first button after its title.
+  await heading.locator('xpath=following::button[1]').click();
+  await page.getByRole('menuitem', { name: /^delete$/i }).click();
+
+  const confirmDialog = page.getByRole('alertdialog').or(page.getByRole('dialog')).last();
+  await expect(confirmDialog).toContainText(/delete this mvp/i, { timeout: 10000 });
+  const deleted = page.waitForResponse(
+    (r) => r.request().method() === 'DELETE' && /\/mvps\//.test(r.url()),
+    { timeout: 15000 }
+  );
+  await confirmDialog.getByRole('button', { name: /yes, delete this mvp/i }).click();
+  expect((await deleted).ok()).toBe(true);
+
+  await expect(page.getByRole('heading', { name: mvpName, exact: true })).toHaveCount(0, { timeout: 15000 });
+}
+
+// Best-effort cleanup for afterAll hooks (no `page`/`project` fixtures
+// there): opens its own context with the run's baseURL + session and
+// deletes every listed MVP, ignoring ones that are already gone.
+export async function cleanupMvps(browser, baseURL, project, mvpNames, login) {
+  if (!mvpNames.length) return;
+  const context = await browser.newContext({ baseURL, storageState: 'storageState.json', ignoreHTTPSErrors: true });
+  const page = await context.newPage();
+  try {
+    await login(page);
+    for (const name of mvpNames) {
+      await deleteMvp(page, project, name).catch(() => {});
+    }
+  } finally {
+    await context.close();
+  }
 }

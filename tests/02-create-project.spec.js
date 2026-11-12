@@ -71,6 +71,6 @@ test('Create project — validation', async ({ page }) => {
   // submitting again here — the happy-path "Create project" test above
   // already covers a full successful submission end-to-end.
   const projectNameText = unique('Validation Test Project');
-  await page.locator('input[placeholder*="Type name"]').first().fill(projectNameText);
+  await page.getByRole('textbox', { name: /^project name/i }).fill(projectNameText);
   await expect(page.getByText(/must be at least 2 characters/i)).not.toBeVisible({ timeout: 5000 }).catch(() => {});
 });

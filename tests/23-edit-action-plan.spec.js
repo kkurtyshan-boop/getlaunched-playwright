@@ -5,6 +5,7 @@ import {
   gotoActionPlanBoard,
   getColumnByStageName,
   selectFromCustomDropdown,
+  selectAssignee,
   selectDueDate,
   createStage,
   createTask,
@@ -67,7 +68,7 @@ async function applyTaskEdits(page, modal, changes) {
   }
 
   if (changes.assignee) {
-    await selectFromCustomDropdown(page, modal, 2, changes.assignee, false);
+    await selectAssignee(page, modal, changes.assignee);
   }
 }
 
@@ -131,9 +132,11 @@ test.describe.serial('Edit action plan flow', () => {
 
     const verifyModal = await openEditModalForTask(page, minimalTaskName);
     await expect(verifyModal.locator('button[data-open="false"]').nth(0)).toContainText('High', { timeout: 15000 });
-    await expect(verifyModal.locator('button[data-open="false"]').nth(2)).toContainText(member.firstName, { timeout: 15000 });
+    // Assignee is a combobox now — its input value is the member's full name.
+    await expect(verifyModal.getByRole('combobox').first()).toHaveValue(member.fullName, { timeout: 15000 });
     await expect(
-      verifyModal.getByRole('button', { name: /28\s+\p{L}+\s+\d{4}/iu }).first()
+      // Due date renders as "Nov 28, 2026" (was "28 Nov 2026") — accept both.
+      verifyModal.getByRole('button', { name: /^(28\s+\p{L}+\s+\d{4}|\p{L}+\s+28,\s+\d{4})$/iu }).first()
     ).toBeVisible({ timeout: 15000 });
 
   });
@@ -177,7 +180,8 @@ test.describe.serial('Edit action plan flow', () => {
 
     const verifyModal = await openEditModalForTask(page, auditTaskName);
     await expect(verifyModal.locator('button[data-open="false"]').nth(0)).toContainText('Critical', { timeout: 15000 });
-    await expect(verifyModal.locator('button[data-open="false"]').nth(2)).toContainText(member.firstName, { timeout: 15000 });
+    // Assignee is a combobox now — its input value is the member's full name.
+    await expect(verifyModal.getByRole('combobox').first()).toHaveValue(member.fullName, { timeout: 15000 });
 
   });
 

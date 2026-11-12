@@ -9,7 +9,7 @@ export function writeRunContext(context) {
   fs.writeFileSync(RUN_CONTEXT_PATH, JSON.stringify(context, null, 2));
 }
 
-function readRunContext() {
+export function readRunContext() {
   const raw = fs.readFileSync(RUN_CONTEXT_PATH, 'utf-8');
   return JSON.parse(raw);
 }

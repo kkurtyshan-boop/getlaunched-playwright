@@ -24,14 +24,20 @@ export async function openOtherTab(page, project) {
 // (e.g. /Location Analysis/i) rather than the full combined text, since the
 // description copy is incidental.
 export async function expandAccordionSection(page, headingRegex) {
-  const region = page.getByRole('region', { name: headingRegex }).first();
+  const header = page.getByRole('button', { name: headingRegex }).first();
+  await expect(header).toBeVisible({ timeout: 15000 });
 
-  if (!(await region.isVisible().catch(() => false))) {
-    const header = page.getByRole('button', { name: headingRegex }).first();
-    await expect(header).toBeVisible({ timeout: 15000 });
+  // Decide from the header's own aria-expanded, not from an instant
+  // region-visibility check: right after navigation the region of an
+  // already-open section may not have rendered yet, and clicking the header
+  // then COLLAPSES it (this was the real cause of most "accordion collapsed
+  // mid-flow" failures).
+  if ((await header.getAttribute('aria-expanded')) !== 'true') {
     await header.click();
   }
+  await expect(header).toHaveAttribute('aria-expanded', 'true', { timeout: 15000 });
 
+  const region = page.getByRole('region', { name: headingRegex }).first();
   await expect(region).toBeVisible({ timeout: 15000 });
   return region;
 }
@@ -71,145 +77,125 @@ async function selectFromCustomDropdown(page, scope, optionLabel) {
 
 // ---------------------------------------------------------------------------
 // Intellectual Property Rights — NOT a list: one fixed record per IP type
-// (Trademark / Patent / Copyright / Design), each its own panel behind a
-// single-select nav button. CONFIRMED LIVE QUIRK (BUG_PATTERNS.md "IP Rights
-// Nav Buttons Carry a Live Status Badge"): once a type has been saved with a
-// status, its nav button label becomes "{Type} {Status}" (e.g. "Patent
-// Registered") — so it must always be matched by PREFIX, never exact text.
+// (Trademark / Patent / Copyright / Design), each its own panel behind a nav
+// button. Redesigned 2026-11 (confirmed live 2026-11-11):
+//   - Status: "Have it" / "Planned" / "Not relevant". A never-saved type
+//     shows a question with "Yes, we have it" / "Yes, planned" / "Not
+//     relevant" buttons; once answered it's a radiogroup.
+//   - Have it → Stage* (Trademark/Design: Filed | Registered; Patent:
+//     Filed | Granted; Copyright: no stage), Registration / application
+//     number, Countries / regions, Filing date, Valid until, Description.
+//   - Planned → Planned filing, Estimated cost, Countries / regions, Description.
+//   - The nav button carries the saved stage as a badge ("Patent Filed",
+//     "Trademark Not set") — always match the type by PREFIX.
+//   - Switching type with unsaved edits opens a "Discard unsaved changes?"
+//     dialog (Stay / Discard changes).
+//   - Escape inside an open dropdown collapses the whole accordion — never
+//     press Escape here.
 // ---------------------------------------------------------------------------
-async function openIpTypePanel(page, type) {
-  await expandAccordionSection(page, /Intellectual Property Rights/i);
+export const IP_STATUS = { have: 'Have it', planned: 'Planned', notRelevant: 'Not relevant' };
+const IP_STATUS_QUESTION_BUTTON = {
+  'Have it': /^yes, we have it$/i,
+  Planned: /^yes, planned$/i,
+  'Not relevant': /^not relevant$/i,
+};
 
-  const typeButton = page.getByRole('button', { name: new RegExp(`^${escapeRegExp(type)}\\b`) }).first();
-  await expect(typeButton).toBeVisible({ timeout: 10000 });
-  await typeButton.click();
-  return typeButton;
+function ipTypeButton(region, type) {
+  return region.getByRole('button', { name: new RegExp(`^${escapeRegExp(type)}\\b`) }).first();
 }
 
-// The whole "Other" accordion intermittently collapses mid-flow on this
-// live/shared project — confirmed live, reproducible but NOT deterministic
-// (most likely caused by another concurrent session's mutation elsewhere on
-// the project invalidating this page's data and resetting local
-// open/closed accordion state). `attemptFillOnce` re-opens the IP type
-// panel defensively before each step; if a step still times out because the
-// panel collapsed out from under it, the whole attempt is retried from
-// scratch rather than leaving a half-filled form.
-export async function saveIpRight(page, project, { type, tracked = true, registrationStatus, notes } = {}) {
+async function openIpTypePanel(page, type) {
+  const region = await expandAccordionSection(page, /Intellectual Property Rights/i);
+  await ipTypeButton(region, type).click();
+
+  const discard = page.getByRole('button', { name: /^discard changes$/i });
+  if (await discard.isVisible().catch(() => false)) {
+    await discard.click();
+  }
+  // Panel is ready once its status controls (question buttons or radios) render.
+  await expect(
+    region.getByRole('radio', { name: IP_STATUS.have, exact: true }).or(region.getByRole('button', { name: /^yes, we have it$/i }))
+  ).toBeVisible({ timeout: 10000 });
+  return region;
+}
+
+async function setIpStatus(region, status) {
+  const radio = region.getByRole('radio', { name: status, exact: true });
+  if (!(await radio.isVisible().catch(() => false))) {
+    await region.getByRole('button', { name: IP_STATUS_QUESTION_BUTTON[status] }).click({ timeout: 10000 });
+  } else if (!(await radio.isChecked())) {
+    await radio.click({ timeout: 10000 });
+  }
+  await expect(radio).toBeChecked({ timeout: 5000 });
+}
+
+// Saves one IP type and verifies it persisted after a reload (nav badge +
+// the Stage dropdown's own value). Returns the fixture used.
+//
+// The IP accordion still intermittently collapses mid-interaction on the
+// live project (long-standing quirk, see BUG_PATTERNS.md) — each fill
+// attempt therefore re-opens the panel from scratch, bounded to 3 attempts.
+export async function saveIpRight(page, project, { type, status = IP_STATUS.have, stage, registrationNumber, description } = {}) {
   await openOtherTab(page, project);
 
-  const attemptFillOnce = async () => {
-    let panel = await expandAccordionSection(page, /Intellectual Property Rights/i);
-    await openIpTypePanel(page, type);
+  const fillAndSave = async () => {
+    const region = await openIpTypePanel(page, type);
+    await setIpStatus(region, status);
 
-    // Scope every field lookup to the IP Rights panel itself, not the whole
-    // page — the page also has other custom dropdowns/switches elsewhere in
-    // the sidebar/header, and a page-wide `.first()` lookup can silently
-    // grab the wrong one.
-    const trackedSwitch = panel.getByRole('switch').first();
-    await expect(trackedSwitch).toBeVisible({ timeout: 10000 });
-    const isChecked = await trackedSwitch.isChecked();
-    if (Boolean(tracked) !== isChecked) {
-      await trackedSwitch.click();
+    if (status === IP_STATUS.have && stage) {
+      await selectFromCustomDropdown(page, region, stage);
+    }
+    if (status === IP_STATUS.have && registrationNumber !== undefined) {
+      await region.getByRole('textbox', { name: /^registration \/ application number$/i }).fill(registrationNumber, { timeout: 10000 });
+    }
+    if (description !== undefined) {
+      await region.getByRole('textbox', { name: /^description$/i }).fill(description, { timeout: 10000 });
     }
 
-    let notesField = panel.getByPlaceholder('Type text').first();
-    if (tracked) {
-      // Toggling "Tracked" on enables the registration-status dropdown and
-      // the notes field together in one re-render — wait for that
-      // transition to settle before touching either.
-      await expect(notesField).toBeEnabled({ timeout: 10000 });
-    }
-
-    if (tracked && registrationStatus) {
-      // CONFIRMED LIVE (2026-08-28): the "Intellectual Property Rights"
-      // accordion can collapse mid-interaction while the Registration
-      // status dropdown is being opened/selected — a real, non-
-      // deterministic app race (see the class comment above; it happens on
-      // some attempts and not others, unrelated to anything this helper
-      // does differently between attempts). When it does, every element
-      // reference captured from the pre-collapse `panel`/dropdown hangs
-      // indefinitely instead of failing fast, since Playwright's actionability
-      // retries have no bound on a plain `.click()`. Bound the whole
-      // select-and-verify sequence in its own short timeout so a collapse
-      // here fails fast into a re-expand-and-retry instead of eating the
-      // rest of the test's budget.
-      let selected = false;
-      for (let dropdownAttempt = 0; dropdownAttempt < 2 && !selected; dropdownAttempt++) {
-        try {
-          await Promise.race([
-            selectFromCustomDropdown(page, panel, registrationStatus),
-            page.waitForTimeout(8000).then(() => { throw new Error('dropdown selection stalled (likely accordion collapse)'); }),
-          ]);
-          // selectFromCustomDropdown itself now verifies the trigger's
-          // displayed value before resolving, so reaching here without a
-          // throw already means the correct status is showing.
-          selected = true;
-        } catch {
-          selected = false;
-        }
-
-        if (!selected) {
-          panel = await expandAccordionSection(page, /Intellectual Property Rights/i);
-          await openIpTypePanel(page, type);
-          notesField = panel.getByPlaceholder('Type text').first();
-          await expect(notesField).toBeEnabled({ timeout: 10000 });
-        }
-      }
-      if (!selected) {
-        throw new Error(`Could not select Registration status "${registrationStatus}" — accordion kept collapsing.`);
-      }
-    }
-
-    if (tracked && notes !== undefined) {
-      await notesField.fill(notes);
-    }
-
-    const saveButton = panel.getByRole('button', { name: /^save$/i }).first();
+    const saveButton = region.getByRole('button', { name: /^save$/i });
     await expect(saveButton).toBeVisible({ timeout: 10000 });
-    await saveButton.click();
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    // Save stays disabled when the form already matches what's stored (e.g.
+    // a re-run saving "Not relevant" again) — nothing to submit then; the
+    // reload check below still verifies the persisted state.
+    if (await saveButton.isDisabled()) return;
+    const saved = page.waitForResponse(
+      (r) => /\/intellectual-properties/.test(r.url()) && r.request().method() !== 'GET',
+      { timeout: 15000 }
+    );
+    await saveButton.click({ timeout: 10000 });
+    expect((await saved).ok()).toBe(true);
   };
 
-  // The "Other" accordion has been observed to intermittently collapse
-  // mid-flow on this live/shared project (see comment above) — retry the
-  // whole fill-and-save attempt from scratch once rather than leaving a
-  // half-filled form or failing on a one-off timing glitch. Capped at 2
-  // total attempts (not 3): if the browser/page itself has died (confirmed
-  // live — "Target page, context or browser has been closed", a real crash,
-  // not a collapse), every further attempt fails identically and just burns
-  // through the test's timeout budget for no benefit.
   let lastError;
-  const maxAttempts = 2;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      await attemptFillOnce();
+      await fillAndSave();
       lastError = undefined;
       break;
     } catch (err) {
       lastError = err;
       if (/Target page, context or browser has been closed/.test(err.message || '')) break;
+      await page.reload({ waitUntil: 'domcontentloaded' });
     }
   }
   if (lastError) throw lastError;
 
-  // Confirm persistence after a reload. The nav button's status badge
-  // (documented in BUG_PATTERNS.md as carrying the live status, e.g.
-  // "Patent Registered") is confirmed live to be unreliable here — it kept
-  // showing the type's ORIGINAL status well after a successful, verified
-  // (200 OK, correct payload) save, even across many reloads. The form's
-  // own Registration status dropdown, reopened fresh after reload, is a
-  // more direct signal of what was actually persisted, so check that
-  // instead of trusting the badge text.
-  if (tracked && registrationStatus) {
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    const panel = await expandAccordionSection(page, /Intellectual Property Rights/i);
-    await openIpTypePanel(page, type);
-    const dropdownButton = panel.locator('button[data-open="false"]').first();
-    await expect(dropdownButton).toContainText(registrationStatus, { timeout: 15000 });
+  // Persistence check after a reload.
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  const reloaded = await openIpTypePanel(page, type);
+  // Note: the reload-based assertions below only read state, so an
+  // accordion collapse here just re-renders the same saved values.
+  await expect(reloaded.getByRole('radio', { name: status, exact: true })).toBeChecked({ timeout: 15000 });
+  if (status === IP_STATUS.have && stage) {
+    await expect(ipTypeButton(reloaded, type)).toContainText(stage, { timeout: 15000 });
+    await expect(reloaded.locator('button[data-open]').first()).toContainText(stage, { timeout: 15000 });
+  }
+  if (description !== undefined) {
+    await expect(reloaded.getByRole('textbox', { name: /^description$/i })).toHaveValue(description, { timeout: 15000 });
   }
 
-  return { type, tracked: Boolean(tracked), registrationStatus, notes };
+  return { type, status, stage, registrationNumber, description };
 }
 
 // ---------------------------------------------------------------------------
@@ -224,8 +210,9 @@ export async function saveIpRight(page, project, { type, tracked = true, registr
 // ---------------------------------------------------------------------------
 
 // Locations / Suppliers / Criteria Configuration each render as their own
-// <section> with an <h2> heading + an unlabeled icon-only "add" button
-// (`div.pb-4 > button` — confirmed live, no accessible name to select by).
+// <section> with an <h2> heading; the create trigger is the first button
+// after that heading (labeled "Add …" while empty, an unlabeled "+" icon
+// once the section has items — same as helpers/dom.js openSectionCreateModal).
 async function openSubsectionCreateModal(page, region, headingRegex) {
   const section = region.locator('section').filter({
     has: page.getByRole('heading', { name: headingRegex }),
@@ -233,7 +220,20 @@ async function openSubsectionCreateModal(page, region, headingRegex) {
 
   await expect(section).toBeVisible({ timeout: 15000 });
 
-  const addButton = section.locator('div.pb-4 > button').first();
+  const addButton = section.getByRole('heading', { name: headingRegex }).locator('xpath=following::button[1]');
+  await expect(addButton).toBeVisible({ timeout: 15000 });
+  await addButton.click();
+
+  const modal = page.getByRole('dialog');
+  await expect(modal).toBeVisible({ timeout: 15000 });
+  return modal;
+}
+
+// The Locations / Suppliers item lists no longer have their own heading
+// (2026-11): just an "N added" counter with the "+" add button next to it,
+// at the top of the module's region.
+async function openItemCreateModal(page, region) {
+  const addButton = region.getByText(/^\d+ added$/i).first().locator('xpath=following::button[1]');
   await expect(addButton).toBeVisible({ timeout: 15000 });
   await addButton.click();
 
@@ -258,7 +258,7 @@ export async function createLocation(page, project, overrides = {}) {
   for (let attempt = 0; attempt < 2 && !created; attempt++) {
     try {
       const region = await expandAccordionSection(page, /Location Analysis/i);
-      const modal = await openSubsectionCreateModal(page, region, /^Locations$/i);
+      const modal = await openItemCreateModal(page, region);
 
       await modal.getByPlaceholder('Type name').fill(location.name);
       await modal.getByPlaceholder('Type address').fill(location.address);
@@ -281,6 +281,25 @@ export async function createLocation(page, project, overrides = {}) {
   return location;
 }
 
+// Add/Edit supplier drawer (redesigned 2026-11): Supply (Name*, What they
+// supply, For which products, Role Main/Backup/Interim), Volume & delivery,
+// Contact details (Contact person, Phone, E-mail, Country combobox, Company
+// address), Team & notes. Only Name is required.
+export function supplierEmailField(modal) {
+  return modal.getByRole('textbox', { name: /^e-?mail$/i });
+}
+
+export function supplierCountryField(modal) {
+  return modal.getByRole('combobox', { name: /country/i }).first();
+}
+
+export async function setSupplierCountry(page, modal, country) {
+  const combobox = supplierCountryField(modal);
+  await combobox.click();
+  await combobox.fill(country);
+  await page.getByRole('option', { name: country, exact: true }).first().click();
+}
+
 export async function createSupplier(page, project, overrides = {}) {
   const supplier = {
     name: overrides.name || unique(SUPPLIER_NAME),
@@ -296,11 +315,11 @@ export async function createSupplier(page, project, overrides = {}) {
   for (let attempt = 0; attempt < 2 && !created; attempt++) {
     try {
       const region = await expandAccordionSection(page, /Supplier Analysis/i);
-      const modal = await openSubsectionCreateModal(page, region, /^Suppliers$/i);
+      const modal = await openItemCreateModal(page, region);
 
       await modal.getByPlaceholder('Type name').fill(supplier.name);
-      await modal.getByPlaceholder('Type email').fill(supplier.email);
-      await modal.getByPlaceholder('Type country').fill(supplier.country);
+      await supplierEmailField(modal).fill(supplier.email);
+      await setSupplierCountry(page, modal, supplier.country);
 
       const createButton = modal.getByRole('button', { name: /^create$/i }).first();
       await expect(createButton).toBeVisible({ timeout: 15000 });
@@ -359,13 +378,18 @@ export async function openCardEditModal(page, region, cardName) {
   const card = await getSubsectionCard(page, region, cardName);
   await card.scrollIntoViewIfNeeded();
 
+  // Location / Supplier cards (2026-11) are themselves a button that opens
+  // the Edit drawer directly; Criteria Configuration cards still use an
+  // "Open actions menu" → Edit menu.
   const menuButton = card.getByRole('button', { name: /open actions menu/i }).first();
-  await expect(menuButton).toBeVisible({ timeout: 15000 });
-  await menuButton.click();
-
-  const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
-  await expect(editItem).toBeVisible({ timeout: 15000 });
-  await editItem.click();
+  if (await menuButton.isVisible().catch(() => false)) {
+    await menuButton.click();
+    const editItem = page.getByRole('menuitem', { name: /^edit$/i }).first();
+    await expect(editItem).toBeVisible({ timeout: 15000 });
+    await editItem.click();
+  } else {
+    await card.getByRole('button').first().click();
+  }
 
   const modal = page.getByRole('dialog');
   await expect(modal).toBeVisible({ timeout: 15000 });

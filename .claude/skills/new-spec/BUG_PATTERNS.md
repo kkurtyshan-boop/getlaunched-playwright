@@ -49,9 +49,2175 @@ session's live exploration. Nothing below is speculative — items whose root
 cause or exact scope is still uncertain are explicitly marked as such rather
 than overstated.
 
+**Last reviewed:** 2026-11-11/12 (Autotest suite updated to the redesigned
+UI — Project form, Client needs Category, 3-step Product wizard, IP Rights,
+Supplier/Location drawers, Action plan Area/Assignee, split Implementation
+navigation, Business plan document view. Re-verified "Running-Cost Resources
+Cannot Be Created" — still open, root cause confirmed, workaround found.
+2026-11-12 full run: 1 new confirmed bug — "MVP List Shows Only the First 15
+MVPs")
+
+**Last reviewed:** 2026-10-20, second pass (Targeted re-test of "Deleting a
+Marketing Channel Does Not Refresh Income, Cash Flow and Balance Sheet":
+3/3 delete cycles + multi-channel delete + cancel refresh correctly — now
+Fixed; no new bugs)
+
+**Last reviewed:** 2026-10-20 (FTE per year for line staff + financial
+reports refresh after mutations in Team, Marketing, Financing, Repayments,
+Funding settings, Products, Resources; EN + DE; 5 new confirmed bugs;
+"Employment % Inputs Silently Truncate Decimals" now Fixed)
+
+**Last reviewed:** 2026-10-07, fourth pass (Targeted re-test of "Marketing
+Funnel Deals Do Not Feed Revenue": 10 → 20 deals, revenue and
+revenue_breakdown unchanged — still Confirmed; no new bugs)
+
+**Last reviewed:** 2026-10-07, third pass (Income tax loss carry-forward
+re-test: accumulation, partial use, exact-equal boundary 300 000 vs
+300 000, Income tab, Business plan and PDF, 7 existing projects — all
+correct; no new confirmed bugs. The carry-forward is still not shown in the
+Income table — UX suggestion, not logged as a bug)
+
+**Last reviewed:** 2026-10-07, second pass (Working capital re-test #2 with
+focus on passing the values to the financial tables: fresh 5-year project,
+defaults 60/30/30, custom 60/45/15, explicit 0, Balance sheet / Cash flow
+tabs, Business plan and PDF, balance on 8 projects. Math correct
+everywhere; one-line Cash flow still present; validation-text bug Fixed;
+2 new confirmed bugs)
+
+**Last reviewed:** 2026-10-07 (Business plan → Go-to-Market marketing-channel
+page redesign: KPI row + funnel, channels with 1/2/3/4/5 steps on a
+5-channel project, preview vs horizontal vs PDF export, AI intro after
+Update. Numbers and edge cases correct; 3 new confirmed bugs. "Marketing
+Funnel Deals Do Not Feed Revenue" still present)
+
+**Last reviewed:** 2026-10-06 (Magic Triangle USP / Value proposition
+saving — client feedback p. 5: manual save, leave/return/reload, German UI,
+mobile, AI fill via page-level Assist me in EN/DE/UA, save-error handling,
+Auto analyze interaction. Manual and AI saves persist on the backend; 3 new
+confirmed bugs)
+
+**Last reviewed:** 2026-10-05, fourth pass (Number & date localization
+re-test in German on dev — 20 pages × 3 projects (UAH/EUR/CHF) in DE and EN,
+every numeric input in every form, edit-form saved values, date picker,
+profile/notifications dates. All 2026-10-01 number bugs still Confirmed
+(integer-only inputs now also seen on Product quantity per year); 2 new
+confirmed bugs)
+
+**Last reviewed:** 2026-10-05, third pass (German localization — every screen
+of "Autotest Project Karina" plus global, public and logged-out screens,
+EN↔DE string diff incl. create/edit drawers, dropdowns, validation, delete
+dialogs, tooltips; 2 new confirmed bugs; earlier untranslated strings still
+present)
+
+**Last reviewed:** 2026-10-05, second pass (Working capital re-test: AR /
+Inventory / AP formulas, defaults 60/30/30, custom values, AP = COGS only,
+balance and cash check on a fresh 5-year project + 7 existing projects — all
+correct; "one net Working Capital line" still Confirmed; empty-field save is
+now blocked by validation, but with a raw technical message — 1 new
+confirmed bug)
+
+**Last reviewed:** 2026-10-05 (Income tax loss carry-forward: accumulation,
+partial/full use, profit→loss→profit, boundary 199 998 vs 200 000, 19.5%
+rounding, Cash flow / Balance sheet downstream — all correct; no new
+confirmed bugs)
+
+**Last reviewed:** 2026-10-01, fifth pass (Working capital AR/Inventory/AP:
+formulas, defaults 60/30/30 and balance verified on 4 projects incl. a fresh
+one — correct; "Working Capital Defaults … Not Applied" now Fixed; 1 new
+confirmed presentation issue in the Cash flow table)
+
+**Last reviewed:** 2026-10-01, fourth pass (Marketing funnel fix: step rename
+saved, deals recalculated live, "Step N: name" in details — all fixed;
+deals still not fed into revenue; 1 new confirmed bug)
+
+**Last reviewed:** 2026-10-01, third pass (Resources → Investment "Useful life,
+years" + depreciation in P&L / balance sheet / cash flow: backend math
+correct, UI field missing and investment creation blocked; 2 new confirmed
+bugs; "Amortization Period Capped at 100" status changed)
+
+**Last reviewed:** 2026-10-01, second pass (Number / date / translation
+localization re-test EN↔DE on dev after the number-localization deploy: 6 of 7
+bugs from 2026-09-30 still Confirmed, the financing-year 422 bug Partially fixed; 3 new confirmed bugs)
+
+**Last reviewed:** 2026-10-01 (Audit-fix re-test on dev: delete error
+handling in Competitors / Operations → Other, Dashboard & Profile load-error
+state, AI chat lazy loading, German UI / shared business-plan `?lang=`,
+Business plan navigation; 2 new confirmed bugs)
+
+**Last reviewed:** 2026-09-30 (Number localization EN/DE — every page in
+both languages, localized numeric inputs, pluralization; 7 new confirmed
+bugs; Line staff creation now Fixed)
+
+**Last reviewed:** 2026-09-29 (Income: "Direct service costs" category —
+backend counts it like COGS; UI row still missing; no new bugs, existing
+entry re-verified)
+
+**Last reviewed:** 2026-09-28 (Create MVP + in-form Assist me re-test:
+partially fixed; 2 new confirmed bugs. Also Product validation re-test.)
+
+**Last reviewed:** 2026-09-24 (Assist me — AI form-fill in every create
+form of the project, 15 forms; 6 new confirmed bugs; Assist me opened
+22/22 times)
+
+**Last reviewed:** 2026-09-23 (Products — Subscription payment period +
+Cost type (COGS vs. Other direct costs) numeric verification against the
+live financial-evaluation / balance-sheet APIs; 4 new confirmed bugs, one
+previous bug now Fixed)
+
+**Last reviewed:** 2026-09-21 (Create/Edit Product modal redesign review —
+verified the new Cost type / Sourcing / Subscription type fields added for
+the COGS-vs-Other-direct-cost income statement task; one new confirmed bug
+found)
+
 **Last reviewed:** 2026-08-26 (Dior-Brand decoupling refactor — full suite
 migrated onto a bootstrapped "Autotest Project"; two new confirmed bugs found
 via stricter persistence assertions and a live network probe)
+
+---
+
+## MVP List Shows Only the First 15 MVPs — No Pagination or "Load More"
+
+### Module
+Magic triangle → MVP (`/project/{id}/triangle/mvp`)
+
+### Feature
+MVP list
+
+### Status
+**Confirmed** (2026-11-12, dev `frontv2`, project "Autotest Project Karina")
+
+### Description
+`GET /projects/{id}/mvps` is paginated (15 items per page; on this project the response meta shows `current_page: 1`, `last_page: 2`). The MVP page renders only page 1 and offers no pagination control, "Load more" button or infinite scroll, so every MVP after the 15th is invisible in the UI — including one the user has just created.
+
+### Expected Behaviour
+All MVPs of the project are reachable in the list (pagination, "Load more" or infinite scroll), and a newly created MVP is visible right after creation.
+
+### Actual Behaviour
+The list always stops at 15 cards (oldest first). A newly created 16th MVP is saved (it counts toward `last_page: 2`) but never appears; scrolling and reloading do not help.
+
+### Root Cause (if known)
+The frontend requests only the first page of the paginated `/mvps` endpoint and ignores `meta.last_page`. Not verified in code.
+
+### Regression Risk
+High for projects with many MVPs — users cannot see, edit or delete MVPs beyond the 15th and may think creation failed. Other lists backed by paginated endpoints may have the same gap.
+
+### Areas Affected
+Magic triangle → MVP list; indirectly Action plan "Area: MVP", Business plan MVP content (not checked).
+
+### QA Notes
+Found in a full suite run on 2026-11-12: `tests/24-create-mvp.spec.js` test 01 and `tests/25-edit-mvp.spec.js` test 00 fail because the created MVP's card never appears (`findMvpHeading`). Verified by reading the `/mvps` response on page load: 15 items, `last_page: 2`, and 15 cards in the UI. The suites passed earlier the same week while the project still had ≤ 15 MVPs.
+
+### Workaround (if any)
+None in the UI. Deleting old MVPs brings newer ones into the first 15.
+
+---
+
+## Deleting a Marketing Channel Does Not Refresh Income, Cash Flow and Balance Sheet
+
+### Module
+Operations → Marketing channels → Financial → Forecasts & Reports
+
+### Feature
+Refresh financial reports after a mutation (no page reload)
+
+### Status
+**Fixed** (re-tested 2026-10-20 16:25–16:31 EEST, dev `frontv2`: 3/3 create → delete cycles plus a multi-channel delete now refetch `financial-evaluation`, `cash-flow` and `balance-sheet`; SPA figures equal the reload and return exactly to the pre-create baseline. Report: `test-reports/Marketing_Channel_Delete_Reports_Refresh_Retest_Test_Report.md`)
+
+Previously **Confirmed** (2026-10-20, dev `frontv2`, 3/3 reproductions)
+
+### Description
+After a channel is deleted, opening Forecasts & Reports through the sidebar shows the old figures. No `financial-evaluation`, `cash-flow` or `balance-sheet` request is sent. The deleted channel's cost stays in the Income "Marketing channels" row, in Net profit, Closing cash, Total assets and Total equity, and in the OPEX tile. A reload shows the correct figures. Creating and editing a channel refresh the reports correctly.
+
+### Expected Behaviour
+After create, edit **and delete**, the three reports show the new figures without a reload (acceptance criterion of the FTE / report refresh task).
+
+### Actual Behaviour
+After delete the reports keep the pre-delete figures until a reload (for example, "Marketing channels" stays at −36 000 / −72 000 / −96 000 instead of 0).
+
+### Root Cause (if known)
+Probably the delete mutation in `useMarketingMutations.ts` does not call the shared "invalidate financial reports" helper (create and update do). A control run with navigation and no mutation does not refetch `financial-evaluation`, so the refetch after create and edit is caused by invalidation.
+
+### Regression Risk
+Medium — users see wrong financials after deleting a channel. Any other delete mutation that is not wired to the helper could have the same gap.
+
+### Areas Affected
+Forecasts & Reports (Income, Cash flow, Balance sheet, KPI tiles).
+
+### QA Notes
+Network-level check: GET requests to the three report endpoints are recorded between the mutation and the sidebar navigation, and the figures read through the SPA are compared with the figures after a reload. Evidence: `test-reports/screenshots/FTE_2026-10-20_channel_delete_stale_reports.png`. Report: `test-reports/FTE_and_Financial_Reports_Refresh_Test_Report.md`.
+
+### Workaround (if any)
+Reload the page.
+
+---
+
+## Running-Cost Resources Cannot Be Created — "Create" Does Nothing, No Request, No Message
+
+### Module
+Operations → Resources → Create new resource (Running costs)
+
+### Feature
+Create running-cost resource
+
+### Status
+**Confirmed — still open, scope narrowed** (2026-11-12, dev `frontv2`): fails only when the drawer is switched from Investment to Running costs **inside** the drawer. Opening "Create new resource" while the list filter is already on **Running costs** opens the drawer in Running costs mode and creation works (201). Re-tested 2026-11-11 with 6/6 reproductions of the in-drawer path; first confirmed 2026-10-20; worked on 2026-10-01.
+
+### Description
+With every visible field filled (name, category "Rent and Utilities", payment type Monthly or Annually, start year 2027, cost per year for both years, with or without a description), clicking **Create** or pressing Enter does nothing. No `POST /resources` request is sent, no validation message or toast is shown, and the dialog stays open. An Investment resource created in the same session succeeds (201).
+
+### Expected Behaviour
+The running-cost resource is created, or the blocking field is highlighted with a message.
+
+### Actual Behaviour
+Silent no-op. Running costs cannot be added at all.
+
+### Root Cause (if known)
+Confirmed 2026-11-12 by reading the react-hook-form state after Create: the drawer opens in Investment mode, whose single "Investment amount" field is bound to `yearly_costs.0`. After switching to Running costs that empty `{}` stays at index 0 and the per-year costs are appended at indexes 1…n (`yearly_costs: [{}, {year: 2027, quantity: …}, …]`). The schema requires `year`/`quantity` on every item, so validation fails on `yearly_costs.0` — a field that is not rendered, hence no message. (Filling the Investment tab first makes index 0 valid, which is why that also "works".)
+
+### Regression Risk
+High — running costs feed OPEX, "Running resources" in Income and the cash flow. Users cannot add them.
+
+### Areas Affected
+Operations → Resources; indirectly all financial reports.
+
+### QA Notes
+The suite's own `tests/16-create-resources.spec.js` / `17-edit-resources.spec.js` also fail on 2026-10-20, but for a different reason: test drift, because the Investment form now has an "Investment amount" field. Evidence: `test-reports/screenshots/FTE_2026-10-20_running_cost_create_no_request.png`. Update 2026-11-11: the Investment drift is fixed in the suite; `16-create-resources.spec.js` test 02 and `17-edit-resources.spec.js` test 00 now fail **because of this bug** (modal never closes) and should pass as soon as it is fixed. (The 2026-10-20 screenshot and reports were removed from `test-reports/` during the 2026-11-11 cleanup.)
+
+### Workaround (if any)
+Select **Running costs** in the list filter first, then click "Create new resource" — the drawer opens in Running costs mode and saves normally. Since 2026-11-12 the suite uses this path (`createResource` in `tests/helpers/resource.helper.js`), so `16`/`17` pass; the in-drawer switch itself is no longer exercised by the suite.
+
+---
+
+## Line-Staff Card Shows FTE With a Decimal Point in German ("0.5 Personal")
+
+### Module
+Operations → Team and staff (DE)
+
+### Feature
+FTE display on the line-staff card
+
+### Status
+**Confirmed** (2026-10-20, dev `frontv2`)
+
+### Description
+In German, the line-staff card shows "0.5 Personal", while the salary on the same card is localized ("₣ 100.000"). The role's details panel ("FTE pro Jahr") correctly shows "0,5" / "1,3", and the edit form prefills "0,5" / "1,3".
+
+### Expected Behaviour
+"0,5 Personal" (DE decimal comma), consistent with the details panel and the form.
+
+### Actual Behaviour
+"0.5 Personal".
+
+### Root Cause (if known)
+The card renders the raw number without the locale number formatter.
+
+### Regression Risk
+Low — cosmetic. Inconsistent with the DE number-localization work.
+
+### Areas Affected
+Team and staff card (DE).
+
+### QA Notes
+Evidence: `test-reports/screenshots/FTE_2026-10-20_de_card_fte_dot.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## "Total Salary Costs" Header Ignores FTE / Head Count
+
+### Module
+Operations → Team and staff
+
+### Feature
+"Total salary costs" summary tile
+
+### Status
+**Confirmed** (2026-10-20, dev `frontv2`)
+
+### Description
+The tile adds up the nominal annual salaries and ignores FTE and employment %:
+- FTE 2 / 2 × ₣50 000 shows ₣50 000 (Income: −100 000 per year);
+- FTE 0.5 / 1.3 × ₣100 000 shows ₣100 000 (Income: −50 000 / −130 000);
+- a key member at 50 % × ₣80 000 shows ₣80 000 (Income: −40 000).
+
+### Expected Behaviour
+The tile matches the salary cost the reports use (salary × FTE × employment %), or its label makes clear that it is the sum of nominal salaries.
+
+### Actual Behaviour
+The tile and the Income "Team & staffing" row disagree.
+
+### Root Cause (if known)
+The tile sums `salary` only.
+
+### Regression Risk
+Low–Medium — more visible now that FTE is fractional.
+
+### Areas Affected
+Team and staff header.
+
+### QA Notes
+Integer head count (FTE 2) is also ignored, so this is not specific to fractional FTE.
+
+### Workaround (if any)
+Use the Income table.
+
+---
+
+## "Total Salary Costs" Shows "₣ 0000" When the Team Is Empty
+
+### Module
+Operations → Team and staff
+
+### Feature
+"Total salary costs" summary tile, empty state
+
+### Status
+**Confirmed** (2026-10-20, dev `frontv2`, EN and DE)
+
+### Description
+With no team roles, the tile shows "₣ 0000" ("Gesamte Gehaltskosten ₣ 0000" in DE) instead of "₣ 0". With at least one role it is formatted correctly ("₣ 100,000").
+
+### Expected Behaviour
+"₣ 0".
+
+### Actual Behaviour
+"₣ 0000".
+
+### Root Cause (if known)
+Unknown — probably a placeholder or formatting fallback for an empty or zero total.
+
+### Regression Risk
+Low — cosmetic.
+
+### Areas Affected
+Team and staff header.
+
+### QA Notes
+Evidence: `test-reports/screenshots/FTE_2026-10-20_total_salary_0000.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Business Plan / PDF Cash Flow Shows the Working Capital Line With an Inverted Sign
+
+### Module
+Business plan → Financials → Cash flow (editor preview and PDF export)
+
+### Feature
+Operating activities — working-capital movement
+
+### Status
+**Confirmed** (2026-10-07, dev `frontv2`, fresh project "Audit WC 1007" and "Autotest Project Karina")
+
+### Description
+In the Financial → Cash flow tab, the "Working Capital" row has a "−" operator icon, so `€60K` reads as an outflow. The Business plan and the exported PDF reuse the values but drop the operator icons. The row is printed as a plain signed amount:
+- **63K** (positive, black) in 2026–2027, when working capital grows and cash goes **out**;
+- **−63K** (red) in 2029–2030, when working capital is released and cash comes **in**.
+
+The column does not add up as printed (2026: 164.25K + 0 + 63K ≠ Operating Cash Flow 101.25K). In the same plan, CAPEX is printed with its cash-effect sign (Karina: CAPEX −1, Investing Cash Flow −1), so only the working-capital row is inverted.
+
+### Expected Behaviour
+Cash effect signs: −63K in 2026–2027 and +63K in 2029–2030. Ideally the three required lines are shown: −ΔAR, −ΔInventory, +ΔAP.
+
+### Actual Behaviour
+The sign is the opposite of the cash effect. Investors reading the PDF see working capital as a source of cash in growth years.
+
+### Root Cause (if known)
+The Business plan table prints the raw `working_capital_change` (an increase in working capital) without negating it. The app tab compensates with the operator icon, which the plan template does not render.
+
+### Regression Risk
+Medium — investor-facing document; the operating cash flow appears not to add up.
+
+### Areas Affected
+Business plan (vertical and horizontal) and the PDF export, Cash flow table.
+
+### QA Notes
+Fresh project, One-time product 365 000 / COGS 146 000, quantities 1/2/2/1/0, DIO 60 / DSO 45 / DPO 15 → 2026: Net Profit 164.25K, Working Capital printed "63K", OCF 101.25K. Evidence: `test-reports/screenshots/WC_2026-10-07_bp_pdf_cash_flow.png` (PDF p.6) vs `WC_2026-10-07_cf_single_line.png` (app tab with the "−" icon). Report: `test-reports/Working_Capital_Retest_2_Test_Report.md`. Related: "Cash Flow Shows One Net 'Working Capital' Line…".
+
+### Workaround (if any)
+—
+
+---
+
+## Domicile "Germany" Has No Legal Forms, So a Project With Domicile Germany Cannot Be Created
+
+### Module
+Projects → Create project (Business setup)
+
+### Feature
+Domicil → Legal form dependency (`GET /reference/legal-forms?country_id=…`)
+
+### Status
+**Confirmed** (2026-10-07, dev `frontv2`)
+
+### Description
+"Legal form" is required. For Switzerland and Austria it offers six forms (Sole Proprietorship, General Partnership, Limited Partnership, Limited Liability Company, Stock Corporation, Cooperative). With Domicil = **Germany**, the dropdown is empty, so the form cannot be submitted. Create project shows "Legal form is required" and sends no request.
+
+### Expected Behaviour
+German legal forms are offered (e.g. Einzelunternehmen, GbR, OHG, KG, GmbH, UG, AG, eG), or Legal form is optional when a country has none.
+
+### Actual Behaviour
+Empty dropdown and a blocking validation error.
+
+### Root Cause (if known)
+Missing reference data for Germany in the legal-forms list (suspected; only Switzerland and Austria were checked as working).
+
+### Regression Risk
+High for the German market — German users cannot create a project with their own domicile.
+
+### Areas Affected
+Create project; probably Edit project for existing projects that switch to Germany (not checked).
+
+### QA Notes
+Found while setting up the 2026-10-07 working-capital re-test. Other countries were not checked.
+
+### Workaround (if any)
+Choose another domicile (e.g. Switzerland or Austria).
+
+---
+
+## Business Plan Marketing Channel Page: Cost KPI Shows "Cost per month" Instead of "Cost per year"
+
+### Module
+Business plan → 2. Market & Strategy → Go-to-Market (editor preview, horizontal view, PDF export)
+
+### Feature
+Per-channel KPI row (Cost / New clients / Cost per client / Win rate)
+
+### Status
+**Confirmed** (2026-10-07, dev `frontv2`, project Autotest Project Karina, 5 channels)
+
+### Description
+The redesign spec defines the first KPI as "Cost per year" (the channel's cost for the year), with Cost per client = Cost per year / New clients. The page labels it **"Cost per month"** and shows the sum of the step costs as entered (₣12,000). The AI intro also says "new clients per month". For the same channel, the Income statement books **−144K** per year under "Marketing channels" (12,000 × 12). So the plan shows a monthly figure that the financial model treats as one twelfth of the annual cost. The acceptance numbers (12 000 → ₣167 per client) match only because 12 000 is divided by 72 directly.
+
+### Expected Behaviour
+The label reads "Cost per year" and the value is the channel's annual cost, consistent with the Income statement. Cost per client is derived from that annual cost.
+
+### Actual Behaviour
+The label reads "Cost per month" and the value is the monthly step-cost sum. The Income statement uses ×12 for the same channel.
+
+### Root Cause (if known)
+Funnel step `cost` is stored as a monthly amount (Income multiplies by 12). The page renders it unchanged under a monthly label instead of annualising it. Product needs to confirm whether "New clients" is also a monthly figure.
+
+### Regression Risk
+Medium–High — investor-facing document. Cost per client can be off by 12× depending on how the reader interprets the period.
+
+### Areas Affected
+Business plan Go-to-Market (all views + PDF), AI intro text, Income statement "Marketing channels" line.
+
+### QA Notes
+Re-check with one channel at 20 000 → 5% → 40% → 60% → 30%, cost 12 000. Compare the KPI label and value against Income → "Marketing channels" for the same year. Screenshot: `test-reports/screenshots/BPMC_2026-10-07_pdf_p9_4step.png`. Report: `test-reports/Business_Plan_Marketing_Channels_Test_Report.md`.
+
+### Workaround (if any)
+—
+
+---
+
+## Business Plan Marketing Channel Page Is Missing Drop-off, the "Year 2027" Label and the Weakest-Transition Highlight
+
+### Module
+Business plan → Go-to-Market (editor preview, horizontal view, PDF export)
+
+### Feature
+Marketing-channel funnel block (redesign)
+
+### Status
+**Confirmed** (2026-10-07, dev `frontv2`, channels with 1, 2, 3, 4 and 5 steps)
+
+### Description
+Three elements required by the redesign spec are not rendered in any view or in the PDF:
+1. **Drop-off** (100% − step conversion): no drop-off value appears anywhere. Only "X% move on" is shown.
+2. **Year under the channel title** ("Year 2027"): absent. Product · Client is shown directly under the title.
+3. **Weakest transition highlight** (minimum conversion, excluding the first): every "move on" badge has the same white background and grey text `rgb(96,117,141)`. Examples: 30% in the 20 000→72 channel, 10% in the 5-step channel and 0% in the 3-step channel were not highlighted.
+
+### Expected Behaviour
+Each stage shows its drop-off. The channel title is followed by "Year <first plan year>". The weakest transition is shown in an accent colour.
+
+### Actual Behaviour
+None of the three is rendered.
+
+### Root Cause (if known)
+Not implemented in the template (no "drop" / "Year" text in the DOM; badges share one style).
+
+### Regression Risk
+Medium — acceptance criterion "Drop-off у каждого этапа = 100% − конверсия" cannot pass.
+
+### Areas Affected
+Business plan Go-to-Market in all orientations and the PDF.
+
+### QA Notes
+Use a channel whose weakest non-first conversion is unique (e.g. 50/20/50/10/40 → expect 10% highlighted). Screenshots: `BPMC_2026-10-07_4step_vertical.png`, `BPMC_2026-10-07_5step.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Business Plan Funnel Styling Ignores the Number of Steps (Last Tier Not Dark, White Text on Light Tiers, One-Step Channel Drawn as a Funnel)
+
+### Module
+Business plan → Go-to-Market (editor preview, horizontal view, PDF export)
+
+### Feature
+Funnel tier colours / text colour / one-step rendering
+
+### Status
+**Confirmed** (2026-10-07, dev `frontv2`)
+
+### Description
+Tier colours come from a fixed 5-colour palette by index instead of from the step count:
+- **Last tier is dark only when there are exactly 5 tiers.** With 3 tiers the result tier is `rgb(90,163,218)` and with 4 tiers it is `rgb(67,143,201)` (both mid-blue). With 6 tiers (5-step channel) tiers 5 and 6 share the same dark colour, so the result is not distinguishable.
+- **Tier numbers are always white**, including on the light tiers. Measured contrast: 1.87:1 (`rgb(113,200,240)`), 2.12:1, 2.73:1 and 3.49:1. Only the dark tier passes 4.5:1 (5.67:1).
+- **A one-step channel is still drawn as a 2-tier funnel** (333 → 7% → 23). The spec requires KPIs only.
+
+### Expected Behaviour
+The result tier is always the dark one. Text is dark on light tiers and white on dark tiers. A one-step channel shows only the KPI row.
+
+### Actual Behaviour
+As described above, in the preview and in the PDF.
+
+### Root Cause (if known)
+Index-based palette and a fixed white text colour in the tier component. No special case for a single step.
+
+### Regression Risk
+Low–Medium — visual and legibility issue in the printed investor document.
+
+### Areas Affected
+Business plan Go-to-Market, all orientations, PDF.
+
+### QA Notes
+Check channels with 1, 2, 3 and 5 steps (1 → 6 tiers incl. "New clients"). Screenshots: `BPMC_2026-10-07_3ch_page2.png`, `BPMC_2026-10-07_3ch_page3.png`, `BPMC_2026-10-07_5step.png`, `BPMC_2026-10-07_pdf_p13_1step.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Magic Triangle Cards Not Refreshed After an AI Save — the Next Manual Edit Overwrites the AI's USP / Value Proposition
+
+### Module
+Magic triangle → Strategy details (USP, Value proposition) + page-level Assist me
+
+### Feature
+Live refresh after AI `action` events; `PUT /projects/{id}/value-proposition`
+
+### Status
+**Confirmed** (2026-10-06, dev `frontv2`, 4/4 reproductions)
+
+### Description
+When the AI saves the USP or the VP, the SSE stream emits `{"type":"action","entity":"value_proposition","operation":"updated"}` and the AI replies "saved". The page sends no `GET /magic-triangle`, so the cards (and the edit drawers' pre-fill) keep the old value until a manual reload. The PUT always sends `name` + `usp` + `description`, so saving one field from a drawer writes the stale copy of the other one and wipes the AI's change.
+
+### Expected Behaviour
+The cards update as soon as the AI save completes; editing one field never changes the other.
+
+### Actual Behaviour
+The cards stay stale. Editing the VP right after an AI USP save sent `"usp":"<previous value>"`; after a reload the AI's USP was gone.
+
+### Root Cause (if known)
+The frontend ignores `action` events for `value_proposition` / `strategy_health` (no query invalidation), and the update uses a full-object PUT built from the cached record.
+
+### Regression Risk
+High — silent data loss; matches the client's complaint "AI says it added it, but it doesn't". Likely also affects edits in two tabs at the same time (not tested).
+
+### Areas Affected
+Magic triangle USP / Value proposition cards and drawers; possibly any page where the AI can update records without a live refresh.
+
+### QA Notes
+After every AI save, check the card **without** reloading, then make a manual edit of the other field and reload. Screenshots: `test-reports/screenshots/USPVP_2026-10-06_ai_vp_stale_card.png`, `USPVP_2026-10-06_ai_usp_overwritten.png`. Report: `test-reports/USP_Value_Proposition_Test_Report.md`.
+
+### Workaround (if any)
+Reload the page after every AI save before editing.
+
+---
+
+## USP / Value Proposition Save Failure Shows No Error Message
+
+### Module
+Magic triangle → Strategy details → USP / Value proposition edit drawer
+
+### Feature
+Error handling of `PUT /projects/{id}/value-proposition`
+
+### Status
+**Confirmed** (2026-10-06, dev `frontv2`; HTTP 500 and network failure simulated)
+
+### Description
+On a failed save, the drawer just stays open with an active Update button. No toast or inline error is shown. A successful save shows no toast either (the drawer just closes).
+
+### Expected Behaviour
+A clear "could not save" message; the entered text is kept for a retry.
+
+### Actual Behaviour
+Silent failure; the user can't tell whether the text was saved. Retrying after recovery works (200).
+
+### Root Cause (if known)
+No `onError` handling in the update mutation (presumed).
+
+### Regression Risk
+Medium–High — one real (not simulated) save failed with a CORS / `net::ERR_FAILED` error in this session and went unnoticed in the UI; it did not reproduce on retry.
+
+### Areas Affected
+USP and Value proposition drawers.
+
+### QA Notes
+Simulate with `page.route('**/value-proposition', r => r.request().method()==='PUT' ? r.fulfill({status:500, body:'{}'}) : r.continue())`. Screenshot: `test-reports/screenshots/USPVP_2026-10-06_usp_put_500.png`.
+
+### Workaround (if any)
+Reload after saving to confirm.
+
+---
+
+## "Auto Analyze" Silently Overwrites Manually Entered USP and Value Proposition
+
+### Module
+Magic triangle → "Auto analyze" (`POST /projects/{id}/dashboard/ai-fill`)
+
+### Feature
+AI regeneration of the Strategy details
+
+### Status
+**Confirmed** (2026-10-06, dev `frontv2`). Needs product confirmation whether overwriting is intended.
+
+### Description
+"Auto analyze" replaces user-typed USP and VP text (and the hidden VP `name`) with generated text, with no warning or undo.
+
+### Expected Behaviour
+Manual text is kept, or the user is warned before it is replaced.
+
+### Actual Behaviour
+The manual USP "QA-USP-1006 manual before Auto analyze" was replaced by AI-generated Ukrainian text, both on the page and after a reload.
+
+### Root Cause (if known)
+`ai-fill` writes all Strategy details fields unconditionally.
+
+### Regression Risk
+Medium — user content is lost; plausible cause of "Einträge wurden nicht gespeichert".
+
+### Areas Affected
+Magic triangle USP, Value proposition, hidden VP `name`.
+
+### QA Notes
+The cards are labelled "Auto-generated analysis" even though users can edit them.
+
+### Workaround (if any)
+Don't run "Auto analyze" after editing USP/VP manually.
+
+---
+
+## German Date Picker Shows "15 Oktober 2026" (No Period) — a Third Date Style Next to "28.08.2026"
+
+### Module
+Implementation → Action plan → "Neuen Aktionspunkt erstellen"
+
+### Feature
+Due-date picker display value
+
+### Status
+**Confirmed** (2026-10-05, dev `frontv2`)
+
+### Description
+The calendar itself is localized ("Oktober 2026", "Mo Di Mi Do Fr Sa So"). After picking a day, the field shows `15 Oktober 2026`. The German long format requires a period after the day: `15. Oktober 2026`. The same date type on the Action plan cards is shown as `28.08.2026` (in both languages), and the Dashboard uses `21. Sept. 2026`. In English the picker shows `15 October 2026`, while the Dashboard shows `Sep 21, 2026`.
+
+### Expected Behaviour
+`15. Oktober 2026` (or `15.10.2026`), and one date style per language for the same kind of date.
+
+### Actual Behaviour
+`15 Oktober 2026`; three different styles across the app.
+
+### Root Cause (if known)
+Likely a hard-coded `d MMMM yyyy` pattern with only the month name localized.
+
+### Regression Risk
+Low — presentation only.
+
+### Areas Affected
+Action item drawer (create/edit), possibly other date pickers using the same component.
+
+### QA Notes
+Screenshot: `test-reports/screenshots/NUM_2026-10-05_de_action_item_date_selected.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Employment % Inputs Silently Truncate Decimals and Long Values ("12,5" → 12, "1500,50" → 15)
+
+### Module
+Operations → Team and staff → "Teamrolle erstellen" (key member)
+
+### Feature
+Employment % per year inputs
+
+### Status
+**Fixed** (re-verified 2026-10-20 in EN: `12.5` / `37.5` are kept in the input and Create is blocked with "Please enter a whole number" under each field; no request is sent. DE not re-checked. Was: Confirmed 2026-10-05, dev `frontv2`, both languages)
+
+### Description
+Typing `12,5` (DE) or `12.5` (EN) leaves `12`; typing `1500,50` leaves `15`. The decimal part and any digits beyond three are dropped silently, with no message. (The salary field in the same form has the separate 10×/100× issue — see "Integer-Only Numeric Inputs Drop the Decimal Separator".)
+
+### Expected Behaviour
+Either decimals are accepted (`12,5 %`), or the field blocks/announces the invalid input (e.g. "0–100, ganze Zahl").
+
+### Actual Behaviour
+The value is silently truncated.
+
+### Root Cause (if known)
+Input mask limited to 3 digits / integers without feedback.
+
+### Regression Risk
+Low–Medium — part-time percentages like 12,5 % or 37,5 % are stored wrong without notice.
+
+### Areas Affected
+Employment % grid in the key-member form.
+
+### QA Notes
+Found by typing the DE/EN acceptance cases into every numeric input of every form.
+
+### Workaround (if any)
+Enter whole percentages only.
+
+---
+
+## German Forms Show English Validation Messages, and Raw Schema Text in the Financing Form
+
+### Module
+Implementation → MVP / Action plan; Operations → Other → Location analysis; Financial → Funding & Setup
+
+### Feature
+Client-side form validation messages
+
+### Status
+**Confirmed** (2026-10-05, dev `frontv2`, project Autotest Project Karina)
+
+### Description
+With Deutsch selected, submitting these forms empty shows English validation texts (identical to the English UI):
+- MVP builder (`/mvp/manage`): "Client is required", "Feature name is required".
+- "Neuen Aktionspunkt erstellen": "Task name is required" (next to the German "Priorität ist erforderlich").
+- "Standort hinzufügen": "Location name must be at least 2 characters", "Address is required".
+- "Finanzierungsaktivität erstellen": "Expected 'issuing_equity' | 'issuing_debt', received null" (Typ), "Expected number, received null" (Betrag, Jahr) — raw schema-library text with internal enum values, in both languages.
+Other forms (Clients, Products, Competitors, Criteria, Marketing, Team, Resources, Risk, Create/Edit project, Sign-up) show German messages.
+
+### Expected Behaviour
+All validation messages are German and written for users.
+
+### Actual Behaviour
+English messages in three forms; raw technical text in the financing form.
+
+### Root Cause (if known)
+These schemas use hard-coded English messages or no custom message (default Zod text), instead of i18n keys.
+
+### Regression Risk
+Low–Medium — visible on every failed submit in German.
+
+### Areas Affected
+MVP builder, Action item drawer, Location drawer, Financing activity drawer. Same root cause as "Working Capital Validation Shows Raw Technical Text" (Working capital form).
+
+### QA Notes
+Found by an EN↔DE identical-string diff after an empty submit. Screenshots: `test-reports/screenshots/L10N_2026-10-05_de_mvp_validation_english.png`, `..._de_action_item_validation.png`, `..._de_location_validation.png`, `..._de_funding_activity_validation.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Further Untranslated Strings in the German UI (Create Entry, Action Item, MVP, AI Chat, Business Plan, ARIA)
+
+### Module
+Financial → Forecasts & Reports; Implementation; Assist me; Business plan; Global / auth pages
+
+### Feature
+UI translations (de)
+
+### Status
+**Confirmed** (2026-10-05, dev `frontv2`)
+
+### Description
+New English strings found in German, in addition to the earlier entries (which are still present):
+- Forecasts & Reports → "Eintrag erstellen": type toggle "Revenue / Expense".
+- "Neuen Aktionspunkt erstellen": Phase value/options "To Do / In Progress / In Review / Done"; empty owner list "Empty list". The Action plan board also has an "In Review" column in English.
+- MVP builder: feature type option "Core" (next to German "Optional").
+- Assist me drawer: input placeholder "Frag AI etwas..." uses the English "AI" while the disclaimer says "Die KI…"; screen-reader-only heading "AI Chat" and region label "Messages".
+- Business plan (editor, horizontal view, shared `?lang=de`): "Cash Conversion Cycle" in the Betriebskapital block; slider button text "Next slide".
+- Accessibility labels: "Close" (Share dialog, Business-Plan-Assistent widget), "Loading..." (app loader, reset-password page), "Show password", "Login image" (sign-in/sign-up), "Dismiss" (toast), "Notifications Alt+T" (toast region), image alt "Laravel" on the logo.
+
+### Expected Behaviour
+All UI strings German.
+
+### Actual Behaviour
+Mixed German/English.
+
+### Root Cause (if known)
+Missing i18n keys / hard-coded strings.
+
+### Regression Risk
+Low — presentation only.
+
+### Areas Affected
+See list above.
+
+### QA Notes
+EN↔DE identical-string diff over 40+ screens and their drawers/dropdowns. Screenshots: `test-reports/screenshots/L10N_2026-10-05_de_create_entry_revenue_expense.png`, `..._de_action_item_empty_list.png`, `..._de_ai_chat_header_english.png`, `..._de_bp_Teilen.png`, `..._de_shared_bp.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Working Capital Validation Shows Raw Technical Text "Expected number, received null"
+
+### Module
+Financial → Funding & Setup → Working capital
+
+### Feature
+DIO / DSO / DPO input validation
+
+### Status
+**Fixed** (re-tested 2026-10-07, dev `frontv2`: the message is now "This field is required", no request is sent, and the saved values stay after a reload. Cash conversion cycle still shows "0days" while the fields are empty.) — was: **Confirmed** (2026-10-05)
+
+### Description
+When DIO, DSO or DPO is cleared and **Save changes** is clicked, the save is now blocked (no request is sent — the earlier silent no-op is gone), but each empty field shows the raw schema-library message "Expected number, received null" in English. The placeholders show the defaults (30 / 60 / 30), but empty fields are not filled with them. While a field is empty, Cash conversion cycle treats it as 0 (DIO 30 + DSO empty − DPO 30 → "0days").
+
+### Expected Behaviour
+A plain, translated message such as "Enter a number of days (0 or more)", or empty fields fall back to the defaults 60 / 30 / 30.
+
+### Actual Behaviour
+"Expected number, received null" under each empty field; cycle calculated with 0 for the empty field.
+
+### Root Cause (if known)
+The default form-validation (Zod) error text is shown without a custom message.
+
+### Regression Risk
+Low — presentation only; no wrong data is saved.
+
+### Areas Affected
+Working capital form; possibly other forms using the same numeric validation.
+
+### QA Notes
+Backend validation is sound: `PUT /financial-settings` rejects null (required), negative (min 0), decimals (integer) and > 65535 with 422. Typing "-5" in the UI strips the minus and saves 5. Screenshot: `test-reports/screenshots/WC_2026-10-05_empty_fields_save.png`.
+
+### Workaround (if any)
+Enter 0 or the default value explicitly.
+
+---
+
+## Cash Flow Shows One Net "Working Capital" Line Instead of −ΔAR / −ΔInventory / +ΔAP
+
+### Module
+Financial → Forecasts & Reports → Cash flow
+
+### Feature
+Operating activities — working-capital movement
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`; re-tested 2026-10-05 and 2026-10-07, still present — `/cash-flow` still returns only `working_capital_change`, and the Cash flow tab, Business plan and PDF all show one line)
+
+### Description
+The requirement asks for the operating section to show −ΔAR, −ΔInventory and +ΔAP. The table shows a single net line "Working Capital" (ΔAR + ΔInventory − ΔAP) marked with a "−" operator icon. The math is correct and the section adds up (2026: Net Profit €219K − Working Capital €60K = Operating Cash Flow €159K), but the three components are not visible, and a release of working capital renders as a double negative ("−" icon next to `€-60K`, 2029).
+
+### Expected Behaviour
+Separate lines −ΔAR, −ΔInventory, +ΔAP (2026: −60 000 / −12 000 / +12 000), or a clearly signed net line.
+
+### Actual Behaviour
+One net line; double negative when working capital decreases.
+
+### Root Cause (if known)
+The API returns only the aggregated `working_capital_change`.
+
+### Regression Risk
+Low — presentation only.
+
+### Areas Affected
+Cash flow tab (and Business plan / PDF cash flow if it reuses the table).
+
+### QA Notes
+Initially suspected an inverted sign; the row's "−" operator icon shows it is subtracted, so the totals are consistent. Screenshot: `test-reports/screenshots/WC_2026-10-01_cf_defaults.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Marketing Funnel Deals Do Not Feed Revenue
+
+### Module
+Operations → Marketing channels → Financial (Income)
+
+### Feature
+Funnel "Final Result" deals → product revenue
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`, project Autotest Project Karina; targeted re-test 2026-10-07: still present — channel 100 × 10% = 10 deals (POST 201), then 20% = 20 deals (PUT 200); revenue 204 012 / 254 012 and the product 369 / client 408 line `1000 × 100` / `1000 × 125` unchanged; `revenue_breakdown` sources still `product` only. Report: `test-reports/Marketing_Funnel_Revenue_Retest_Test_Report.md`)
+
+### Description
+The funnel now recalculates deals correctly (Leads × conversion of each step) and saves them, but the deals have no effect on revenue. Channel linked to product "Autotest Product 1789997843929-1" (price 1 000) and client 408: deals changed 10 → 20 → 200 (and 100 with two steps), while `financial-evaluation` revenue for that product/client stayed `1000 × 100 = 100 000` in 2027 (the attached-client quantity) and total revenue stayed unchanged. The revenue breakdown contains only `source: "product"` items; there is no marketing/deals source.
+
+### Expected Behaviour
+Per the requirement: recalculated deals flow into revenue (100 leads × 10 % → 10 deals; 20 % → 20 deals and revenue increases).
+
+### Actual Behaviour
+Revenue is independent of funnel deals.
+
+### Root Cause (if known)
+Revenue is still computed from the client quantity attached to the product (Attach clients), not from funnel deals.
+
+### Regression Risk
+High — the marketing plan has no effect on the financial model, which contradicts the requirement.
+
+### Areas Affected
+Income statement revenue, Dashboard financial tiles, Business plan financials.
+
+### QA Notes
+Verified via `GET /financial-evaluation` before/after each Update. Screenshot: `test-reports/screenshots/FUN_2026-10-01_en_edit_20pct_live.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Investment Resources Cannot Be Created — "Useful life" Field Missing, Backend Still Requires `amortization_period`
+
+### Module
+Operations → Resources (Investment)
+
+### Feature
+Create / Edit resource — useful life of an investment
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`)
+
+### Description
+The Investment form has neither the new "Useful life, years" field nor the old "Amortization period" field (create and edit, EN and DE). On create the frontend sends `amortization_period: null`, and `POST /resources` returns 422 "The amortization period field is required when cost type is investment." The dialog stays open with no message. Edit still works because the hidden stored value is sent back unchanged, but the user cannot see or change the useful life.
+
+### Expected Behaviour
+A required "Useful life, years" field on Investment resources (create and edit), saved to the backend; creation succeeds.
+
+### Actual Behaviour
+No field. Every new Investment resource fails silently with 422.
+
+### Root Cause (if known)
+The old field was removed from the form, but the new one was not added (or not deployed). The backend still validates `amortization_period` (required, integer 1–100).
+
+### Regression Risk
+Critical — blocks a core create flow and the whole CAPEX / D&A feature.
+
+### Areas Affected
+Resources create/edit, CAPEX, D&A, Fixed assets, Cash flow, Business plan financials.
+
+### QA Notes
+Payload: `{"cost_type":"investment","amortization_period":null,"yearly_costs":[{"year":2027,"cost":100}]}` → 422. Screenshots: `test-reports/screenshots/UL_2026-10-01_en_investment_form_no_useful_life.png`, `UL_2026-10-01_en_create_investment_422.png`.
+
+### Workaround (if any)
+None in the UI.
+
+---
+
+## Existing Investments' Amortization Period (Stored in Months) Is Now Read as Years — D&A Understated 12×
+
+### Module
+Financial → Forecasts & Reports (Income, Cash flow, Balance sheet)
+
+### Feature
+Depreciation & amortisation calculation
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`, project Dior Brand)
+
+### Description
+The backend now computes yearly D&A = purchase cost / `amortization_period`, treating the value as years (per-purchase, starting in the purchase year — correct for the new rule). Existing resources were entered when the field meant **months** (36, 48, 60, 84, 96), and no migration converted them. Example: POS terminals 45 000, 36 months (3 years) → D&A 1 250/year instead of 15 000/year. Dior 2027 D&A is 22 083 instead of 265 000 (12× lower). Net fixed assets and EBIT are overstated by the same amount.
+
+### Expected Behaviour
+Legacy month values are converted to years (÷12, rounded per a product rule) or flagged for the user to re-enter, so D&A stays correct.
+
+### Actual Behaviour
+Legacy values are used as years.
+
+### Root Cause (if known)
+Unit change from months to years without a data migration. The field name and validation (1–100) are also unchanged.
+
+### Regression Risk
+High — silently changes EBIT, net profit, tax, and the balance sheet of every existing project with investments.
+
+### Areas Affected
+All projects with Investment resources created before this change.
+
+### QA Notes
+Verified by recomputing every Dior depreciation item from `/resources` vs `/financial-evaluation` (exact match to cost / value-as-years). Screenshot: `test-reports/screenshots/UL_2026-10-01_en_dior_income_da_understated.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Weighted-Score Summary Uses English Decimals in German (Mixed With German Decimals on the Same Card)
+
+### Module
+Operations → Other (Location Analysis, Supplier Analysis)
+
+### Feature
+"Bester Standort / Höchste Punktzahl / Durchschnitt" summary under the comparison matrix
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`, project Dior Brand)
+
+### Description
+In German, the matrix footer "Gewichtete Punktzahl" shows `7,9 · 7,6 · 7,5` (correct), but the summary right below it shows `7.9 Höchste Punktzahl` and `7.7 Durchschnitt` (English decimal point). The same value appears in two formats on one card.
+
+### Expected Behaviour
+`7,9` / `7,7` in German, `7.9` / `7.7` in English.
+
+### Actual Behaviour
+Always `7.9` / `7.7` regardless of language.
+
+### Root Cause (if known)
+The summary values are rendered with `toFixed(1)` / raw string instead of the locale number formatter.
+
+### Regression Risk
+Low (display only).
+
+### Areas Affected
+Location Analysis and Supplier Analysis summaries (and likely the Competitors equivalent if it has one).
+
+### QA Notes
+Found by an automated EN↔DE comparison of identical numeric tokens. Screenshot: `test-reports/screenshots/L10N_2026-10-01_de_location_score_7_9.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## German Business Plan Keeps AI-Generated Text in English With English Number Formats
+
+### Module
+Business plan (editor and shared link `?lang=de`)
+
+### Feature
+AI-generated narrative sections (Management Summary, Clients, Products …)
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`, project Autotest Project Karina)
+
+### Description
+With German selected, all UI labels and table numbers in the plan are German (`1.500,50`), but the AI-written paragraphs stay in English, including their numbers: "The model forecasts CHF 200,000 revenue and CHF 108,749.25 net profit…", "54.37% profitability". The same plan also mixes currency notation: the AI text uses `CHF`, the UI uses `₣`.
+
+### Expected Behaviour
+A German plan has German text and German number formatting (or the generated text is regenerated/translated for the selected language).
+
+### Actual Behaviour
+English prose with English numbers inside a German document.
+
+### Root Cause (if known)
+The narrative is generated once in the language active at generation time and stored as plain text; it is not localized on language change.
+
+### Regression Risk
+Medium — the business plan is the main shareable output for German-speaking investors.
+
+### Areas Affected
+All AI-generated sections of the business plan; shared link and PDF export.
+
+### QA Notes
+Related to the 2026-09-30 observation that Dior's AI text was frozen in Ukrainian format. Screenshot: `test-reports/screenshots/L10N_2026-10-01_de_business_plan_ai_text_english.png`.
+
+### Workaround (if any)
+Regenerate the plan while the UI is in German (not verified).
+
+---
+
+## More Untranslated Strings in the German UI (Statuses, MVP, Funnel, Charts, ARIA)
+
+### Module
+Implementation (Action plan, MVP), Operations (Team and staff, Marketing funnel, Other → IP Rights), Charts, Global ARIA labels
+
+### Feature
+German localization (Deutsch)
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`)
+
+### Description
+In addition to the strings in "German UI Still Contains Untranslated English Strings", these remain English in German: Action plan board columns "To Do / In Progress / Done"; IP Rights "Registrierungsstatus" options "Not Filed / Pending / Registered / Rejected / Expired"; MVP builder hint "Define the core features that will be included in your MVP. At least one core feature is required to proceed."; Team and staff subtitle "Manage team members, roles, and staff responsibilities."; funnel step name "Step 1" (also saved to the backend as the step name); chart tooltip series "revenue / expenses"; ARIA labels "Next slide / Previous slide / Go to slide N", "Open navigation", "Close drawer", "Breadcrumb". Translation quality: Location/Supplier summary reads "Stärke des Führers / Schwäche des Führers" — "Führer" has a strong negative connotation in German; "Spitzenreiter" is the usual term.
+
+### Expected Behaviour
+All UI strings German.
+
+### Actual Behaviour
+Mixed German/English.
+
+### Root Cause (if known)
+Hardcoded strings / missing DE keys; status enums rendered from raw values.
+
+### Regression Risk
+Low–Medium (status columns are very visible; "Führer" wording is reputationally sensitive).
+
+### Areas Affected
+See description.
+
+### QA Notes
+Found by EN↔DE identical-string comparison over 18 page states × 3 projects plus 9 create forms. Screenshots: `test-reports/screenshots/L10N_2026-10-01_de_action_plan_status_english.png`, `..._de_ip_rights_status_options.png`, `..._de_mvp_core_features_english.png`, `..._de_team_subtitle_english.png`, `..._de_funnel_step.png`, `..._de_chart_tooltip.png`, `..._de_location_score_7_9.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Shared Business Plan Without `?lang` Uses the Viewer's Saved App Language Instead of English
+
+### Module
+Business plan → Share (public link `/shared/business-plan/{id}`)
+
+### Feature
+Language selection of the public business-plan page
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`)
+
+### Description
+The public link is expected to render in English when it has no `lang` parameter. In a fresh browser (no stored language) it does. But in a browser where the GetLaunched app language was set to German (`localStorage.language = "de"`), the same link without `?lang` renders in German (`<html lang="de">`, "Inhaltsverzeichnis"). `?lang=de` → German and `?lang=en` → English work correctly in both cases.
+
+### Expected Behaviour
+No `lang` parameter → English, regardless of the viewer's saved app language.
+
+### Actual Behaviour
+No `lang` parameter → falls back to the viewer's saved app language (German).
+
+### Root Cause (if known)
+Likely the shared page falls back to the app's stored `language` key when `lang` is absent, instead of defaulting to `en`.
+
+### Regression Risk
+Low — affects only viewers who use the app in German themselves (e.g. the plan owner checking their own link).
+
+### Areas Affected
+Shared business plan page.
+
+### QA Notes
+Reproduce: set app language to Deutsch → open the share link without `?lang`. Fresh/incognito context shows English. If falling back to the viewer's language is intended, the acceptance criterion needs updating instead.
+
+### Workaround (if any)
+Always share the link with an explicit `?lang=en` / `?lang=de`.
+
+---
+
+## German UI Still Contains Untranslated English Strings
+
+### Module
+Global (sidebar), Operations → Resources, Project settings (Edit project), Shared business plan
+
+### Feature
+German localization (Deutsch)
+
+### Status
+**Confirmed** (2026-10-01, dev `frontv2`)
+
+### Description
+With the language switched to Deutsch, most of the UI is German, but these strings stay in English: the sidebar collapse button (☰ next to the logo) has an English accessible name on every page — `aria-label="Collapse sidebar"` + `sr-only` text "Collapse" (not visible on screen, screen readers only); Operations → Resources header "Operational resources" and subtitle "Manage the resources, tools, and assets your team uses."; Edit project placeholders "Select..." (Domizil) and "Type tax" (Einkommensteuer (%)); the "Management Summary" section heading in the German business plan / shared plan (`?lang=de`). ("Powered by" next to the getLaunched logo also stays English — possibly intentional branding.)
+
+### Expected Behaviour
+Every UI string is German when Deutsch is selected.
+
+### Actual Behaviour
+Mixed German/English UI.
+
+### Root Cause (if known)
+Strings hardcoded or missing from the DE translation file.
+
+### Regression Risk
+Low (cosmetic; the sidebar string is accessibility-only).
+
+### Areas Affected
+Sidebar, Resources, Edit project, Business plan.
+
+### QA Notes
+Found with a text-node sweep of 16 project routes in DE. No English flash on reload — the app loader is German too ("Anwendung wird geladen..."). Screenshots: `test-reports/screenshots/AuditFix_2026-10-01_de_*`.
+
+### Workaround (if any)
+—
+
+---
+
+## Integer-Only Numeric Inputs Drop the Decimal Separator and Multiply the Value
+
+### Module
+Operations → Team and staff, Marketing channels (funnel), Resources
+
+### Feature
+Numeric inputs (Salary, Funnel cost, Conversion rate %, Resource cost, Line-staff quantity)
+
+### Status
+**Confirmed** (2026-09-30, EN and DE)
+
+### Description
+Typing a decimal separator (`,` in DE, `.` in EN) in these fields discards it and joins the digits: Salary `12,5` → `125`, `1500,50` → `150.050`; Funnel conversion `2,5` → `25`, `12,75` → `1.275` (>100% accepted), `0,1` → `1`; Funnel cost and Resource cost `1500,50` → `150.050`. The inflated value is saved (funnel POST sent `cost: 150050, conversion_rate: 25`, 201). Product price/cost, Funding amount, Interest rate, Repayment and Project tax are NOT affected — they keep decimals correctly.
+
+### Expected Behaviour
+Decimals are kept (`12,5` stays `12,5`), or the separator is blocked/rejected with a message.
+
+### Actual Behaviour
+Silent 10×–100× value, saved to the backend.
+
+### Root Cause (if known)
+These fields use an integer-only input, not the new locale-aware decimal input used by Product price / Funding.
+
+### Regression Risk
+High — corrupts OPEX, funnel deals, break-even and the Business plan.
+
+### Areas Affected
+Team and staff (Key members and Line staff), Marketing funnel step, Resources (Investment and Running costs).
+
+### QA Notes
+Related to the older "Assist me Marketing Funnel: Decimal Conversion Rate Is Rounded" entry (same integer-only field), but this one is manual input and multiplies instead of rounding. Screenshots: `test-reports/screenshots/L10N_2026-09-30_*`.
+
+### Workaround (if any)
+Type whole numbers only.
+
+---
+
+## Zero Totals in Operations Summary Tiles Render as "0000"
+
+### Module
+Operations (Team and staff, Marketing channels, Resources)
+
+### Feature
+Header total tile
+
+### Status
+**Not a bug — by design** (confirmed by the product owner on 2026-10-05; the "0000" placeholder in zero-total tiles is intentional. Was: Confirmed)
+
+### Description
+With a zero total, "Total salary costs", "Total for channels" and "Total cost" show `₣ 0000` / `€ 0000`.
+
+### Expected Behaviour
+`₣ 0` / `€ 0`.
+
+### Actual Behaviour
+`0000`.
+
+### Root Cause (if known)
+Unknown (tile-specific formatter).
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Operations header tiles.
+
+### QA Notes
+Other zero amounts (Funding & Setup) render `₣0` correctly.
+
+### Workaround (if any)
+—
+
+---
+
+## CHF Amounts Use the "₣" (French Franc) Sign
+
+### Module
+Global — currency formatting
+
+### Feature
+Currency symbol for CHF projects
+
+### Status
+**Confirmed** (2026-09-30, EN and DE)
+
+### Description
+A project in Swiss Franc shows every amount as `₣…` (dashboard, product cards, input adornments, Funding, Team).
+
+### Expected Behaviour
+`CHF 1.500,50` (standard `Intl` output for CHF in en/de).
+
+### Actual Behaviour
+`₣1,5K`, `₣ 500,00`.
+
+### Root Cause (if known)
+Custom currency-symbol map.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+All money values in CHF projects.
+
+### QA Notes
+—
+
+### Workaround (if any)
+—
+
+---
+
+## Some Counts Are Not Thousands-Grouped
+
+### Module
+Dashboard; Operations → Team and staff
+
+### Feature
+"Products purchased by customers" matrix; Line-staff card count
+
+### Status
+**Confirmed** (2026-09-30, EN and DE)
+
+### Description
+Matrix shows `5904`; the Line-staff card/detail shows `1000 personnel` / `1000 Personal`, while the same modal's per-year grid shows `1.000`.
+
+### Expected Behaviour
+`5.904`, `1.000 Personal`.
+
+### Actual Behaviour
+Raw integers.
+
+### Root Cause (if known)
+Values bypass the number formatter.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Dashboard, Team and staff.
+
+### QA Notes
+—
+
+### Workaround (if any)
+—
+
+---
+
+## Count Labels Ignore Plural Rules
+
+### Module
+Dashboard, Competitors, Products, Business plan
+
+### Feature
+Count + noun labels
+
+### Status
+**Confirmed** (2026-09-30)
+
+### Description
+EN: `1 competitors:`, `9 Location`, `1 criteria`, `0 Client`, `1 active clients`. DE: `9 Standort(e)`, `1 Kriterien`, `0 Kunde`, `1 aktive Kunden`.
+
+### Expected Behaviour
+Singular for 1, plural for 0 and 2+ (EN/DE).
+
+### Actual Behaviour
+Fixed noun form or "(e)" suffix.
+
+### Root Cause (if known)
+No i18n plural handling for these strings.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Dashboard widgets, Competitors header, Product cards, Business plan product list.
+
+### QA Notes
+`3 Clients`, `10 criteria`, `9 Suppliers` render correctly.
+
+### Workaround (if any)
+—
+
+---
+
+## Mixed Number Styles Within One Page (Compact vs. Full, 0 vs. 2 Decimals)
+
+### Module
+Products / Services; Financial → Funding & Setup, Forecasts & Reports
+
+### Feature
+Amount display
+
+### Status
+**Confirmed** (2026-09-30, EN and DE)
+
+### Description
+Product cards: `₣ 500,00` for <1000 but `₣1,5K` for ≥1000. Loan card: `₣1,5K` and `₣1.501` for the same amount. Income tab full amounts vs. Cash flow/Balance sheet compact `M/K`. Edit Product shows saved price `1.500,5` next to margin `1.488,00`.
+
+### Expected Behaviour
+One style per component; trailing zero kept for currency.
+
+### Actual Behaviour
+Styles mixed within one view.
+
+### Root Cause (if known)
+Different formatters per component.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Products list, Funding cards, Forecasts tabs, Edit Product.
+
+### QA Notes
+Separators themselves are correct for the locale.
+
+### Workaround (if any)
+—
+
+---
+
+## Create Financing Activity Offers a Year the Backend Rejects (422, No Message)
+
+### Module
+Financial → Funding & Setup
+
+### Feature
+Create activity — Year dropdown
+
+### Status
+**Partially fixed** (2026-10-01: an error toast now appears, but it shows the raw backend text "Das Feld year muss mindestens 2027 sein." and 2026 is still offered. Was: Confirmed 2026-09-30, no message)
+
+### Description
+Year dropdown lists 2026/2027/2028; submitting with 2026 returns 422 and the dialog shows nothing. 2027 works (201).
+
+### Expected Behaviour
+Invalid year not offered, or a validation message.
+
+### Actual Behaviour
+Silent failure.
+
+### Root Cause (if known)
+Dropdown not aligned with backend year range.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Funding & Setup.
+
+### QA Notes
+Found incidentally during the localization session.
+
+### Workaround (if any)
+Pick a later year.
+
+---
+
+## Create MVP Form: AI Does Not Fill the Form Until a Target Segment Is Picked Manually
+
+### Module
+Implementation → MVP — Create MVP form
+
+### Feature
+In-form Assist me (AI form-fill)
+
+### Status
+**Confirmed** (2026-09-28, 3/3 runs; re-checked the same day with "Заповни
+поля MVP рандомно": 0 fields filled in 2/2 runs without a segment; 17
+fields filled with a segment pre-selected; nothing saved). Also checked
+by giving the segment in the chat instead of the field: naming it exactly
+(2/2) → "не вдалося зіставити з наявним сегментом, виберіть у полі"; "обери
+будь-який сегмент сам" (1/1) → the AI wrongly claims the project has no
+segment IDs (it has 2) and tells the user to hand the task to the "агент
+клієнтів". 0 fields filled in all 3 runs, so the chat is no workaround.
+
+### Description
+The form's default context sends `client_ids: [0]` (no segment selected).
+For both "Створи мені MVP" and the follow-up "Придумай усі значення сам і
+заповни всі поля форми", the agent returns no `draft` and asks the user to
+pick a segment first. It says it can't see segment names ("їхні назви не
+відображені в доступному контексті") and that ID 0 matches no segment. With
+a segment pre-selected manually, the same prompt fills the whole form on
+the first try (4/4).
+
+### Expected Behaviour
+The AI fills the form, picking an existing segment itself or leaving the
+segment empty, as the Marketing channel form does (it picks `client_id`
+itself).
+
+### Actual Behaviour
+Nothing is filled until the user manually selects the Target segment.
+
+### Root Cause (if known)
+The MVP agent context carries no list of available segments, and the form
+sends a placeholder `0` instead of an empty array.
+
+### Regression Risk
+Medium.
+
+### Areas Affected
+Create MVP form.
+
+### QA Notes
+—
+
+### Workaround (if any)
+Select Target segment first, then use Assist me.
+
+---
+
+## Page-Level Assist me Creates and Saves an MVP Immediately With AI-Invented Content
+
+### Module
+Implementation → MVP list (page-level AI side panel)
+
+### Feature
+Agent create action from the side panel
+
+### Status
+**Confirmed** (2026-09-28)
+
+### Description
+On the MVP list (context `screen: implementation/mvp`), the side panel
+prompt "Створи мені MVP" immediately returned `{type: "action", entity:
+"mvp", operation: "created", id: "92"}`. An MVP with fully AI-invented
+content ("Тестовий MVP цифрового сервісу") was saved, with no preview and
+no confirmation step. The follow-up "Придумай усі значення сам і заповни
+всі поля форми" got "Форму MVP заповнено … без збереження запису", although
+no form was open and nothing was filled.
+
+### Expected Behaviour
+Per the MVP/AI task: the final Create happens only after explicit user
+confirmation. The AI should show the proposed content (or open a prefilled
+form) and ask before saving.
+
+### Actual Behaviour
+The record is saved immediately. A later reply claims a form was filled
+that doesn't exist.
+
+### Root Cause (if known)
+The side-panel agent has a direct create tool with no confirmation step.
+
+### Regression Risk
+High: unreviewed records are written to user data.
+
+### Areas Affected
+MVP (verified). Possibly other entities created from the side panel (not
+verified).
+
+### QA Notes
+MVP #92 was deleted after the test.
+
+### Workaround (if any)
+Create MVPs only from the Create MVP form.
+
+---
+
+## Assist me in the Create MVP Form Saves an MVP Directly Instead of Filling the Form
+
+### Module
+Implementation → MVP — Create MVP form
+
+### Feature
+In-form "Assist me" (AI form-fill)
+
+### Status
+**Fixed** for the in-form flow (was: Confirmed 2026-09-24). Re-tested
+2026-09-28: the form now sends `context.modal = {entity: "mvp", values}`.
+In 8 in-form runs there were 0 unrequested saves and 0 `action` events.
+"Збережи це MVP" gets the answer "натисніть кнопку Зберегти у формі". With
+a segment selected, the `draft` fills every field, and Create MVP then
+saves it (201). Remaining issues are split into two new entries:
+"AI Does Not Fill the Form Until a Target Segment Is Picked Manually"
+(in-form) and "Page-Level Assist me Creates and Saves an MVP Immediately"
+(side panel).
+
+### Description
+The Create MVP form has an Assist me button, but its chat request carries
+only `context: {screen: "mvp/manage"}`, with no `modal.entity` and no
+`values`, unlike every working form. With the prompt "Створи мені MVP.
+Придумай усі значення сам і заповни всі поля форми" the agent returned
+`{type: "action", entity: "mvp", operation: "created", id: "88"}` and
+replied "MVP створено та збережено у статусі чернетки". The MVP was
+persisted to the project without the user pressing Create. The form fields
+stayed empty. In another run (separate conversation) the agent only
+described the values in chat. There was no `draft` event and nothing was
+filled.
+
+### Expected Behaviour
+Same as other forms: a `draft` event fills the form, and nothing is saved
+until the user clicks Create MVP.
+
+### Actual Behaviour
+Either nothing is filled, or an MVP is silently created and saved.
+
+### Root Cause (if known)
+The MVP form doesn't pass modal context to the agent, so the agent runs in
+general "auto" mode and uses its create-tool.
+
+### Regression Risk
+High: unexpected writes to user data from a "fill the form" request.
+
+### Areas Affected
+MVP list and anything reading MVPs (Dashboard, Business Plan).
+
+### QA Notes
+Created MVP id 88 was deleted manually after the session.
+
+### Workaround (if any)
+None. Don't use Assist me on Create MVP.
+
+---
+
+## Assist me in "Create new action item" Never Fills the Form
+
+### Module
+Implementation → Action plan — Create new action item modal
+
+### Feature
+In-form Assist me
+
+### Status
+**Confirmed** (2026-09-24, 3/3 runs)
+
+### Description
+The modal sends correct context (`entity: action_item`, values incl.
+`stage_id`). The agent lists proposed values (name, description, priority,
+deadline, stage) in chat, but never emits a `draft` event, so Name and
+Description stay empty. It justifies this with "у проєкті немає учасника
+команди, а поле «Відповідальний» вимагає вибрати існуючу людину", but
+Assignee is optional in this form (`tests/helpers/action-plan.helper.js`:
+only Name and Priority are required).
+
+### Expected Behaviour
+The form is filled via `draft`, and Assignee is left empty.
+
+### Actual Behaviour
+The form stays empty, and the AI claims a non-required field is required.
+
+### Root Cause (if known)
+Likely the agent's action_item draft schema marks `assignee_id` as
+required.
+
+### Regression Risk
+Medium.
+
+### Areas Affected
+Action plan.
+
+### QA Notes
+Test project has no team members. Re-test with at least one team member
+to see if it then fills.
+
+### Workaround (if any)
+Fill manually.
+
+---
+
+## Assist me Is Missing From 6 Create Forms
+
+### Module
+Magic Triangle → Competitors; Operations → Other; Financial
+
+### Feature
+In-form Assist me availability
+
+### Status
+**Confirmed** (2026-09-24)
+
+### Description
+No Assist me button exists inside these create modals (0 matches in the
+dialog; page-level button is inert/hidden behind the modal):
+Evaluation criteria (Competitors), Add location, Add supplier, Criteria
+Configuration (Location Analysis), Create entry (Forecasts & Reports →
+Income), Create activity (Funding & Setup). The other 9 create forms
+(Client, Product, Competitor, Marketing channel, Team role, Resource, Risk,
+Action item, MVP) do have it.
+
+### Expected Behaviour
+Assist me is available in every create form of the project.
+
+### Actual Behaviour
+It is absent from 6 of 15 forms.
+
+### Root Cause (if known)
+The in-form Assist me is not wired into these modal components.
+
+### Regression Risk
+Medium: feature gap and inconsistency.
+
+### Areas Affected
+Listed forms. Supplier "Criteria Configuration" uses the same component
+and is presumably affected too (not separately opened).
+
+### QA Notes
+The alternative (page-level side panel) fails for "create location", see
+next entry.
+
+### Workaround (if any)
+Fill manually.
+
+---
+
+## Page-Level Assist me Hangs Indefinitely on "Create a Location" Request
+
+### Module
+Operations → Other (page-level AI side panel)
+
+### Feature
+Agent create requests from the side-panel chat
+
+### Status
+**Confirmed** (2026-09-24, 2/2 runs)
+
+### Description
+Operations → Other → Assist me (side panel, mode "Auto") → "Створи мені
+локацію. Придумай усі значення сам і заповни всі поля форми". A spinner
+shows, and `POST /agent/chat/stream` returned no response within 90 s (run
+1) and 240 s (run 2, after which the client fired `POST /agent/chat`).
+No reply, no error, and no location was created. Control: a simple
+question in the same panel ("Скільки продуктів у моєму проєкті?")
+answered in 14 s.
+
+### Expected Behaviour
+A reply within a reasonable time: create/draft the location, or explain
+why not. On failure, show an error instead of an endless spinner.
+
+### Actual Behaviour
+Endless spinner, and nothing happens.
+
+### Root Cause (if known)
+Unknown (agent tool call for location hangs / times out server-side).
+
+### Regression Risk
+Medium.
+
+### Areas Affected
+Page-level chat create actions (only "location" verified).
+
+### QA Notes
+—
+
+### Workaround (if any)
+None.
+
+---
+
+## In-Form Assist me Chat Shows Raw Markdown (`**bold**`)
+
+### Module
+Global: in-form Assist me chat popover (all create modals that have it)
+
+### Feature
+AI reply rendering
+
+### Status
+**Confirmed** (2026-09-24)
+
+### Description
+Replies inside the in-form chat render literal Markdown markers, e.g.
+"- **Назва:** Автоматизований моніторинг…". The page-level side panel
+renders the same kind of reply correctly ("**10 продуктів**" shown in
+bold).
+
+### Expected Behaviour
+Markdown is rendered (bold and lists), as in the side panel.
+
+### Actual Behaviour
+Raw `**` and `-` markers are shown.
+
+### Root Cause (if known)
+The in-form popover renders plain text instead of using the Markdown
+renderer.
+
+### Regression Risk
+Low: cosmetic, but seen on every AI reply.
+
+### Areas Affected
+All 9 forms with in-form Assist me.
+
+### QA Notes
+Screenshot: `test-reports/screenshots/AssistMe_2026-09-24_product_filled_raw_markdown.png`.
+
+### Workaround (if any)
+—
+
+---
+
+## Assist me Marketing Funnel: Decimal Conversion Rate Is Rounded When Applied
+
+### Module
+Operations → Marketing channels — Create channel, step 2 (Sales funnels)
+
+### Feature
+AI draft → funnel step fields
+
+### Status
+**Confirmed** (2026-09-24, 1 observation)
+
+### Description
+The agent's draft contained `conversion_rate: 2.6` for the first funnel
+step. After it was applied, the step's "Conversion rate, %" input showed
+**3**. Other steps (10, 100) were applied exactly.
+
+### Expected Behaviour
+2.6 is kept, or the agent only proposes values the field accepts.
+
+### Actual Behaviour
+The value is silently rounded to 3, which changes funnel math (Final
+Result).
+
+### Root Cause (if known)
+The field is integer-only while the agent returns decimals.
+
+### Regression Risk
+Low.
+
+### Areas Affected
+Marketing channel funnel.
+
+### QA Notes
+—
+
+### Workaround (if any)
+Correct manually.
+
+---
+
+## Working Capital Defaults (DIO/DSO/DPO) Are Displayed but Not Applied Until "Save changes" Is Clicked
+
+### Module
+Financial → Funding & Setup (Working capital) → Forecasts & Reports (Balance sheet, Cash flow)
+
+### Feature
+Working capital settings driving Inventory / Accounts Receivable / Accounts Payable
+
+### Status
+**Fixed** (2026-10-01: on projects with `is_configured: false` — Dior Brand and a freshly created project — the defaults 60/30/30 are applied without Save; fresh project Revenue 365 000 / COGS 146 000 → AR 60 000, Inventory 12 000, AP 12 000. Was: Confirmed 2026-09-23)
+
+### Description
+On a project whose working-capital settings were never saved,
+`GET /financial-settings` returns `{dso: 60, dpo: 30, dio: 30,
+is_configured: false}` and Funding & Setup renders those values pre-filled
+in the DIO/DSO/DPO inputs with a computed "Cash conversion cycle: 60 days".
+But the Balance sheet ignores them: with COGS = 55,000 (2027), Inventory,
+Accounts Receivable and Accounts Payable were all 0, and Cash flow's
+"Working Capital" row was 0. Clicking **Save changes** without changing any
+value (30/60/30) flips `is_configured` to `true`, and only then does the
+Balance sheet show Inventory 4,520.55 (= 55,000 / 365 × 30), AR 32,876.71,
+AP 4,520.55.
+
+### Expected Behaviour
+Either the displayed defaults are actually applied to the Balance sheet /
+Cash flow, or the inputs are shown empty (or explicitly labeled "not
+configured") so the user isn't told a 60-day cycle is in effect when it
+isn't.
+
+### Actual Behaviour
+The UI shows a working-capital configuration that has no effect on any
+statement until an explicit, no-op Save.
+
+### Root Cause (if known)
+Backend computes working-capital lines only when `is_configured = true`,
+while the frontend renders the default values as if they were configured.
+
+### Regression Risk
+High for the Cost type task specifically: acceptance criterion "COGS
+100,000, DIO 30 → Inventory 8,219" only holds after Save; on an untouched
+project Inventory is always 0 regardless of cost type, which masks both
+correct and incorrect behavior.
+
+### Areas Affected
+Balance sheet (Inventory, AR, AP, Cash), Cash flow (Working Capital,
+Operating Cash Flow), Funding & Setup.
+
+### QA Notes
+Reproduced on "Autotest Project Karina" 2026-09-23. After this session the
+project's settings are saved (30/60/30, `is_configured: true`), so repro
+needs a project that never saved working-capital settings. When testing
+Inventory math, always Save working capital first.
+
+### Workaround (if any)
+Click "Save changes" on Funding & Setup once per project.
+
+---
+
+## Variable Production Cost Is Marked Required but an Empty Value Is Silently Saved as 0
+
+### Module
+Magic Triangle → Products / Services — Create/Edit product, step 1
+
+### Feature
+Variable production cost (`#productionCost`) validation
+
+### Status
+**Fixed — resolved by making the field optional** (was: Confirmed
+2026-09-23). Re-tested 2026-09-28: the required asterisk was removed from
+the "Variable production cost" label (other step-1 fields keep theirs, and
+there is no `aria-required`). An empty value is still allowed and saved as
+`variable_cost: 0` on Create (201) and Edit (200), which is now consistent
+with the label. **Open requirement conflict:** the Cost type task says the
+field "stays mandatory". Pending a Product Owner decision; if the field
+must be mandatory, reopen this entry.
+
+### Description
+The field label carries a required asterisk ("Variable production cost*"),
+and the Cost type task explicitly keeps `variable_production_cost`
+mandatory. Clicking Next on an empty form shows errors for Name, Revenue
+type and Selling price only — none for Variable production cost. Leaving it
+empty and creating the product succeeds (201) with `variable_cost: 0` in
+the request payload.
+
+### Expected Behaviour
+"Production cost is required" validation, Next blocked, like Selling price.
+
+### Actual Behaviour
+Empty value accepted and persisted as 0 — the product has zero COGS / Other
+direct cost with no warning.
+
+### Root Cause (if known)
+Frontend form schema does not mark the field required and coerces empty to
+0; backend accepts 0.
+
+### Regression Risk
+Medium — silently inflates Gross profit/EBITDA for products where the user
+simply forgot the cost.
+
+### Areas Affected
+Products create/edit, Income statement (COGS / Other direct costs),
+Inventory.
+
+### QA Notes
+Repro: Create product → Name, One-time, price 100, leave cost empty → Next →
+Create → POST body has `"variable_cost":0`.
+
+### Workaround (if any)
+None.
+
+---
+
+## Create Product — "Revenue type is required" Error Stays Visible After a Revenue Type Is Selected
+
+### Module
+Magic Triangle → Products / Services — Create product, step 1
+
+### Feature
+Inline validation for the Revenue type custom dropdown
+
+### Status
+**Fixed** (was: Confirmed 2026-09-23). Re-verified 2026-09-28: after an
+empty Next, each error clears as soon as its field is filled (Name,
+Revenue type, Selling price). "Price is required" correctly re-appears
+when the price is cleared again.
+
+### Description
+Click Next on an empty form → "Revenue type is required" appears. Select
+any Revenue type (e.g. Subscription): the dropdown shows the selection, but
+the error stays (verified 1.5 s later, and still present after switching
+Hourly → Subscription again).
+
+### Expected Behaviour
+The error clears as soon as a valid value is selected, like text inputs.
+
+### Actual Behaviour
+Stale error remains until the next submit attempt.
+
+### Root Cause (if known)
+Not confirmed — likely the custom dropdown doesn't trigger field
+re-validation on change.
+
+### Regression Risk
+Low — cosmetic, but confusing on a form that now has four dropdowns.
+
+### Areas Affected
+Create product step 1 (possibly other custom dropdowns app-wide — not
+verified).
+
+### QA Notes
+—
+
+### Workaround (if any)
+Click Next again.
+
+---
+
+## Escape With an Open Dropdown Closes the Whole Create Product Drawer and Discards Input
+
+### Module
+Magic Triangle → Products / Services — Create product
+
+### Feature
+Keyboard handling of custom dropdowns inside the drawer
+
+### Status
+**Confirmed** (2026-09-23, reproduced twice)
+
+### Description
+With data typed in the Create product drawer, open any custom dropdown
+(Sourcing, Subscription type) and press Escape: instead of closing only the
+listbox, the entire drawer closes and all entered data is lost, with no
+"discard changes?" prompt.
+
+### Expected Behaviour
+First Escape closes only the open listbox (WAI-ARIA listbox pattern); the
+drawer stays open.
+
+### Actual Behaviour
+Drawer closes; typed data is lost.
+
+### Root Cause (if known)
+Escape keydown propagates from the listbox to the drawer's dismiss handler.
+
+### Regression Risk
+Low–Medium — data loss on a long, now 9-field form.
+
+### Areas Affected
+Create product drawer (likely any drawer that hosts the shared custom
+dropdown — not verified).
+
+### QA Notes
+Test helpers must never press Escape to close a dropdown inside a drawer —
+click an option instead.
+
+### Workaround (if any)
+Close dropdowns by clicking an option or outside.
+
+---
+
+## Subscription Payment Period Badge Always Shows "/Month"
+
+### Module
+Magic Triangle → Products / Services — Products list
+
+### Feature
+Product card — price cadence badge, for Revenue type = Subscription
+
+### Status
+**Fixed** (was: Confirmed 2026-09-21) — re-verified 2026-09-23: Annual
+subscription cards show "₣ 600,00/Year", Monthly cards "₣ 50,00/Month".
+
+### Description
+The Create/Edit Product modal was redesigned to add a **Subscription type**
+field (Monthly subscription / Annual subscription — only rendered when
+Revenue type = Subscription), part of the task adding a payment-period
+concept for subscription products (×12 in Financial for Monthly vs. a single
+yearly payment for Annual). Selecting "Annual subscription", creating the
+product, then re-opening it via Edit confirms the value **is persisted
+correctly on the backend** (Edit modal pre-fills "Annual subscription"). But
+the Products list card's price badge always renders "$ X,XX**/Month**"
+regardless of the actual Subscription type — reproduced by creating a fresh
+Annual-subscription product and reading the card's text content directly
+(`$ 120,00/Month` for a product whose persisted Subscription type is Annual
+subscription).
+
+### Expected Behaviour
+A Subscription product's card should show a cadence suffix matching its
+actual Subscription type — "/Month" for Monthly, "/Year" (or equivalent) for
+Annual.
+
+### Actual Behaviour
+Every Subscription product's card shows "/Month", even when Subscription
+type = Annual subscription. Purely a list-card display bug — the underlying
+data and the Edit modal are correct.
+
+### Root Cause (if known)
+Not confirmed — likely the card's cadence label is still hardcoded to
+"/Month" for any Subscription-type product rather than reading the new
+Subscription type field.
+
+### Regression Risk
+Medium — cosmetic only (doesn't affect Financial math, which reads the
+persisted field directly per this session's product data), but actively
+misleading for anyone relying on the Products list to sanity-check
+subscription billing cadence, especially once Annual-subscription products
+become common.
+
+### Areas Affected
+Magic Triangle → Products / Services list only. Edit modal, and (as far as
+this session could observe without a clean financial baseline — see
+`tests/06-create-product.spec.js` comments) Financial calculations, are
+unaffected.
+
+### QA Notes
+`tests/06-create-product.spec.js` test "06. Create an Annual subscription
+product and verify the period persists" asserts the persisted value via the
+Edit modal (confirmed reliable) rather than the card badge, specifically to
+avoid flapping on this known display bug. Re-verify the card badge itself
+once this is fixed, and update that test to assert on it directly.
+
+### Workaround (if any)
+None needed — data integrity is unaffected, only the list card's display.
+
+---
+
+## Income Statement Is Missing the "Other Direct Costs" Line (Cost Type Split Not Reflected in Financial Reports)
+
+### Module
+Financial → Forecasts & Reports — Income statement (Planning horizon
+breakdown table)
+
+### Feature
+Income statement line items, following the Create/Edit Product modal's new
+**Cost type** field (`Cost of goods sold - held in stock` / `Other direct
+cost - services, fees`)
+
+### Status
+**Confirmed** (2026-09-21) — scope limited by a live baseline that already
+carries ~90 accumulated test products (see "Duplicate Products..." below),
+so exact dollar amounts were not cross-checked; the missing line item itself
+is unambiguous regardless of the mix of products.
+
+**Re-verified 2026-09-29 — still Confirmed, now worse.** The task was
+re-scoped: the row is to be called **"Direct service costs"** and counted
+exactly like COGS (i.e. deducted *before* Gross profit). The backend change
+has shipped: `gross_profit` = Revenue − COGS − `other_direct_costs` (e.g.
+2027: 250,000 − 55,000 − 45,000 = 150,000; on 2026-09-23 it was 195,000).
+The frontend row has **not** shipped: the Income table still goes Revenue
+₣250,000 → Cost of goods sold ₣-55,000 → Gross profit ₣150,000. The
+visible statement no longer adds up at the Gross profit line itself (the
+gap used to be between Gross profit and EBITDA). No "Direct service costs"
+/ "Other direct" text anywhere on the page, not even at ₣0. Expanding COGS
+lists only `cogs` products (correct). Screenshots:
+`test-reports/screenshots/DSC_2026-09-29_*.png`.
+
+### Description
+The task behind this session's Product modal review specifies a new
+`Other direct costs` line that must always render in the Income statement,
+positioned between `Gross profit` and the operating-expense lines
+(`Team & staffing`, `Marketing channels`, etc.), fed exclusively by products
+whose Cost type = "Other direct cost - services, fees" (while
+`Cost of goods sold` should only include Cost-type = COGS products, and
+`Inventory` in Funding & Setup should only be driven by that narrowed COGS
+figure). As of this session, Financial → Forecasts & Reports' Planning
+horizon breakdown shows: `Revenue → Cost of goods sold → Gross profit →
+Team & staffing → Marketing channels → Running resources → Other expenses →
+Custom entries → EBITDA → ...` — there is no `Other direct costs` row at
+all, even though the project now contains multiple products with Cost type
+= "Other direct cost - services, fees" (created both by this session and
+pre-existing fixture data).
+
+### Expected Behaviour
+Per the task's acceptance criteria, `Other direct costs` should always
+render as its own line (even at $0) between `Gross profit` and the
+operating-expense lines, and should sum the variable cost of every product
+flagged `other_direct`; `Cost of goods sold` should exclude those products.
+
+### Actual Behaviour
+No `Other direct costs` line exists in the Income statement. It is not
+possible to confirm from the UI alone whether `Cost of goods sold` already
+excludes `other_direct`-flagged products' cost internally (i.e. whether this
+is a report-rendering gap only, or whether the split isn't wired into
+Financial calculations at all) — flagged as open rather than guessed.
+
+### Root Cause (if known)
+Not confirmed — the Create/Edit Product modal side of this task (Cost type
+field, helper text, persistence) is fully implemented; this appears to be
+an unfinished or not-yet-shipped piece specifically in the Financial →
+Forecasts & Reports report renderer.
+
+### Regression Risk
+High for this specific task's acceptance criteria (a required, always-shown
+report line is absent), Low for existing functionality (nothing currently
+rendered appears broken by this gap).
+
+### Areas Affected
+Financial → Forecasts & Reports (Income statement). Potentially Funding &
+Setup → Inventory, which is formula-derived from `Cost of goods sold`
+(unverified whether that figure is already correctly narrowed).
+
+### QA Notes
+Not covered by an automated spec yet — `tests/28-financial-forecasts.spec.js`
+only smoke-tests that the existing stat tiles/line items render, and predates
+this task. A dedicated assertion for the `Other direct costs` line (and a
+COGS-vs-Inventory numeric check) should be added once this line ships;
+until then, product-level Cost type coverage lives in
+`tests/06-create-product.spec.js` tests 04–05.
+
+### Workaround (if any)
+None — this is a report gap, not a product-creation blocker.
 
 ---
 
@@ -64,7 +2230,7 @@ Operations → Team and Staff — Create team role, "Line staff" shape
 Create Line Staff — form submission
 
 ### Status
-**Confirmed** (2026-08-26)
+**Fixed** (re-verified 2026-09-30: `staffing[]` now carries `employment_percent: 100` per year and `POST /team-members` returns 201; was: Confirmed 2026-08-26)
 
 ### Description
 Creating a Line Staff role (as opposed to a Key Member) always fails.
@@ -1255,7 +3421,7 @@ Operations → Resources (Investment type)
 Create/Edit Resource — Amortization period field
 
 ### Status
-Open (confirmed validation limit)
+**Changed** (2026-10-01): the field is no longer shown in the UI (see "Investment Resources Cannot Be Created"). The backend still validates `amortization_period` as an integer 1–100 and now treats it as years. Was: Open (confirmed validation limit, months).
 
 ### Description
 The Amortization period field (months) for an Investment resource rejects
@@ -1486,14 +3652,63 @@ existing bug's status changes (e.g. Open → Fixed), update its row here too
 
 | Bug Name | Module | Status |
 |---|---|---|
-| Team & Staff — "Line Staff" Creation Always Fails (Missing `employment_percent` in `staffing[]`) | Operations → Team and Staff | **Confirmed** |
+| MVP List Shows Only the First 15 MVPs — No Pagination or "Load More" | Magic triangle → MVP | **Confirmed** |
+| Deleting a Marketing Channel Does Not Refresh Income, Cash Flow and Balance Sheet | Operations → Marketing channels / Financial | **Fixed** (2026-10-20 re-test) |
+| Running-Cost Resources Cannot Be Created — "Create" Does Nothing, No Request, No Message | Operations → Resources | **Confirmed** (2026-11-12: only when switching type inside the drawer; root cause found) |
+| Line-Staff Card Shows FTE With a Decimal Point in German ("0.5 Personal") | Operations → Team and staff | **Confirmed** |
+| "Total Salary Costs" Header Ignores FTE / Head Count | Operations → Team and staff | **Confirmed** |
+| "Total Salary Costs" Shows "₣ 0000" When the Team Is Empty | Operations → Team and staff | **Confirmed** |
+| Business Plan / PDF Cash Flow Shows the Working Capital Line With an Inverted Sign | Business plan → Financials | **Confirmed** |
+| Domicile "Germany" Has No Legal Forms, So a Project With Domicile Germany Cannot Be Created | Projects → Create project | **Confirmed** |
+| Business Plan Marketing Channel Page: Cost KPI Shows "Cost per month" Instead of "Cost per year" | Business plan | **Confirmed** |
+| Business Plan Marketing Channel Page Is Missing Drop-off, the "Year 2027" Label and the Weakest-Transition Highlight | Business plan | **Confirmed** |
+| Business Plan Funnel Styling Ignores the Number of Steps (Last Tier Not Dark, White Text on Light Tiers, One-Step Channel Drawn as a Funnel) | Business plan | **Confirmed** |
+| Magic Triangle Cards Not Refreshed After an AI Save — the Next Manual Edit Overwrites the AI's USP / Value Proposition | Magic triangle | **Confirmed** |
+| USP / Value Proposition Save Failure Shows No Error Message | Magic triangle | **Confirmed** |
+| "Auto Analyze" Silently Overwrites Manually Entered USP and Value Proposition | Magic triangle | **Confirmed** (needs product confirmation) |
+| German Date Picker Shows "15 Oktober 2026" (No Period) — a Third Date Style Next to "28.08.2026" | Implementation → Action plan | **Confirmed** |
+| Employment % Inputs Silently Truncate Decimals and Long Values ("12,5" → 12, "1500,50" → 15) | Operations → Team and staff | **Fixed** |
+| German Forms Show English Validation Messages, and Raw Schema Text in the Financing Form | Implementation / Operations / Financial | **Confirmed** |
+| Further Untranslated Strings in the German UI (Create Entry, Action Item, MVP, AI Chat, Business Plan, ARIA) | Financial / Implementation / Assist me / Business plan / Global | **Confirmed** |
+| Working Capital Validation Shows Raw Technical Text "Expected number, received null" | Financial → Funding & Setup | **Fixed** (2026-10-07; was: Confirmed) |
+| Cash Flow Shows One Net "Working Capital" Line Instead of −ΔAR / −ΔInventory / +ΔAP | Financial → Forecasts & Reports | **Confirmed** (re-tested 2026-10-05 and 2026-10-07, still present) |
+| Marketing Funnel Deals Do Not Feed Revenue | Operations → Marketing / Financial | **Confirmed** (re-tested 2026-10-07, still present) |
+| Investment Resources Cannot Be Created — "Useful life" Field Missing, Backend Still Requires `amortization_period` | Operations → Resources | **Confirmed** |
+| Existing Investments' Amortization Period (Stored in Months) Is Now Read as Years — D&A Understated 12× | Financial → Forecasts & Reports | **Confirmed** |
+| Weighted-Score Summary Uses English Decimals in German (Mixed With German Decimals on the Same Card) | Operations → Other | **Confirmed** |
+| German Business Plan Keeps AI-Generated Text in English With English Number Formats | Business plan | **Confirmed** |
+| More Untranslated Strings in the German UI (Statuses, MVP, Funnel, Charts, ARIA) | Implementation / Operations / Charts / Global | **Confirmed** |
+| Shared Business Plan Without `?lang` Uses the Viewer's Saved App Language Instead of English | Business plan → Share | **Confirmed** |
+| German UI Still Contains Untranslated English Strings | Global / Resources / Edit project / Business plan | **Confirmed** |
+| Integer-Only Numeric Inputs Drop the Decimal Separator and Multiply the Value | Operations → Team/Marketing/Resources | **Confirmed** |
+| Zero Totals in Operations Summary Tiles Render as "0000" | Operations | **Not a bug — by design** (2026-10-05; was: Confirmed) |
+| CHF Amounts Use the "₣" (French Franc) Sign | Global — currency formatting | **Confirmed** |
+| Some Counts Are Not Thousands-Grouped | Dashboard, Team and staff | **Confirmed** |
+| Count Labels Ignore Plural Rules | Dashboard, Competitors, Products, Business plan | **Confirmed** |
+| Mixed Number Styles Within One Page (Compact vs. Full, 0 vs. 2 Decimals) | Products, Financial | **Confirmed** |
+| Create Financing Activity Offers a Year the Backend Rejects (422, No Message) | Financial → Funding & Setup | **Partially fixed** (toast now shown, raw text; 2026 still offered; was: Confirmed) |
+| Create MVP Form: AI Does Not Fill the Form Until a Target Segment Is Picked Manually | Implementation → MVP | **Confirmed** |
+| Page-Level Assist me Creates and Saves an MVP Immediately With AI-Invented Content | Implementation → MVP (AI side panel) | **Confirmed** |
+| Assist me in the Create MVP Form Saves an MVP Directly Instead of Filling the Form | Implementation → MVP | **Fixed** (in-form flow; was: Confirmed) |
+| Assist me in "Create new action item" Never Fills the Form | Implementation → Action plan | **Confirmed** |
+| Assist me Is Missing From 6 Create Forms | Competitors / Operations → Other / Financial | **Confirmed** |
+| Page-Level Assist me Hangs Indefinitely on "Create a Location" Request | Operations → Other (AI side panel) | **Confirmed** |
+| In-Form Assist me Chat Shows Raw Markdown (`**bold**`) | Global — in-form AI chat | **Confirmed** |
+| Assist me Marketing Funnel: Decimal Conversion Rate Is Rounded When Applied | Operations → Marketing Channels | **Confirmed** |
+| Working Capital Defaults (DIO/DSO/DPO) Are Displayed but Not Applied Until "Save changes" Is Clicked | Financial → Funding & Setup / Balance sheet | **Fixed** (2026-10-01; was: Confirmed) |
+| Variable Production Cost Is Marked Required but an Empty Value Is Silently Saved as 0 | Magic Triangle → Products / Services | **Fixed** (was: Confirmed). Field made optional (asterisk removed); conflicts with the spec, pending PO decision |
+| Create Product — "Revenue type is required" Error Stays Visible After a Revenue Type Is Selected | Magic Triangle → Products / Services | **Fixed** (was: Confirmed) |
+| Escape With an Open Dropdown Closes the Whole Create Product Drawer and Discards Input | Magic Triangle → Products / Services | **Confirmed** |
+| Income Statement Is Missing the "Other Direct Costs" Line (Cost Type Split Not Reflected in Financial Reports) | Financial → Forecasts & Reports | **Confirmed** (re-verified 2026-09-29 as "Direct service costs": backend now deducts it before Gross profit, UI row still missing, so Gross profit no longer equals Revenue − COGS on screen) |
+| Subscription Payment Period Badge Always Shows "/Month" | Magic Triangle → Products / Services | **Fixed** (was: Confirmed) |
+| Team & Staff — "Line Staff" Creation Always Fails (Missing `employment_percent` in `staffing[]`) | Operations → Team and Staff | **Fixed** 2026-09-30 (was: Confirmed) |
 | Client Edit Form Discards an Uncommitted Name Change After Deleting a Need | Magic Triangle → Clients | **Confirmed** |
 | Dashboard Widgets Truncate Long Data-Driven Text With No Way to Recover the Full Value | Dashboard | **Confirmed** |
 | Mobile Invite Dialog Drops the "Cancel" Button Present on Desktop | Global — Invite dialog (Mobile) | **Confirmed** |
 | App-Wide Overlay Primitive Triggers Two Accessibility Violations on Open (Invite Dialog, Mobile Nav Drawer, Profile Menu) | Global — shared overlay primitive | **Confirmed** |
 | Dashboard — "Competitor Summary" Empty State Reuses the "Critical Risk" Icon | Dashboard | **Confirmed** |
 | Dashboard / Forecasts & Reports — "Revenue vs Expenses" Chart Y-Axis Mislabeled | Dashboard, Financial | **Confirmed** |
-| Intermittent Sidebar Menu/Panel/Drawer Open Failure (Assist me, Notifications, Language) | Global — Sidebar UI shell | Confirmed, **not reproduced 2026-08-07** (likely fixed/improved — re-verify) |
+| Intermittent Sidebar Menu/Panel/Drawer Open Failure (Assist me, Notifications, Language) | Global — Sidebar UI shell | Confirmed, **not reproduced 2026-08-07**; **Assist me part not reproduced 2026-09-24 (22/22 opens: in-form + page-level)**. Notifications/Language not re-checked. |
 | Marketing Channel — Custom "Other" Category Names Permanently Pollute the Shared Category Dropdown | Operations → Marketing Channels | **Confirmed** |
 | Marketing Channels — Sales Funnels Step Redesigned Into a Multi-Stage Funnel Builder | Operations → Marketing Channels | Confirmed (not a defect) |
 | Marketing Channel Category Labels Recapitalized / "Paid Search" Dropped "(Google Ads)" | Operations → Marketing Channels | Confirmed (not a defect) |
@@ -1502,7 +3717,7 @@ existing bug's status changes (e.g. Open → Fixed), update its row here too
 | Session Lost on One Side When Two Tabs/Contexts Reload Concurrently | Global — Auth/Session | **Confirmed** (was: Open/unconfirmed) |
 | App Never Reaches `networkidle` (Continuous Background Polling) | Global / Test Infrastructure | Open |
 | Resources — Running Cost Rejected for Years Before Start Year | Operations → Resources | Open |
-| Resources — Amortization Period Capped at 100 | Operations → Resources | Open |
+| Resources — Amortization Period Capped at 100 | Operations → Resources | **Changed** (field removed from UI; backend 1–100, now years; was: Open) |
 | IP Rights Nav Buttons Carry a Live Status Badge in Their Label | Operations → Other → IP Rights | Open |
 | MVP Submission Requires At Least One "Core" Feature | Implementation → MVP | Open |
 | Action Plan Board Ignores Playwright's Native `dragTo()` | Implementation → Action Plan | Open |
@@ -1511,6 +3726,106 @@ existing bug's status changes (e.g. Open → Fixed), update its row here too
 **Next entry goes here (top of table + new section above).**
 
 ## Session log
+
+- **2026-09-30 — Number localization (EN → DE) on DEV**: all 14 project
+  pages + tabs crawled in both languages for Karina (CHF), Dior (UAH) and
+  QA Full Regression (EUR); automated EN↔DE token diff found no leftover EN
+  formats in DE, no `-0`/`NaN`, no RU space grouping (except AI-generated
+  Business plan prose). Inputs: Product price/cost, Funding amount/rate/
+  repayment, Tax parse `1500,50`/`15.000`/`1500.50` correctly and persist
+  exact values; Salary, Funnel cost/conversion, Resource cost do not (new
+  bug). Line staff creation now Fixed. 7 new entries above (6 localization + 1
+  incidental Funding year 422). All created records deleted; account
+  language restored to English. Report: `test-reports/Number_Localization_Test_Report.md`.
+
+- **2026-09-29 — Income: "Direct service costs" category (counted like
+  COGS for `other_direct` products)**: one controlled product (id 404,
+  client 408, qty 100/125) was driven through One-time 500/450
+  other_direct → cogs → Monthly subscription 50/10 other_direct, then
+  deleted. Backend passes: `other_direct_costs` 45,000/56,250 (One-time)
+  and 12,000/15,000 (Monthly ×12); `gross_profit` = Revenue − COGS −
+  other_direct (new behavior); GP and EBITDA are identical whether the
+  product is flagged cogs or other_direct; Inventory = COGS only (4,520.55
+  at DIO 30); AP = (COGS + other_direct)/365 × DPO (8,219.18). Fails: the
+  Income table has no "Direct service costs" row (merged into the existing
+  "Other Direct Costs line" entry above). No new bugs. Baseline restored
+  exactly (GP 145,000 / 181,250).
+
+- **2026-09-28 — Create MVP + AI re-test**: the in-form Assist me now
+  sends MVP modal context. There were no unrequested saves in 8 in-form
+  runs, and an explicit "save" request is deferred to the Create button.
+  With a segment selected, the whole form is filled (4/4) and it saves via
+  Create MVP (201). Still broken: without a manually selected segment
+  nothing is filled (3/3). New: the side panel on the MVP list saves an
+  AI-invented MVP immediately with no confirmation. Test MVPs #92 and #93
+  deleted; MVP list back to empty.
+
+- **2026-09-28 — Create/Edit Product validation re-test** (2 reported
+  fixes): stale "Revenue type is required" error (and the other step-1
+  errors) → **Fixed**. Empty Variable production cost → **resolved by
+  making the field optional**: the asterisk was removed, and empty is still
+  saved as `variable_cost: 0` (Create and Edit). This conflicts with the
+  task spec ("stays mandatory"), so it needs a PO decision. (An earlier
+  draft of this session's report wrongly said the asterisk was still
+  present; corrected after checking the label DOM.) Probe products
+  deleted.
+
+- **2026-09-24 — Assist me AI form-fill across all create forms**: 15
+  create forms opened. Assist me opens in 22/22 attempts. Mechanism:
+  in-form button → chat popover inside the modal → `POST
+  /agent/chat/stream` with `context.modal.{entity, values}` → SSE `draft`
+  event → frontend fills the form (nothing saved until user clicks
+  Create). Works: Client (+needs), Product (all fields incl. Subscription
+  type/Cost type; saved OK), Competitor (saved OK), Marketing channel (step
+  1 + funnel steps), Team role, Resource, Risk. For Client, Product, Team
+  role, Resource, MVP and Action item the first prompt ("Створи мені X")
+  only returns clarifying questions; a follow-up ("придумай сам і заповни")
+  is needed. 6 new bugs: MVP saves directly instead of filling; Action
+  item never fills; Assist me missing in 6 forms; page-level "create
+  location" hangs; raw Markdown in in-form chat; funnel conversion rate
+  rounded. Cleanup: competitor, product and AI-created MVP #88 deleted.
+
+- **2026-09-23 — Products: Subscription period + Cost type numeric
+  verification**: drove controlled products (client 408, qty 100/125) and
+  read `financial-evaluation` / `balance-sheet` API responses after each
+  step. Backend math passes every acceptance criterion: Monthly = price ×
+  12 × qty (variable cost also × 12), Annual = price × 1 × qty; switching
+  period/revenue type recalculates and clears `subscription_period`;
+  other_direct cost goes to `other_direct_costs` (not COGS), Gross profit =
+  Revenue − COGS, EBITDA identical for cogs vs. other_direct at equal
+  amounts, all-other_direct → COGS 0 / Inventory 0, COGS 100,000 + DIO 30 →
+  Inventory 8,219.18. Still open: the Income statement UI doesn't render the
+  Other direct costs row although the API returns it (table then doesn't
+  reconcile Gross profit → EBITDA). "/Month" badge bug now Fixed. 4 new
+  confirmed bugs (working-capital defaults not applied until Save; empty
+  production cost saved as 0; stale Revenue type error; Escape closes the
+  drawer). All probe products deleted; baseline financials restored exactly.
+  Side effect: the project's working-capital settings are now saved
+  (30/60/30, `is_configured: true`).
+
+- **2026-09-21 — Create/Edit Product modal review (COGS vs. Other direct
+  cost task)**: the redesigned Create/Edit Product modal (Name/Description/
+  Revenue type/Selling price/**Subscription type** [Subscription only]/
+  **Sourcing**/**Cost type**/Variable production cost/**Margin per unit**)
+  was verified live end-to-end. Cost type (`Cost of goods sold - held in
+  stock` / `Other direct cost - services, fees`) and Subscription type
+  (`Monthly subscription` / `Annual subscription`) both work correctly and
+  persist on the backend (confirmed via Edit re-open), and the auto-computed
+  Margin per unit field is correct (selling price − production cost). 2 new
+  confirmed bugs: the Products list card's price-cadence badge always shows
+  "/Month" for any Subscription product regardless of its actual
+  Subscription type; and Financial → Forecasts & Reports' Income statement
+  has no "Other direct costs" line at all, so the task's required always-on
+  report line and the COGS/Other-direct split are not yet reflected in
+  Financial reporting (product-level classification itself is fine).
+  `tests/helpers/product.helper.js` also had a latent locator bug fixed
+  while adding coverage: `selectFromCustomDropdown()`'s `.first()` dropdown
+  match only ever worked because Product step 1 used to have exactly one
+  custom dropdown (Revenue type) — now that the redesigned modal renders up
+  to 4 at once, a new `selectFromLabeledDropdown()` scopes by field label
+  instead. `tests/06-create-product.spec.js` gained 3 new tests (04–06)
+  covering the Cost type toggle, an Other-direct-cost product end-to-end,
+  and an Annual-subscription product's persistence.
 
 - **2026-08-07 — Dashboard Mobile-only follow-up** (390×844 exclusively,
   both projects; Figma Mobile page re-attempted with the same result as the

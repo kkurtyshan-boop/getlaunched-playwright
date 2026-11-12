@@ -15,6 +15,7 @@ tests/.auth/
 tmp/
 debug*.png
 .playwright-mcp/
+test-reports/screenshots/
 
 # Env
 .env

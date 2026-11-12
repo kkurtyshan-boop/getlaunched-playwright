@@ -14,11 +14,11 @@ async function openDashboard(page, project) {
 const WIDGETS = [
   { title: 'Products purchased by customers', hrefPattern: /\/triangle\/products$/ },
   { title: 'Financial overview', hrefPattern: /\/financial$/ },
-  { title: 'Critical risk', hrefPattern: /\/implementation\/risk-analysis$/ },
+  { title: 'Critical risk', hrefPattern: /\/project\/[^/]+\/risk-analysis$/ },
   { title: 'Competitor summary', hrefPattern: /\/triangle\/competitors$/ },
   { title: 'Location Analysis', hrefPattern: /\/operations\/other$/ },
   { title: 'Supplier Analysis', hrefPattern: /\/operations\/other$/ },
-  { title: 'Action plan', hrefPattern: /\/implementation\/action-plan$/ },
+  { title: 'Action plan', hrefPattern: /\/project\/[^/]+\/action-plan$/ },
 ];
 
 test.describe('Dashboard', () => {

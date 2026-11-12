@@ -3,6 +3,7 @@ import { login } from './helpers';
 import { unique, LOCATION_NAME, SUPPLIER_NAME } from './config';
 import {
   saveIpRight,
+  IP_STATUS,
   expandAccordionSection,
   createLocation,
   createSupplier,
@@ -21,23 +22,22 @@ import {
 // to each module's own accordion region (both modules render an identically
 // named "Criteria Configuration" section, so a page-wide lookup would be
 // ambiguous).
-// Trimmed to 2 of the 4 IP types (still covering both a "Registered" and a
-// "Pending" status, and the conditional-badge-prefix-match quirk) — each
-// type requires a full page navigation + up to 3 retries against the
-// documented intermittent accordion-collapse behavior, and this suite runs
-// on a memory-constrained shared machine where 4 full sequential attempts
-// occasionally exhausted available memory and crashed the browser mid-run.
+// IP Rights (redesigned 2026-11): one "Have it" type with a stage, one
+// "Planned" type, and one "Not relevant" — covers all three status shapes.
 const IP_TYPES = [
   {
     type: 'Trademark',
-    registrationStatus: 'Registered',
-    notes: unique('Brand name and logo registered; renewals tracked annually.'),
+    status: IP_STATUS.have,
+    stage: 'Registered',
+    registrationNumber: 'TM-AUTOTEST-001',
+    description: unique('Brand name and logo registered; renewals tracked annually.'),
   },
   {
-    type: 'Patent',
-    registrationStatus: 'Pending',
-    notes: unique('Application filed for the core product formula; awaiting review.'),
+    type: 'Design',
+    status: IP_STATUS.planned,
+    description: unique('Product design filing planned for next year.'),
   },
+  { type: 'Copyright', status: IP_STATUS.notRelevant },
 ];
 
 // Trimmed to 2 items each (was 3) for the same resource-footprint reason as
@@ -70,10 +70,9 @@ test.describe.serial('Other (Operations) flow', () => {
   // two modules' criteria stay independent datasets (RELEASE_CHECKLIST §11).
   let locationCriterionName;
 
-  test('01. Track and fill all intellectual property rights types', async ({ page, project }) => {
-    // 4 IP types saved sequentially, each retried up to 3x against the
-    // live app's intermittent accordion-collapse-mid-flow behavior (see
-    // helpers/other.helper.js's saveIpRight) — exceeds the default 30s timeout.
+  test('01. Save intellectual property rights in each status', async ({ page, project }) => {
+    // 3 IP types saved sequentially, each with a reload-based persistence
+    // check — exceeds the default 30s timeout.
     test.setTimeout(180_000);
     await login(page);
 

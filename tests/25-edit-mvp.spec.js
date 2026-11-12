@@ -9,6 +9,7 @@ import {
   applyMvpEdits,
   submitMvpUpdate,
   findMvpHeading,
+  deleteMvp,
 } from './helpers/mvp.helper';
 
 const UPDATED_HYPOTHESIS_THEN =
@@ -130,5 +131,18 @@ test.describe.serial('Edit MVP flow', () => {
     await expect(page.getByPlaceholder('e.g. Conversation rate').first()).toHaveValue(updatedSuccessMetric, {
       timeout: 15000,
     });
+  });
+
+  // Also keeps the shared project under the 15-MVP list limit (see
+  // helpers/mvp.helper.js deleteMvp).
+  test('04. Delete the edited MVP', async ({ page, project }) => {
+    test.setTimeout(60_000);
+    await login(page);
+    await deleteMvp(page, project, mvpName);
+
+    // Persistence check: still gone after a reload.
+    await page.reload();
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await expect(page.getByRole('heading', { name: mvpName, exact: true })).toHaveCount(0, { timeout: 15000 });
   });
 });

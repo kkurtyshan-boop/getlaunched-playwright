@@ -5,8 +5,8 @@ import {
   createTeamMember,
   openTeamAndStaffTab,
   openEditModalForRole,
-  selectFromCustomDropdown,
-  ensureEngagementPercent,
+  fillEmploymentPercents,
+  fteInputs,
   submitTeamRoleUpdate,
 } from './helpers/team.helper';
 
@@ -15,9 +15,7 @@ import {
 // 14-create-team-and-staff.spec.js having run first (see
 // tests/07-edit-product-add-delete-client.spec.js for the same
 // test.describe.serial + shared `let` pattern). Line staff setup lives
-// inline in test 03 rather than in this shared setup step, specifically so
-// that test's test.skip() (see its comment) can't cascade-skip 01/02, which
-// depend only on `keyMember` and are otherwise fully working.
+// inline in test 03 so a Line staff failure can't cascade-skip 01/02.
 test.describe.serial('Edit team and staff flow', () => {
   let keyMember;
 
@@ -36,17 +34,13 @@ test.describe.serial('Edit team and staff flow', () => {
 
     const modal = await openEditModalForRole(page, keyMember.cardText);
 
-    // The Edit form doesn't pre-fill this field (see ensureEngagementPercent's
-    // doc comment) — must be resupplied on every edit or Update fails.
-    await ensureEngagementPercent(modal, keyMember.importancePercent);
-
     const roleNameField = modal.getByPlaceholder('Type role name').first();
     await expect(roleNameField).toBeVisible({ timeout: 15000 });
     await roleNameField.fill(updatedRoleName);
 
     const salaryField = modal.getByPlaceholder(/type salary/i).first();
     await expect(salaryField).toBeVisible({ timeout: 15000 });
-    await salaryField.fill('9200');
+    await salaryField.fill('110400');
 
     await submitTeamRoleUpdate(modal);
 
@@ -64,32 +58,14 @@ test.describe.serial('Edit team and staff flow', () => {
     keyMember.roleName = updatedRoleName;
   });
 
-  test('02. Edit key member employment type and background', async ({ page, project }) => {
+  test('02. Edit key member employment % and background', async ({ page, project }) => {
     await login(page);
     await openTeamAndStaffTab(page, project);
 
     const updatedBackground = unique('Now consults on a project basis');
 
     let modal = await openEditModalForRole(page, keyMember.cardText);
-
-    await ensureEngagementPercent(modal, keyMember.importancePercent);
-
-    // Employment type / Pay period dropdowns are only present on the older
-    // form shape (see helpers/team.helper.js's createTeamMember) — on an
-    // environment that's shipped the newer per-year "Employment*" section,
-    // there's nothing left to select here.
-    const hasOldDropdowns = await modal.locator('button[data-open="false"]').first().isVisible().catch(() => false);
-    if (hasOldDropdowns) {
-      await selectFromCustomDropdown(page, modal, 0, 'Freelance');
-    }
-
-    const salaryField = modal.getByPlaceholder(/type salary/i).first();
-    await expect(salaryField).toBeVisible({ timeout: 15000 });
-    await salaryField.fill('150');
-
-    if (hasOldDropdowns) {
-      await selectFromCustomDropdown(page, modal, 1, 'Hourly');
-    }
+    await fillEmploymentPercents(modal, ['60']);
 
     const backgroundField = modal.getByPlaceholder('Write your story...').first();
     await expect(backgroundField).toBeVisible({ timeout: 15000 });
@@ -97,29 +73,19 @@ test.describe.serial('Edit team and staff flow', () => {
 
     await submitTeamRoleUpdate(modal);
 
-    // Persistence check: reopen the edit form (rather than guessing what the
-    // card itself renders, per lesson 2) and confirm every changed field
-    // actually stuck server-side.
+    // Persistence check: reopen the edit form and confirm the changes stuck
+    // server-side.
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     await page.getByRole('tab', { name: /team and staff/i }).first().click();
 
     modal = await openEditModalForRole(page, keyMember.cardText);
     await expect(modal.getByPlaceholder('Write your story...').first()).toHaveValue(updatedBackground, { timeout: 15000 });
-    await expect(modal.getByPlaceholder(/type salary/i).first()).toHaveValue('150', { timeout: 15000 });
+    await expect(modal.getByText('%', { exact: true }).first().locator('xpath=preceding-sibling::input[1]')).toHaveValue('60', { timeout: 15000 });
   });
 
-  test('03. Edit line staff quantities and description', async ({ page, project }) => {
-    // CONFIRMED LIVE BUG (2026-08-24): creating a Line staff record (this
-    // test's own setup step) is currently rejected unconditionally by the
-    // API with a 422 — "The staffing.0.employment_percent field is required
-    // when staffing is present. (and 1 more error)". See
-    // tests/helpers/team.helper.js's createTeamMember doc comment for the
-    // full repro (confirmed via a direct network probe; not a test-timing
-    // issue). Skipping until fixed; re-enable by removing this test.skip
-    // once Line staff can actually be created.
-    test.skip(true, 'Blocked by a live API 422 on every Line staff submission — see comment above');
-
+  test('03. Edit line staff FTE per year and description', async ({ page, project }) => {
+    test.setTimeout(90_000);
     await login(page);
 
     const lineStaff = await createTeamMember(page, project, { type: 'line', roleName: unique('Autotest Edit Line Staff') });
@@ -130,13 +96,11 @@ test.describe.serial('Edit team and staff flow', () => {
 
     let modal = await openEditModalForRole(page, lineStaff.cardText);
 
-    await ensureEngagementPercent(modal, lineStaff.importancePercent);
-
-    const qtyInputs = modal.getByPlaceholder(/type quantity/i);
+    const qtyInputs = fteInputs(modal);
     const qtyCount = await qtyInputs.count();
     const updatedQuantities = [];
     for (let i = 0; i < qtyCount; i++) {
-      const value = String(30 + i * 5);
+      const value = ['2.5', '4'][i] ?? '4';
       updatedQuantities.push(value);
       await qtyInputs.nth(i).fill(value);
     }
@@ -156,7 +120,7 @@ test.describe.serial('Edit team and staff flow', () => {
     modal = await openEditModalForRole(page, lineStaff.cardText);
     await expect(modal.getByPlaceholder('Write your story...').first()).toHaveValue(updatedDescription, { timeout: 15000 });
 
-    const reloadedQtyInputs = modal.getByPlaceholder(/type quantity/i);
+    const reloadedQtyInputs = fteInputs(modal);
     for (let i = 0; i < updatedQuantities.length; i++) {
       await expect(reloadedQtyInputs.nth(i)).toHaveValue(updatedQuantities[i], { timeout: 15000 });
     }

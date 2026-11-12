@@ -5,9 +5,8 @@ import {
   createResource,
   openResourcesTab,
   openCreateResourceModal,
-  switchToRunningCostsInModal,
+  switchResourceListTab,
   selectFromCustomDropdown,
-  clickCreateButton,
   getResourceRow,
 } from './helpers/resource.helper';
 
@@ -20,23 +19,15 @@ import {
 // load breaks worker/list-pass sync ("Test not found in the worker
 // process").
 //
-// Confirmed live 2026-08-24 by inspecting the Create/Edit Resource modal
-// directly: Investment resources no longer have a single "Cost" field or
-// an "Amortization period" field — both Investment and Running costs now
-// share the exact same "Cost per year" (one input per planning-horizon
-// year) shape, differing only in the Payment type dropdown (fixed
-// "One-time payment" for Investment vs. selectable Monthly/Annually for
-// Running costs). This makes PROJECT_KNOWLEDGE.md §3.3's Investment field
-// list and BUG_PATTERNS.md's "Resources — Amortization Period Capped at
-// 100" stale — there's no Amortization field left to apply that cap to,
-// so no boundary test for it is included below (it would be testing a
-// field that doesn't exist). The "cost year before Start year is
-// rejected" rule (also in BUG_PATTERNS.md) is still very much alive and is
-// covered by test 03 below, now confirmed to apply to both resource types.
+// Form shapes (confirmed live 2026-11-11): Investment = Category, Year,
+// Useful life (years), Investment amount; Running costs = Category,
+// Payment type, Start year, Cost per year (one input per planning-horizon
+// year). The "cost year before Start year is rejected" rule (BUG_PATTERNS.md)
+// applies to Running costs and is covered by test 03 below.
 const INVESTMENT_FIXTURES = [
-  { label: 'Equipment', category: 'Equipment', startYearIndex: 0 },
-  { label: 'Office space', category: 'Office space', startYearIndex: 0 },
-  { label: 'Trade secrets', category: 'Trade secrets', startYearIndex: 1 },
+  { label: 'Equipment', category: 'Equipment', startYearIndex: 0, investmentAmount: '25000', usefulLife: '5' },
+  { label: 'Office space', category: 'Office space', startYearIndex: 0, investmentAmount: '120000', usefulLife: '20' },
+  { label: 'Trade secrets', category: 'Trade secrets', startYearIndex: 1, investmentAmount: '8000', usefulLife: '3' },
 ];
 
 const RUNNING_COST_FIXTURES = [
@@ -61,6 +52,8 @@ test.describe.serial('Create resources flow', () => {
         name: unique(`${RESOURCE_NAME} ${fixture.label}`),
         category: fixture.category,
         startYearIndex: fixture.startYearIndex,
+        investmentAmount: fixture.investmentAmount,
+        usefulLife: fixture.usefulLife,
       });
 
       const row = await getResourceRow(page, resource.name);
@@ -88,37 +81,26 @@ test.describe.serial('Create resources flow', () => {
     }
   });
 
-  test('03. Running cost rejects a cost value for a year before the start year', async ({ page, project }) => {
+  test('03. Running cost blocks cost input for years before the start year', async ({ page, project }) => {
     // Boundary coverage for BUG_PATTERNS.md "Resources — Running Cost
-    // Rejected for Years Before Start Year" (previously an explicit gap
-    // per RELEASE_CHECKLIST.md §10 Edge Cases). Deliberately selects the
-    // second available Start year option, then fills the *first*
-    // planning-horizon year's Cost column — a year before the resource's
-    // own Start year. Confirmed live: this is rejected with a toast
-    // ("Yearly cost years must not be earlier than the resource start
-    // year.") and the modal stays open / no record is created.
+    // Rejected for Years Before Start Year". Since 2026-11 the app prevents
+    // the invalid input up front: every "Cost per year" column earlier than
+    // the selected Start year is disabled (the old behavior was a rejection
+    // toast on submit).
     test.setTimeout(60_000);
 
     await login(page);
 
-    const rejectedName = unique(`${RESOURCE_NAME} Cost Before Start`);
     await openResourcesTab(page, project);
+    await switchResourceListTab(page, 'Running costs');
     const modal = await openCreateResourceModal(page);
-    await switchToRunningCostsInModal(page, modal);
 
-    const nameField = modal.getByPlaceholder('Type resource name').first();
-    await expect(nameField).toBeVisible({ timeout: 15000 });
-    await nameField.fill(rejectedName);
-
-    // Category and Payment type are also required — fill them so the only
-    // validation error triggered by submitting is the cost-per-year one
-    // under test.
+    await modal.getByPlaceholder('Type resource name').first().fill(unique(`${RESOURCE_NAME} Cost Before Start`));
     await selectFromCustomDropdown(page, modal, 0, 'Goods and Materials');
     await selectFromCustomDropdown(page, modal, 1, 'Monthly');
 
-    // Force-fill the first cost column directly (bypassing the helper's
-    // own defensive skip) while Start year is the *second* available
-    // option, so column 0 is guaranteed to be earlier than Start year.
+    // Start year = the SECOND option, so the first planning-horizon column
+    // is earlier than the resource's start.
     const startYearButton = modal.locator('button[data-open="false"]').nth(2);
     await startYearButton.click();
     const startYearListbox = page.getByRole('listbox').last();
@@ -127,16 +109,11 @@ test.describe.serial('Create resources flow', () => {
     await expect(startYearListbox).not.toBeVisible({ timeout: 5000 }).catch(() => {});
 
     const costInputs = modal.getByPlaceholder(/type cost/i);
-    await costInputs.nth(0).fill('5000');
+    await expect(costInputs.nth(0)).toBeDisabled({ timeout: 10000 });
+    await expect(costInputs.nth(1)).toBeEnabled({ timeout: 10000 });
 
-    await clickCreateButton(modal);
-
-    await expect(page.getByText(/yearly cost years must not be earlier than the resource start year/i)).toBeVisible({
-      timeout: 10000,
-    });
-    await expect(modal).toBeVisible();
-    await expect(page.getByText(rejectedName)).toHaveCount(0);
-
+    // Nothing is saved — close without creating.
     await modal.getByRole('button', { name: /cancel/i }).click();
+    await expect(modal).not.toBeVisible({ timeout: 10000 });
   });
 });

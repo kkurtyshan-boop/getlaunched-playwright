@@ -66,10 +66,11 @@ test('New project onboarding: create, configure, verify, clean up', async ({ pag
   const project = { id: projectId, name: projectName };
 
   await openProject(page, project);
-  await expect(page.getByText(/^dashboard$/i).first()).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText(/magic triangle/i).first()).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText(/operations/i).first()).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText(/implementation/i).first()).toBeVisible({ timeout: 15000 });
+  // Sidebar as of 2026-11-11: Implementation was split into top-level
+  // Risk analysis / Action plan entries, MVP moved under Magic triangle.
+  for (const section of [/^dashboard$/i, /^magic triangle$/i, /^operations$/i, /^financial$/i, /^risk analysis$/i, /^action plan$/i, /^business plan$/i]) {
+    await expect(page.getByRole('link', { name: section }).first()).toBeVisible({ timeout: 15000 });
+  }
 
   // 4. Minimal "initial configuration" — one client, one product attached
   // to it — proving the new project is immediately usable, not just visible.

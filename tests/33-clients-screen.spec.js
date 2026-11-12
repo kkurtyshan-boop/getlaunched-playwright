@@ -2,6 +2,7 @@ import { test, expect } from './fixtures/project.fixture';
 import { login } from './helpers';
 import { unique, CLIENT_NAME } from './config';
 import { gotoClients } from './helpers/navigation';
+import { deleteNeedInEditPanel } from './helpers/client.helper';
 import {
   createSegment,
   segmentCard,
@@ -75,6 +76,66 @@ test.describe('Clients screen: segment cards', () => {
     await page.getByRole('button', { name: /^cancel$/i }).click();
     await expect(page.getByRole('heading', { name: 'Delete this client?' })).toBeHidden({ timeout: 15000 });
     await expect(card).toBeVisible();
+  });
+
+  // Replaces the old 05-edit-client-delete-need.spec.js (2026-11-12).
+  test('edit panel saves a new name and description', async ({ page, project }) => {
+    test.setTimeout(90_000);
+    const card = await segment(page, project, 'Edit', [need('Edit job', 'High', 'Job')]);
+    const oldName = created[created.length - 1];
+    const newName = `${oldName} Updated`;
+    const newDescription = unique('Updated segment description');
+
+    await openCardMenu(card, 'Edit');
+    const panel = page.getByRole('dialog', { name: /edit client/i });
+    await expect(panel).toBeVisible({ timeout: 15000 });
+    await panel.getByRole('textbox', { name: /^name/i }).fill(newName);
+    await panel.getByRole('textbox', { name: /^description/i }).fill(newDescription);
+    await panel.getByRole('button', { name: /^update$/i }).click();
+    await expect(panel).toBeHidden({ timeout: 15000 });
+    created[created.length - 1] = newName;
+
+    // Persistence: reload and find the card under its new name.
+    await page.reload();
+    const updated = segmentCard(page, newName);
+    await expect(updated).toBeVisible({ timeout: 15000 });
+    await expect(updated).toContainText(newDescription);
+    await expect(segmentCard(page, oldName).filter({ hasNotText: 'Updated' })).toHaveCount(0);
+  });
+
+  test('deleting a need in the edit panel removes it from the card', async ({ page, project }) => {
+    test.setTimeout(90_000);
+    const card = await segment(page, project, 'DelNeed', [
+      need('Keep gain', 'High', 'Gain'),
+      need('Drop pain', 'Critical', 'Pain'),
+    ]);
+    await expect(needColumn(card, 'pain').getByTestId('need-item')).toHaveCount(1);
+
+    await openCardMenu(card, 'Edit');
+    const panel = page.getByRole('dialog', { name: /edit client/i });
+    await expect(panel).toBeVisible({ timeout: 15000 });
+    await deleteNeedInEditPanel(page, panel, 1);
+    await expect(panel.getByRole('heading', { name: /^needs \(1\)$/i })).toBeVisible({ timeout: 15000 });
+    // The need is deleted on confirm; close the panel without other changes.
+    await closePanel(page);
+
+    await page.reload();
+    const reloaded = segmentCard(page, created[created.length - 1]);
+    await expect(needColumn(reloaded, 'pain').getByTestId('need-item')).toHaveCount(0, { timeout: 15000 });
+    await expect(needColumn(reloaded, 'gain').getByTestId('need-item')).toHaveCount(1);
+  });
+
+  test('delete from the card menu removes the segment', async ({ page, project }) => {
+    const card = await segment(page, project, 'Remove', [need('Remove job', 'Low', 'Job')]);
+    const name = created.pop(); // deleted here, not in afterEach
+
+    await openCardMenu(card, 'Delete');
+    await page.getByRole('button', { name: /yes, delete this client/i }).click();
+    await expect(segmentCard(page, name)).toHaveCount(0, { timeout: 15000 });
+
+    await page.reload();
+    await expect(page.getByTestId('client-segment-card').first()).toBeVisible({ timeout: 15000 });
+    await expect(segmentCard(page, name)).toHaveCount(0);
   });
 
   test('long pain list is sorted, collapsed to 4 and expandable', async ({ page, project }) => {

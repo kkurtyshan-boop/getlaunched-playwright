@@ -45,8 +45,21 @@ export async function gotoOperations(page, project) {
   await gotoProjectPath(page, project, '/operations');
 }
 
-export async function gotoImplementation(page, project) {
-  await gotoProjectPath(page, project, '/implementation');
+// The old tabbed "Implementation" page was split up (2026-11): Risk
+// analysis and Action plan are top-level sidebar entries with their own
+// routes, and MVP moved under Magic triangle (/triangle/mvp).
+export async function gotoRiskAnalysis(page, project) {
+  await gotoProjectPath(page, project, '/risk-analysis');
+  await expect(page.getByRole('heading', { name: /^risk analysis$/i, level: 1 })).toBeVisible({ timeout: 15000 });
+}
+
+export async function gotoActionPlan(page, project) {
+  await gotoProjectPath(page, project, '/action-plan');
+  await expect(page.getByRole('heading', { name: /^action plan$/i, level: 1 })).toBeVisible({ timeout: 15000 });
+}
+
+export async function gotoMvp(page, project) {
+  await gotoProjectPath(page, project, '/triangle/mvp');
 }
 
 export async function gotoFinancial(page, project, sub = '') {

@@ -1,6 +1,6 @@
 # GetLaunched Autotest
 
-Playwright end-to-end test suite for the GetLaunched app. Tests exercise a single project, **"Autotest Project"**, walking through Magic Triangle, Operations, and Implementation end to end. This project is bootstrapped automatically on every run by `tests/auth.setup.js` (via `tests/helpers/project.js`): if it doesn't exist yet, it's created through the real UI; if the account can't create a new project (e.g. no active subscription), an existing leftover-looking project is adopted and renamed to it instead. The suite never depends on any specific pre-existing project — see "Test data and idempotency" below.
+Playwright end-to-end test suite for the GetLaunched app. Tests exercise a single project, **"Autotest Project"**, walking through Magic Triangle, Operations, Risk analysis, Action plan and MVP end to end. This project is bootstrapped automatically on every run by `tests/auth.setup.js` (via `tests/helpers/project.js`): if it doesn't exist yet, it's created through the real UI; if the account can't create a new project (e.g. no active subscription), an existing leftover-looking project is adopted and renamed to it instead. The suite never depends on any specific pre-existing project — see "Test data and idempotency" below.
 
 ## Install dependencies
 
@@ -111,9 +111,8 @@ Tests are numbered in the order they should run, since later ones frequently dep
 | `01-login.spec.js` | Login |
 | `02-create-project.spec.js` | Create project |
 | `03-edit-project.spec.js` | Edit project |
-| `04-create-client.spec.js` | Create clients + needs |
-| `05-edit-client-delete-need.spec.js` | Edit client, delete a need |
-| `06-create-product.spec.js` | Create products (2-step wizard: Product → Attach clients) |
+| `04-create-client.spec.js` | Create clients + needs (verified on the segment card's Job/Pain/Gain columns) |
+| `06-create-product.spec.js` | Create products (3-step wizard: General → Pricing → Clients; all 5 revenue types) |
 | `07-edit-product-add-delete-client.spec.js` | Edit product, add/remove attached client |
 | `08-create-competitor-analysis.spec.js` | Create competitors |
 | `09-create-evaluation-criteria.spec.js` | Create evaluation criteria |
@@ -129,10 +128,10 @@ Tests are numbered in the order they should run, since later ones frequently dep
 | `15-edit-team-and-staff.spec.js` | Edit team and staff |
 | `16-create-resources.spec.js` | Create resources (Investment + Running costs, all categories) |
 | `17-edit-resources.spec.js` | Edit resources |
-| `18-create-other.spec.js` | IP Rights, Location Analysis, Supplier Analysis |
+| `18-create-other.spec.js` | IP Rights (Have it / Planned / Not relevant), Location Analysis, Supplier Analysis |
 | `19-edit-other.spec.js` | Edit IP Rights / locations / suppliers |
 
-### Implementation
+### Risk analysis, Action plan, MVP
 | File | Covers |
 |---|---|
 | `20-create-risk-analysis.spec.js` | Create risks (all PESTEL categories, Probability × Consequences spread) |
@@ -149,9 +148,10 @@ Tests are numbered in the order they should run, since later ones frequently dep
 | `27-magic-triangle-overview.spec.js` | Magic Triangle overview page, AI insights, auto-analyze |
 | `28-financial-forecasts.spec.js` | Financial forecasts stat tiles/chart, Income/Cash flow/Balance sheet tabs |
 | `29-financial-funding.spec.js` | Working capital calculator, Funding & Capital section |
-| `30-business-plan.spec.js` | Generated business plan sections, presentation navigation |
+| `30-business-plan.spec.js` | Generated business plan document sections, section navigation |
 | `31-invite.spec.js` | Team invite modal: role dropdown, email validation, cancel |
 | `32-minor-global-settings.spec.js` | Notifications panel, language switcher, learning center link |
+| `33-clients-screen.spec.js` | Clients screen segment cards: legend, need columns (sort/collapse), need card + canvas links, add per category, coverage, edit (name/description, delete a need), delete segment, responsive stacking |
 
 ## Known quirks
 
@@ -162,9 +162,9 @@ These are real behaviors found while writing the suite — worth knowing before 
 - **Custom dropdowns follow one consistent pattern** across the whole app: a trigger button `button[data-open="false"]` → `getByRole('listbox')` → `getByRole('option')`.
 - **Action plan drag-and-drop does not work with Playwright's native `dragTo()`.** It requires a manual multi-step `mouse.down()` → several `mouse.move()` steps → `mouse.up()` sequence (see `dragCardToColumn` in `22-create-action-plan.spec.js`).
 - **Action plan "Edit action item" form: changing the Stage dropdown does not persist on Update.** Moving a task between stages only works via drag-and-drop on the board.
-- **Resources: "Amortization period" has a max value of 100**, and a Running cost's per-year cost field is rejected by validation for any year before the resource's Start year.
+- **Resources:** Investment uses a single Year + Useful life + Investment amount; a Running cost's per-year cost field is rejected by validation for any year before the resource's Start year. Running costs must be created from the "Running costs" list filter — switching type inside the drawer is broken (see `BUG_PATTERNS.md`).
 - **MVP creation requires at least one Key feature of type "Core"** — an MVP with only "Optional" features fails to submit.
-- **IP Rights nav buttons carry a status badge** (e.g. "Trademark Planned"), so match by prefix (`/^Trademark\b/`) rather than an exact label.
+- **IP Rights nav buttons carry a status badge** (e.g. "Patent Filed"), so match by prefix (`/^Trademark\b/`) rather than an exact label. Never press Escape inside the Other tab — it collapses the accordion.
 
 ## Notes
 

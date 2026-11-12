@@ -32,6 +32,6 @@ module.exports = [
     },
   },
   {
-    ignores: ['node_modules/', 'playwright-report/', 'test-results/', 'test-reports/', '.playwright-mcp/', 'tests/.auth/'],
+    ignores: ['node_modules/', 'playwright-report/', 'test-results/', 'test-reports/', '.playwright-mcp/', 'tests/.auth/', 'tmp/'],
   },
 ];

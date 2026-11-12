@@ -189,12 +189,15 @@ export async function createMarketingChannel(page, project, overrides = {}) {
   return channel;
 }
 
-// List view is a TABLE (not cards) — locate a channel's row by its unique
-// name rather than assuming position.
+// List view is a grid of CARDS again (was a table until 2026-11): each card
+// has an <h3> with the channel name and an "Open actions menu" button next
+// to it. Locate by the unique name rather than position; the returned
+// locator is the card's header block (name + actions menu).
 export async function getChannelRow(page, channelName) {
-  const row = page.locator('tr').filter({ hasText: channelName }).first();
-  await expect(row).toBeVisible({ timeout: 15000 });
-  return row;
+  const heading = page.getByRole('heading', { name: channelName, exact: true }).first();
+  const card = heading.locator('xpath=ancestor::*[.//button][1]');
+  await expect(card).toBeVisible({ timeout: 15000 });
+  return card;
 }
 
 async function openRowActionsMenu(page, channelName) {

@@ -115,22 +115,17 @@ test.describe.serial('Edit risk analysis flow', () => {
     await login(page);
     await openRiskAnalysisTab(page, project);
 
-    // Risk matrix markers show a truncated fragment of the risk's own name
-    // followed by a single "…" ellipsis character (confirmed live — this is
-    // fixed-width truncation of the name field, not a "Internal…"/
-    // "External…" type prefix as the original spec's selector assumed; that
-    // only worked before because the original fixture names all happened to
-    // start with the word "Internal"/"External"). The "…" character isn't
-    // used anywhere else on this page, so it reliably finds *some* marker
-    // without depending on any specific risk's exact name or position.
-    const marker = page.getByText(/…$/).first();
+    // Risk matrix markers are SVG groups (circle + "+N" count) acting as
+    // tooltip triggers since 2026-11 — no risk-name text is rendered on the
+    // matrix any more. The tooltip lists the cell's risk level and the
+    // names of the risks in it.
+    const marker = page.locator('main svg [data-slot="tooltip-trigger"]').first();
     await expect(marker).toBeVisible({ timeout: 15000 });
     await marker.hover();
 
     const tooltip = page.getByRole('tooltip').first();
     await expect(tooltip).toBeVisible({ timeout: 15000 });
-    await expect(tooltip).toContainText(/consequences/i);
-    await expect(tooltip).toContainText(/probability/i);
-    await expect(tooltip).toContainText(/risk level/i);
+    // e.g. "Extreme" + "Autotest Risk External Political …" (no separator in textContent).
+    await expect(tooltip).toHaveText(/^(Low|Moderate|High|Extreme)\S+/);
   });
 });

@@ -9,7 +9,7 @@ import { defineConfig, devices } from '@playwright/test';
 //
 // Base URL of the app under test.
 //   Prod (default):  npx playwright test
-//   Local dev:       BASE_URL=http://localhost:5173 npx playwright test
+//   Local dev:       BASE_URL=https://local.getlaunched.io:3000 npx playwright test
 // The app frontend reads its backend from VITE_BACK_API_LINK, so a local
 // frontend can still run against the prod API (where the test account and
 // its bootstrapped "Autotest Project" live — see tests/helpers/project.js).

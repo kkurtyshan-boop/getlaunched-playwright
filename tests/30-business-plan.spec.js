@@ -14,46 +14,58 @@ async function openBusinessPlan(page, project) {
   await expect(page).toHaveURL(/\/business-plan/i, { timeout: 20000 });
 }
 
+// Since 2026-11 the plan is a scrollable document (View / Edit toggle,
+// Update, Download) with a "Document sections" navigation — no longer a
+// slide presentation. Which sections appear depends on the project's data,
+// so only the always-present core is asserted by name; every nav entry is
+// then checked against a matching heading in the document itself.
+const CORE_SECTIONS = ['Cover', 'Table of Contents', 'Management Summary', 'Value Proposition', /^Financials/, 'Conclusion'];
+
+function sectionsNav(page) {
+  return page.getByRole('navigation', { name: /document sections/i });
+}
+
 test.describe('Business Plan', () => {
-  test('01. Generated plan renders its major sections', async ({ page, project }) => {
+  test('01. Generated plan renders its core sections', async ({ page, project }) => {
     test.setTimeout(60_000); // aggregates ~7 modules' data — slower than a typical page load
 
     await login(page);
     await openBusinessPlan(page, project);
 
-    // Section list reflects the aggregate document's actual table of
-    // contents (structural headings), not any project's specific business
-    // content — verified against the live rendering rather than assumed.
-    for (const sectionName of [
-      /clients/i,
-      /products\s*&\s*services/i,
-      /competitive analysis/i,
-      /go-to-market/i,
-      /team/i,
-      /location analysis/i,
-      /supplier analysis/i,
-      /financials/i,
-      /risk analysis/i,
-      /action plan/i,
-    ]) {
-      await expect(page.getByText(sectionName).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('radio', { name: /^view$/i })).toBeChecked({ timeout: 20000 });
+    const nav = sectionsNav(page);
+    await expect(nav).toBeVisible({ timeout: 20000 });
+
+    for (const section of CORE_SECTIONS) {
+      const name = typeof section === 'string' ? new RegExp(`^${section}$`, 'i') : section;
+      await expect(nav.getByRole('button', { name })).toBeVisible({ timeout: 15000 });
+    }
+
+    // Every listed section (except the Cover, which has no heading of its
+    // own) must have a matching heading in the rendered document.
+    const document = page.getByRole('region', { name: /business plan/i });
+    const sectionNames = (await nav.getByRole('button').allInnerTexts()).map((t) => t.trim()).filter((t) => t && !/^cover$/i.test(t));
+    for (const name of sectionNames) {
+      await expect(document.getByRole('heading', { name, exact: true, level: 2 }).first()).toBeAttached({ timeout: 15000 });
     }
   });
 
-  test('02. Next slide control advances the presentation', async ({ page, project }) => {
+  test('02. Section navigation scrolls the document to that section', async ({ page, project }) => {
     test.setTimeout(60_000);
 
     await login(page);
     await openBusinessPlan(page, project);
 
-    const nextSlideButton = page.getByRole('button', { name: /next slide/i }).first();
-    await expect(nextSlideButton).toBeVisible({ timeout: 15000 });
+    const nav = sectionsNav(page);
+    await expect(nav).toBeVisible({ timeout: 20000 });
+    const document = page.getByRole('region', { name: /business plan/i });
 
-    const before = await page.locator('main').innerText();
-    await nextSlideButton.click();
-    await page.waitForTimeout(500);
-    const after = await page.locator('main').innerText();
+    const target = document.getByRole('heading', { name: 'Conclusion', exact: true, level: 2 }).first();
+    await nav.getByRole('button', { name: /^conclusion$/i }).click();
+    await expect(target).toBeInViewport({ timeout: 10000 });
 
-    expect(after).not.toEqual(before);
+    const back = document.getByRole('heading', { name: 'Management Summary', exact: true, level: 2 }).first();
+    await nav.getByRole('button', { name: /^management summary$/i }).click();
+    await expect(back).toBeInViewport({ timeout: 10000 });
   });
 });

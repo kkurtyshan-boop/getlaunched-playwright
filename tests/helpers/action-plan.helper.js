@@ -1,16 +1,11 @@
 import { expect } from '@playwright/test';
-import { gotoImplementation, gotoOperations } from './navigation';
+import { gotoActionPlan, gotoOperations } from './navigation';
 import { STAGE_NAME, TASK_NAME, CALC_START_YEAR, unique } from '../config';
 
-// Implementation → Action plan is a tabbed page (Risk analysis / Action
-// plan / MVP) reached via the `project` fixture + gotoImplementation, then
-// clicking the "Action plan" tab — see PROJECT_KNOWLEDGE.md §3.5.
+// Action plan is its own page now (/action-plan), not a tab of the former
+// Implementation page.
 export async function gotoActionPlanBoard(page, project) {
-  await gotoImplementation(page, project);
-
-  const actionPlanTab = page.getByRole('tab', { name: /^action plan$/i }).first();
-  await expect(actionPlanTab).toBeVisible({ timeout: 15000 });
-  await actionPlanTab.click();
+  await gotoActionPlan(page, project);
 
   const addStageButton = page.getByRole('button', { name: /add stage/i }).first();
   await expect(addStageButton).toBeVisible({ timeout: 15000 });
@@ -62,6 +57,21 @@ export async function selectFromCustomDropdown(page, scope, dropdownIndex, optio
   await expect(listbox).not.toBeVisible({ timeout: 5000 }).catch(() => {});
 }
 
+// Assignee is a searchable combobox (since 2026-11 — it used to be the 3rd
+// custom dropdown; that slot is now the new optional "Area" dropdown:
+// No area / Clients / Products & Services / ... / Marketing / ...). Type
+// to filter, then pick the matching option.
+export async function selectAssignee(page, modal, assigneeName) {
+  const combobox = modal.getByRole('combobox').first();
+  await expect(combobox).toBeVisible({ timeout: 15000 });
+  await combobox.click();
+  await combobox.fill(assigneeName);
+
+  const option = page.getByRole('option', { name: assigneeName }).first();
+  await expect(option).toBeVisible({ timeout: 15000 });
+  await option.click();
+}
+
 // `day` is a preference, not a guarantee: the calendar opens to the month of
 // whatever due date is already set, and this picker disables past dates
 // entirely. Clicks "Next month" until at least one day is selectable, then
@@ -69,7 +79,8 @@ export async function selectFromCustomDropdown(page, scope, dropdownIndex, optio
 // enabled day.
 export async function selectDueDate(page, modal, day) {
   const dueDateButton = modal
-    .getByRole('button', { name: /select date|^\d{1,2}\s+\p{L}+\s+\d{4}$/iu })
+    // Empty: "Select date"; filled: "Nov 25, 2026" (older builds: "25 Nov 2026").
+    .getByRole('button', { name: /select date|^\d{1,2}\s+\p{L}+\s+\d{4}$|^\p{L}+\s+\d{1,2},\s+\d{4}$/iu })
     .first();
   await dueDateButton.click();
 
@@ -111,7 +122,20 @@ export async function createStage(page, project, overrides = {}) {
 
   const addButton = page.getByRole('button', { name: /^add$/i }).first();
   await expect(addButton).toBeEnabled({ timeout: 5000 });
+
+  // The board renders a new column optimistically, before the server
+  // answers — so a visible column alone doesn't prove the stage was saved.
+  // Without waiting for the response, a test that ends right after
+  // createStage closes the page and aborts the in-flight POST (seen in
+  // full-suite runs: 22-01's "Done" stage was never persisted, so 22-03's
+  // drag-and-drop failed). Assert on the real response.
+  const created = page.waitForResponse(
+    (r) => /\/action-plan-stages$/.test(r.url()) && r.request().method() === 'POST',
+    { timeout: 15000 }
+  );
   await addButton.click();
+  const response = await created;
+  expect(response.status(), `Creating stage "${stage.name}" failed: ${await response.text().catch(() => '')}`).toBe(201);
 
   const column = getColumnByStageName(page, stage.name);
   await expect(column).toBeVisible({ timeout: 15000 });
@@ -160,7 +184,7 @@ export async function createTask(page, project, stageName, overrides = {}) {
   }
 
   if (task.assignee) {
-    await selectFromCustomDropdown(page, modal, 2, task.assignee, false);
+    await selectAssignee(page, modal, task.assignee);
   }
 
   const createButton = modal.getByRole('button', { name: /^create$/i }).first();
@@ -219,7 +243,21 @@ async function findHorizontalScrollAncestor(locator) {
 // then re-issues a real mouse.move at its new on-screen position — the
 // library's hit-testing only cares about the pointer's current viewport
 // coordinate, not how the content got there.
+// Public entry point: one retry when the drop isn't registered. In long
+// full-suite runs the board occasionally ignores a drop (no save request is
+// sent at all, the card snaps back); a second, fresh drag then works.
 export async function dragCardToColumn(page, cardLocatorOrName, targetColumnName) {
+  try {
+    await dragCardToColumnOnce(page, cardLocatorOrName, targetColumnName);
+  } catch (err) {
+    if (!/waitForResponse: Timeout/.test(err.message || '')) throw err;
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await dragCardToColumnOnce(page, cardLocatorOrName, targetColumnName);
+  }
+}
+
+async function dragCardToColumnOnce(page, cardLocatorOrName, targetColumnName) {
   const card = typeof cardLocatorOrName === 'string'
     ? page.getByText(cardLocatorOrName, { exact: false }).first()
     : cardLocatorOrName;
@@ -294,8 +332,18 @@ export async function dragCardToColumn(page, cardLocatorOrName, targetColumnName
     { steps: 5 }
   );
   await page.waitForTimeout(300);
+
+  // Wait for the move to actually be saved instead of a fixed pause: on a
+  // slow backend (e.g. late in a 40-minute full run) a caller that reloads
+  // right after the drop otherwise aborts the in-flight save and the card
+  // snaps back to its old column.
+  const saved = page.waitForResponse(
+    (r) => r.request().method() !== 'GET' && /\/action-(plan|item)/.test(r.url()),
+    { timeout: 15000 }
+  );
   await page.mouse.up();
-  await page.waitForTimeout(1000);
+  const response = await saved;
+  expect(response.ok(), `Saving the drag-and-drop move failed: ${response.status()}`).toBe(true);
 }
 
 // A task's Assignee dropdown is sourced from Team & Staff Key Members (NOT

@@ -1,12 +1,12 @@
 import { expect } from '@playwright/test';
 import {
   PROJECT_NAME,
-  PROJECT_WEBSITE,
   PROJECT_DESCRIPTION,
   FOUNDATION_YEAR,
   CALC_START_YEAR,
   PLANNING_HORIZON_YEARS,
 } from '../config';
+import { selectDropdownByLabel } from './dom';
 
 // Discovers the backend's API base URL and a live Bearer token by observing
 // real authenticated traffic. storageState.json only carries a
@@ -90,7 +90,7 @@ export async function deleteProjectById(page, id) {
 // no confirmed API endpoint for project creation, only for list/delete, so
 // creation stays UI-driven (also exercises the real onboarding form, which
 // is the point of this suite).
-export async function createProjectViaUi(page, { name, website = PROJECT_WEBSITE, description = PROJECT_DESCRIPTION } = {}) {
+export async function createProjectViaUi(page, { name, description = PROJECT_DESCRIPTION } = {}) {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const createProjectButton = page
@@ -101,27 +101,31 @@ export async function createProjectViaUi(page, { name, website = PROJECT_WEBSITE
   await createProjectButton.click();
 
   await expect(page.getByRole('heading', { name: /create project/i })).toBeVisible({ timeout: 15000 });
+  const form = page.locator('main');
 
-  await page.locator('input[placeholder*="Type name"]').first().fill(name);
-  await page.locator('input[placeholder*="https://"]').first().fill(website);
-  await page.locator('textarea[placeholder*="Write your story"]').first().fill(description);
+  // Form layout as of 2026-11-11: Basic info (name, short description),
+  // Business setup (Domicil combobox — preset to Switzerland, Legal form*,
+  // Development stage*), Financial settings (Currency* combobox, Income
+  // tax*, Year of foundation*, Start calculation from*, Planning years*),
+  // optional Links (website/social — replaced the old Website input) and
+  // Team members. Every select is now a custom dropdown, not a native <select>.
+  await form.getByRole('textbox', { name: /^project name/i }).fill(name);
+  await form.getByRole('textbox', { name: /^short description/i }).fill(description);
 
-  const selects = page.locator('select');
-  await selects.nth(0).selectOption({ index: 1 });
-  await selects.nth(1).selectOption({ index: 1 });
+  await selectDropdownByLabel(page, form, /^legal form/i);
+  await selectDropdownByLabel(page, form, /^development stage/i);
 
-  const currencyField = page.locator('[role="combobox"]').nth(1);
-  await currencyField.click();
+  // Currency is a searchable combobox (₣ Swiss Franc first).
+  await form.getByRole('combobox', { name: /^select$/i }).click();
   await page.getByRole('option').first().click();
 
-  await page.locator('input[placeholder*="Type tax"]').first().fill('25');
+  await form.getByRole('textbox', { name: /^income tax/i }).fill('25');
 
-  // nth(2) foundation year, nth(3) calculation start year, nth(4) planning
-  // horizon length. Many downstream specs assume exactly
-  // PLANNING_HORIZON_YEARS year-columns (2027/2028 today) — see config.js.
-  await selects.nth(2).selectOption(FOUNDATION_YEAR);
-  await selects.nth(3).selectOption(CALC_START_YEAR);
-  await selects.nth(4).selectOption(String(PLANNING_HORIZON_YEARS));
+  // Many downstream specs assume exactly PLANNING_HORIZON_YEARS
+  // year-columns (2027/2028 today) — see config.js.
+  await selectDropdownByLabel(page, form, /^year of foundation/i, FOUNDATION_YEAR);
+  await selectDropdownByLabel(page, form, /^start calculation from/i, CALC_START_YEAR);
+  await selectDropdownByLabel(page, form, /^planning years/i, String(PLANNING_HORIZON_YEARS));
 
   await page.getByRole('button', { name: /^create project$/i }).last().click();
 
@@ -163,7 +167,7 @@ async function renameProjectViaUi(page, currentName, newName) {
 
   await expect(page.getByRole('heading', { name: /edit project|create project/i }).first()).toBeVisible({ timeout: 15000 });
 
-  const nameField = page.locator('input[placeholder*="Type name"]').first();
+  const nameField = page.getByRole('textbox', { name: /^project name/i });
   await expect(nameField).toBeVisible({ timeout: 15000 });
   await nameField.fill(newName);
 

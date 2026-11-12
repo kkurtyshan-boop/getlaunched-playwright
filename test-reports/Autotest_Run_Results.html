@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autotest Run Results</title>
+<style>
+:root {
+  --bg:#f7f7f5; --card:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e4e4df;
+  --ok:#1f7a3e; --ok-bg:#e6f4ea; --bad:#b3261e; --bad-bg:#fdecea; --skip:#8a6100; --skip-bg:#fff4d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#161615; --card:#1f1f1d; --text:#ececea; --muted:#a3a39d; --line:#33332f;
+    --ok:#7fd49b; --ok-bg:#16301f; --bad:#f2a49d; --bad-bg:#3a1a17; --skip:#f0cc6e; --skip-bg:#33290f;
+  }
+}
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width:1200px; margin:0 auto; padding:24px 16px 48px; }
+h1 { font-size:22px; margin:0 0 4px; }
+.meta { color:var(--muted); margin-bottom:16px; }
+.summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; min-width:110px; }
+.tile b { display:block; font-size:22px; }
+.tile.ok b { color:var(--ok); } .tile.bad b { color:var(--bad); } .tile.skip b { color:var(--skip); }
+.filters { margin-bottom:10px; display:flex; gap:6px; flex-wrap:wrap; }
+.filters button { border:1px solid var(--line); background:var(--card); color:var(--text); border-radius:999px; padding:5px 12px; cursor:pointer; font:inherit; }
+.filters button[aria-pressed="true"] { background:var(--text); color:var(--bg); }
+.wrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; }
+table { border-collapse:collapse; width:100%; min-width:760px; }
+th, td { text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--line); }
+th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); position:sticky; top:0; background:var(--card); }
+td.num { white-space:nowrap; color:var(--muted); font-variant-numeric:tabular-nums; }
+.file { color:var(--muted); font-size:12px; }
+.title { font-weight:500; }
+.badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+.badge.ok { color:var(--ok); background:var(--ok-bg); }
+.badge.bad { color:var(--bad); background:var(--bad-bg); }
+.badge.skip { color:var(--skip); background:var(--skip-bg); }
+details { margin-top:6px; } summary { cursor:pointer; color:var(--muted); font-size:12px; }
+pre { white-space:pre-wrap; word-break:break-word; font-size:12px; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px; max-height:260px; overflow:auto; }
+</style>
+</head>
+<body>
+<main>
+<h1>Результати автотестів GetLaunched</h1>
+<div class="meta">Прогін: 2026-11-12 16:09 · Середовище: frontv2.getlaunched.io · Chromium (видимий браузер) · Проєкт «Autotest Project»</div>
+<div class="summary">
+<div class="tile"><b>105</b>Усього</div>
+<div class="tile ok"><b>103</b>Пройшло</div>
+<div class="tile bad"><b>1</b>Впало</div>
+<div class="tile skip"><b>1</b>Не запускалось / пропущено</div>
+</div>
+<div class="filters" role="group" aria-label="Фільтр">
+<button data-f="all" aria-pressed="true">Усі</button>
+<button data-f="bad" aria-pressed="false">Впали</button>
+<button data-f="skip" aria-pressed="false">Не запускались</button>
+<button data-f="ok" aria-pressed="false">Пройшли</button>
+</div>
+<div class="wrap"><table>
+<thead><tr><th>#</th><th>Тест</th><th>Статус</th><th>Час</th><th>Причина / коментар</th></tr></thead>
+<tbody>
+<tr class="ok">
+<td class="num">1</td>
+<td><div class="file">00-onboarding-new-account.spec.js</div><div class="title">New project onboarding: create, configure, verify, clean up</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">47.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">2</td>
+<td><div class="file">01-login.spec.js</div><div class="title">Login</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">5.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">3</td>
+<td><div class="file">02-create-project.spec.js</div><div class="title">Create project</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">4</td>
+<td><div class="file">02-create-project.spec.js</div><div class="title">Create project — validation</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">10.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">5</td>
+<td><div class="file">03-edit-project.spec.js</div><div class="title">Edit and delete project</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">19.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">6</td>
+<td><div class="file">04-create-client.spec.js</div><div class="title">Create client flow › 01. Validation for empty client form</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">7</td>
+<td><div class="file">04-create-client.spec.js</div><div class="title">Create client flow › 02. Create client: with a full needs list</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">8</td>
+<td><div class="file">04-create-client.spec.js</div><div class="title">Create client flow › 02. Create client: with zero needs</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">9</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 01. Validation for empty product form</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">11.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">10</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 02. Create first product with an attached client</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">24.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">11</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 03. Create remaining products (one per Revenue Type)</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">49.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">12</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 04. Cost type toggle updates the in-modal classification hint</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">13</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 05. Create a product with cost_type = Other direct cost (service business)</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">14</td>
+<td><div class="file">06-create-product.spec.js</div><div class="title">Products / Services flow › 06. Create an Annual subscription product and verify the period persists</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">15</td>
+<td><div class="file">07-edit-product-add-delete-client.spec.js</div><div class="title">Products / Services edit flow › 00. Set up product with an attached client</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">28.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">16</td>
+<td><div class="file">07-edit-product-add-delete-client.spec.js</div><div class="title">Products / Services edit flow › 01. Delete client from product</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">17</td>
+<td><div class="file">07-edit-product-add-delete-client.spec.js</div><div class="title">Products / Services edit flow › 02. Add client back to product</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">21.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">18</td>
+<td><div class="file">08-create-competitor-analysis.spec.js</div><div class="title">Competitors flow › 01. Competitors - validation on create</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">19</td>
+<td><div class="file">08-create-competitor-analysis.spec.js</div><div class="title">Competitors flow › 02. Create competitors</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">37.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">20</td>
+<td><div class="file">09-create-evaluation-criteria.spec.js</div><div class="title">Evaluation criteria flow › 01. Evaluation criteria - validation on create</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">21</td>
+<td><div class="file">09-create-evaluation-criteria.spec.js</div><div class="title">Evaluation criteria flow › 02. Create evaluation criteria</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">41.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">22</td>
+<td><div class="file">10-create-evaluation-matrix.spec.js</div><div class="title">Set and verify evaluation matrix scores</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">89.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">23</td>
+<td><div class="file">11-edit-delete-competitor.spec.js</div><div class="title">Edit competitor name, then delete it</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">27.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">24</td>
+<td><div class="file">12-create-marketing-channels.spec.js</div><div class="title">Marketing channels flow › 01. Validation for empty channel form</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">11.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">25</td>
+<td><div class="file">12-create-marketing-channels.spec.js</div><div class="title">Marketing channels flow › 02. &quot;Other&quot; category reveals a custom category name field</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">26</td>
+<td><div class="file">12-create-marketing-channels.spec.js</div><div class="title">Marketing channels flow › 03. Create marketing channels for all built-in categories</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">112.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">27</td>
+<td><div class="file">13-edit-marketing-channels.spec.js</div><div class="title">Edit marketing channels flow › 00. Set up channels to edit</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">76.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">28</td>
+<td><div class="file">13-edit-marketing-channels.spec.js</div><div class="title">Edit marketing channels flow › 01. Edit channel name and cost</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">29</td>
+<td><div class="file">13-edit-marketing-channels.spec.js</div><div class="title">Edit marketing channels flow › 02. Edit channel client connection and conversion rate</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">30</td>
+<td><div class="file">13-edit-marketing-channels.spec.js</div><div class="title">Edit marketing channels flow › 03. Edit channel strategy and quantity</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">31</td>
+<td><div class="file">14-create-team-and-staff.spec.js</div><div class="title">Team and staff flow › 01. Create key members</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">29.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">32</td>
+<td><div class="file">14-create-team-and-staff.spec.js</div><div class="title">Team and staff flow › 02. Create line staff</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">32.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">33</td>
+<td><div class="file">15-edit-team-and-staff.spec.js</div><div class="title">Edit team and staff flow › 00. Create a key member to edit</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">34</td>
+<td><div class="file">15-edit-team-and-staff.spec.js</div><div class="title">Edit team and staff flow › 01. Edit key member role name and salary</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">19.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">35</td>
+<td><div class="file">15-edit-team-and-staff.spec.js</div><div class="title">Edit team and staff flow › 02. Edit key member employment % and background</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">22.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">36</td>
+<td><div class="file">15-edit-team-and-staff.spec.js</div><div class="title">Edit team and staff flow › 03. Edit line staff FTE per year and description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">24.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">37</td>
+<td><div class="file">16-create-resources.spec.js</div><div class="title">Create resources flow › 01. Create investment resources across categories</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">25.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">38</td>
+<td><div class="file">16-create-resources.spec.js</div><div class="title">Create resources flow › 02. Create running costs resources across categories</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">30.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">39</td>
+<td><div class="file">16-create-resources.spec.js</div><div class="title">Create resources flow › 03. Running cost blocks cost input for years before the start year</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">17.2 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">40</td>
+<td><div class="file">17-edit-resources.spec.js</div><div class="title">Edit resources flow › 00. Set up an investment and a running cost resource</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">41</td>
+<td><div class="file">17-edit-resources.spec.js</div><div class="title">Edit resources flow › 01. Edit investment resource category, useful life and amount</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">42</td>
+<td><div class="file">17-edit-resources.spec.js</div><div class="title">Edit resources flow › 02. Edit running costs resource payment type and cost per year</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">43</td>
+<td><div class="file">18-create-other.spec.js</div><div class="title">Other (Operations) flow › 01. Save intellectual property rights in each status</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">35.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">44</td>
+<td><div class="file">18-create-other.spec.js</div><div class="title">Other (Operations) flow › 02. Fill location analysis: locations, criteria and comparison matrix</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">36.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">45</td>
+<td><div class="file">18-create-other.spec.js</div><div class="title">Other (Operations) flow › 03. Fill supplier analysis: suppliers, criteria and comparison matrix</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">37.2 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">46</td>
+<td><div class="file">19-edit-other.spec.js</div><div class="title">Edit other (Operations) flow › 00. Set up a patent, a location with a criterion, and a supplier with a criterion</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">43.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">47</td>
+<td><div class="file">19-edit-other.spec.js</div><div class="title">Edit other (Operations) flow › 01. Edit patent stage and description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">48</td>
+<td><div class="file">19-edit-other.spec.js</div><div class="title">Edit other (Operations) flow › 02. Edit a location and a location criterion weight</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">18.2 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">49</td>
+<td><div class="file">19-edit-other.spec.js</div><div class="title">Edit other (Operations) flow › 03. Edit a supplier and a supplier criterion weight</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.2 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">50</td>
+<td><div class="file">20-create-risk-analysis.spec.js</div><div class="title">Risk analysis flow › 01. Switching Risk type shows/hides the PESTEL category field</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">51</td>
+<td><div class="file">20-create-risk-analysis.spec.js</div><div class="title">Risk analysis flow › 02. Create risk entries covering External (with PESTEL) and Internal types</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">33.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">52</td>
+<td><div class="file">21-edit-risk-analysis.spec.js</div><div class="title">Edit risk analysis flow › 00. Set up an Internal and an External risk to edit</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">25.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">53</td>
+<td><div class="file">21-edit-risk-analysis.spec.js</div><div class="title">Edit risk analysis flow › 01. Edit an internal risk consequences and description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">54</td>
+<td><div class="file">21-edit-risk-analysis.spec.js</div><div class="title">Edit risk analysis flow › 02. Edit an external risk probability and description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">55</td>
+<td><div class="file">21-edit-risk-analysis.spec.js</div><div class="title">Edit risk analysis flow › 03. Switching an existing External risk to Internal clears the PESTEL field</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">21.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">56</td>
+<td><div class="file">21-edit-risk-analysis.spec.js</div><div class="title">Edit risk analysis flow › 04. Hovering a risk matrix marker shows a risk details tooltip</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">57</td>
+<td><div class="file">22-create-action-plan.spec.js</div><div class="title">Action plan flow › 00. Set up a Key Member to use as task assignee</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">58</td>
+<td><div class="file">22-create-action-plan.spec.js</div><div class="title">Action plan flow › 01. Create In Progress and Done stages</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">59</td>
+<td><div class="file">22-create-action-plan.spec.js</div><div class="title">Action plan flow › 02. Create action items with full, minimal, and mixed fields</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">55.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="bad">
+<td class="num">60</td>
+<td><div class="file">22-create-action-plan.spec.js</div><div class="title">Action plan flow › 03. Drag tasks to different stages and verify after reload</div></td>
+<td><span class="badge bad">Впав</span></td>
+<td class="num">30.2 с</td>
+<td>Нестабільність drag-and-drop у довгому прогоні: дошка проігнорувала drop (запит на збереження переміщення не відправився, картка повернулась на місце). Окремо тест проходить (5/5 двічі у видимому браузері). ✅ Виправлено: якщо drop не зареєструвався, хелпер перезавантажує дошку і повторює перетягування один раз. Перевірено: 5/5 passed.<details><summary>Деталі помилки · helpers/action-plan.helper.js:326</summary><pre>TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event &quot;response&quot;
+
+   at helpers/action-plan.helper.js:326
+
+  324 |   // right after the drop otherwise aborts the in-flight save and the card
+  325 |   // snaps back to its old column.
+&gt; 326 |   const saved = page.waitForResponse(
+      |                      ^
+  327 |     (r) =&gt; r.request().method() !== &#x27;GET&#x27; &amp;&amp; /\/action-(plan|item)/.test(r.url()),
+  328 |     { timeout: 15000 }
+  329 |   );
+    at dragCardToColumn (/Users/macbook/Documents/Projects /Getlaunched-Autotest /getlaunched-playwright/tests/helpers/action-plan.helper.js:326:22)
+    at /Users/macbook/Documents/Projects /Getlaunched-Autotest /getlaunched-playwright/tests/22-create-action-plan.spec.js:90:5</pre></details></td>
+</tr><tr class="ok">
+<td class="num">61</td>
+<td><div class="file">23-edit-action-plan.spec.js</div><div class="title">Edit action plan flow › 00. Set up Key Member and tasks to edit</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">38.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">62</td>
+<td><div class="file">23-edit-action-plan.spec.js</div><div class="title">Edit action plan flow › 01. Edit a minimal task: add due date, assignee, raise priority</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">22.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">63</td>
+<td><div class="file">23-edit-action-plan.spec.js</div><div class="title">Edit action plan flow › 02. Edit a task priority and add description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">64</td>
+<td><div class="file">23-edit-action-plan.spec.js</div><div class="title">Edit action plan flow › 03. Edit a task priority and assignee</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">25.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">65</td>
+<td><div class="file">23-edit-action-plan.spec.js</div><div class="title">Edit action plan flow › 04. Editing Stage via the form does not persist; drag-and-drop still does</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">23.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">66</td>
+<td><div class="file">24-create-mvp.spec.js</div><div class="title">MVP flow › 00. Set up a target segment client for the MVPs</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">67</td>
+<td><div class="file">24-create-mvp.spec.js</div><div class="title">MVP flow › 01. Create an MVP for each type</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">91.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">68</td>
+<td><div class="file">24-create-mvp.spec.js</div><div class="title">MVP flow › 02. Reject an MVP whose only Key Feature is Optional</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">69</td>
+<td><div class="file">25-edit-mvp.spec.js</div><div class="title">Edit MVP flow › 00. Set up an MVP to edit</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">37.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">70</td>
+<td><div class="file">25-edit-mvp.spec.js</div><div class="title">Edit MVP flow › 01. Edit MVP target segment and target value</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">28.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">71</td>
+<td><div class="file">25-edit-mvp.spec.js</div><div class="title">Edit MVP flow › 02. Edit MVP hypothesis and time frame</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">30.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">72</td>
+<td><div class="file">25-edit-mvp.spec.js</div><div class="title">Edit MVP flow › 03. Edit MVP name and success metric</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">35.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">73</td>
+<td><div class="file">25-edit-mvp.spec.js</div><div class="title">Edit MVP flow › 04. Delete the edited MVP</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.2 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">74</td>
+<td><div class="file">26-dashboard.spec.js</div><div class="title">Dashboard › 01. All widgets render with the project header</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">75</td>
+<td><div class="file">26-dashboard.spec.js</div><div class="title">Dashboard › 02. Each widget header link points at its module page</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">76</td>
+<td><div class="file">26-dashboard.spec.js</div><div class="title">Dashboard › 03. Invite button opens Add team members modal and closes cleanly</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">17.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">77</td>
+<td><div class="file">27-magic-triangle-overview.spec.js</div><div class="title">Magic Triangle overview › 01. Overview renders AI insights and sub-links</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">78</td>
+<td><div class="file">27-magic-triangle-overview.spec.js</div><div class="title">Magic Triangle overview › 02. Auto analyze shows a loading state and clears</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">43.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">79</td>
+<td><div class="file">28-financial-forecasts.spec.js</div><div class="title">Financial — Forecasts &amp; Reports › 01. Stat tiles and chart render</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">80</td>
+<td><div class="file">28-financial-forecasts.spec.js</div><div class="title">Financial — Forecasts &amp; Reports › 02. Income / Cash flow / Balance sheet tabs each load their own breakdown table</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">81</td>
+<td><div class="file">29-financial-funding.spec.js</div><div class="title">Financial — Funding &amp; Setup › 01. Working capital calculator computes the cash conversion cycle live</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">82</td>
+<td><div class="file">29-financial-funding.spec.js</div><div class="title">Financial — Funding &amp; Setup › 02. Funding &amp; Capital section renders (empty state or activity list)</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">83</td>
+<td><div class="file">30-business-plan.spec.js</div><div class="title">Business Plan › 01. Generated plan renders its core sections</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">84</td>
+<td><div class="file">30-business-plan.spec.js</div><div class="title">Business Plan › 02. Section navigation scrolls the document to that section</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">24.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">85</td>
+<td><div class="file">31-invite.spec.js</div><div class="title">Collaboration — Invite › 01. Role dropdown lists Editor and Viewer</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.7 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">86</td>
+<td><div class="file">31-invite.spec.js</div><div class="title">Collaboration — Invite › 02. Submitting with an empty email is blocked</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">87</td>
+<td><div class="file">31-invite.spec.js</div><div class="title">Collaboration — Invite › 03. Malformed email is rejected</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">16.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">88</td>
+<td><div class="file">31-invite.spec.js</div><div class="title">Collaboration — Invite › 04. Cancel closes the modal without sending an invite</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">17.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">89</td>
+<td><div class="file">32-minor-global-settings.spec.js</div><div class="title">Minor global settings › 01. Notifications panel opens and Mark all as read works</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">14.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">90</td>
+<td><div class="file">32-minor-global-settings.spec.js</div><div class="title">Minor global settings › 02. Language switcher changes and can be reverted to English</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">15.1 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">91</td>
+<td><div class="file">32-minor-global-settings.spec.js</div><div class="title">Minor global settings › 03. Learning center link is present in the sidebar</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">13.9 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">92</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › legend shows the four priorities</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">12.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">93</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › card shows overview and menu opens edit and delete</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">21.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">94</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › edit panel saves a new name and description</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">22.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">95</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › deleting a need in the edit panel removes it from the card</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">25.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">96</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › delete from the card menu removes the segment</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">19.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">97</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › long pain list is sorted, collapsed to 4 and expandable</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">28.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">98</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › unanswered needs show No answer</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.0 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">99</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › need card shows details and links to the canvas</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">22.5 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">100</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › need card Edit opens the edit panel focused on the need</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">20.3 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">101</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › add buttons open the add dialog per category</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">25.6 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">102</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › coverage footer and Open canvas link</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">22.8 с</td>
+<td>Пройшов.</td>
+</tr><tr class="skip">
+<td class="num">103</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › answering a pain through the canvas raises coverage to 1 of N</div></td>
+<td><span class="badge skip">Пропущено</span></td>
+<td class="num">0.0 с</td>
+<td>Пропущено: тест позначений test.fixme() — автор ще не реалізував його (порожнє тіло).</td>
+</tr><tr class="ok">
+<td class="num">104</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › partial and empty segments</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">23.4 с</td>
+<td>Пройшов.</td>
+</tr><tr class="ok">
+<td class="num">105</td>
+<td><div class="file">33-clients-screen.spec.js</div><div class="title">Clients screen: segment cards › card stacks below 1100px</div></td>
+<td><span class="badge ok">Пройшов</span></td>
+<td class="num">18.2 с</td>
+<td>Пройшов.</td>
+</tr>
+</tbody></table></div>
+</main>
+<script>
+document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const f = b.dataset.f;
+  document.querySelectorAll('tbody tr').forEach(tr => { tr.style.display = (f === 'all' || tr.classList.contains(f)) ? '' : 'none'; });
+}));
+</script>
+</body>
+</html>

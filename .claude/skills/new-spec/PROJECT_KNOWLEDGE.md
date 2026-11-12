@@ -6,6 +6,83 @@ Brand"**), cross-referenced against the 25 existing specs in `tests/`. Written
 for a QA engineer who has never seen the app before and needs to plan test
 coverage.
 
+## 0. UI changes confirmed live on 2026-11-11 (supersede older notes below)
+
+Found while updating the suite to the redesigned UI. Where a later section
+contradicts this list, this list wins.
+
+- **Navigation:** the tabbed *Implementation* page is gone. Sidebar:
+  Dashboard, Magic triangle (Clients / Products / Competitors / **MVP**),
+  Operations, Financial, **Risk analysis** (`/project/{id}/risk-analysis`),
+  **Action plan** (`/project/{id}/action-plan`), Business plan. MVP lives at
+  `/triangle/mvp`; `/implementation` redirects to `/action-plan`; `/mvp` is
+  "Not Found". Dashboard widget links point to the new routes.
+- **Create/Edit project:** Basic info (Project name*, Short description),
+  Business setup (Domicil combobox — preset Switzerland, Legal form*,
+  Development stage*), Financial settings ("Use defaults" button, Currency*
+  combobox, Income tax*, Year of foundation*, Start calculation from*,
+  Planning years* — all custom dropdowns, no native `<select>`), Links (the
+  old Website field; optional), Team members.
+- **Client needs:** each need has three required dropdowns — Priority (Low /
+  Medium / High / Critical), Satisfaction level (Not / Partially / Fully
+  satisfied) and the new **Category** (Job / Pain / Gain). A need without a
+  Category blocks Create.
+- **Clients screen (2026-11-12):** one card per segment
+  (`data-testid="client-segment-card"`, `data-client-id`) — overview,
+  Job / Pain / Gain need columns (`need-column[data-category]`, `need-item`
+  with `data-priority`, sorted by priority, collapsed to 4 with a
+  `need-list-toggle`), per-column `need-add-button`, `coverage-footer`
+  ("N of M needs answered by your offer"), "Open canvas" link, and an
+  actions menu (`segment-menu-trigger` → Edit / Delete). Clicking a need
+  opens a `need-card` with Edit and "Answer in canvas". The Edit client
+  drawer has no data-testids. Covered by `tests/33-clients-screen.spec.js`
+  (helpers: `tests/helpers/client-card.helper.js`).
+- **Product:** a 3-step wizard — 1 General (`#name`, `#description`, photo),
+  2 Pricing (Revenue type **radiogroup**: Per item / Hourly / Subscription /
+  Donation / **Commission**; `#price`; Commission uses `#commissionRate` +
+  `#dealValue` and has no Cost type; Cost type; Subscription type; Sourcing;
+  `#productionCost`; margin shown as read-only text "Margin per unit ₣ X ·
+  Y%"), 3 Clients (Add client → Business unit* + Quantity per year).
+- **Competitors / Evaluation criteria / Location & Supplier criteria:** the
+  section's create trigger is a labeled "Add …" button while the section is
+  empty and an unlabeled "+" icon once it has items — in both cases the first
+  button after the section heading.
+- **Marketing channels:** the list is a grid of cards (h3 name + "Open
+  actions menu"), no longer a table.
+- **Resources:** Investment = Category, Payment type (fixed One-time), Year,
+  Useful life (years, default 5), Investment amount, Description. Running
+  costs = Category, Payment type, Start year, Cost per year (per year),
+  Description. Open the drawer from the "Running costs" list filter —
+  switching type inside the drawer breaks Create (BUG_PATTERNS.md). Cost
+  columns before the Start year are disabled. Amounts display with ","
+  thousands separators ("21,000").
+- **MVP list** shows only the first 15 MVPs (API pages by 15, UI has no
+  pagination) — keep the test project under 15 MVPs (BUG_PATTERNS.md).
+- **Team & staff:** Key member = name, background, role, Salary per year,
+  Employment % per year. Line staff = role, FTE per year (placeholder still
+  "Type quantity"), Salary per year, Description. Line staff creation works
+  again.
+- **Other → IP Rights:** per type a status "Have it / Planned / Not relevant"
+  (question buttons "Yes, we have it / Yes, planned / Not relevant" until
+  first answered). Have it → Stage* (Trademark/Design: Filed | Registered;
+  Patent: Filed | Granted; Copyright: none), registration number, countries,
+  filing date, valid until, description. Planned → Planned filing, Estimated
+  cost, countries, description. Nav badge shows the saved stage. Switching
+  type with unsaved edits opens "Discard unsaved changes?". The accordion is
+  open by default — click its header only if `aria-expanded` is not "true".
+- **Other → Location / Supplier:** item lists have no heading, only an "N
+  added" counter with a "+" button. Cards are buttons that open the Edit
+  drawer directly (no actions menu); criteria cards still use the menu.
+  Supplier drawer: Supply (Name*, What they supply, For which products,
+  Role Main/Backup/Interim), Volume & delivery, Contact details (E-mail,
+  Country combobox, …), Team & notes. Supplier card shows Country + Role.
+- **Action plan:** the item form has a new optional **Area** dropdown (No
+  area / Clients / Products & Services / …) in 3rd position; **Assignee** is
+  a searchable combobox. Dates render as "Nov 25, 2026".
+- **Business plan:** a scrollable document (View / Edit, Update, Download)
+  with a "Document sections" nav — no slides / "Next slide" control. Which
+  sections appear depends on the project's data.
+
 ## 1. What the product is
 
 GetLaunched is a **business-planning SaaS**: a user creates a "project"
@@ -98,6 +175,17 @@ idempotency, not just clicking it repeatedly in CI). Covered as of
 render + "Auto analyze" button disables while running and re-enables on
 completion.
 
+**USP / Value proposition** (found 2026-10-06): both cards sit under
+"Strategy details" with an unlabeled pencil button → right-side drawer with
+one textarea (placeholders `Write usp` / `Write value proposition`; DE:
+`USP schreiben`) + Cancel / Update. Both are stored on one record:
+`PUT /projects/{id}/value-proposition` with `{name, usp, description}` (VP
+text = `description`; `name` is hidden in the UI). Page data comes from
+`GET /projects/{id}/magic-triangle`. The page-level Assist me can save both
+(SSE `action` event `entity: value_proposition`), but the page does not
+re-fetch afterwards — see BUG_PATTERNS.md. "Auto analyze" =
+`POST /projects/{id}/dashboard/ai-fill` and rewrites USP/VP/name.
+
 **Clients** (`/triangle/clients`) — list of customer segments.
 - Table columns: Name, Description, Needs count, row "..." actions menu.
 - **Create client** modal: Name*, Description (textarea), and a repeatable
@@ -120,17 +208,63 @@ completion.
   Suggests a **Revenue Type** enum with different downstream math (item vs.
   subscription vs. hourly recurring revenue) — good candidate for financial
   logic testing.
-- **Create product** is a **2-step wizard** (dialog with step tabs): Step 1
-  "Product" — name, description, Revenue Type (custom dropdown), Selling
-  price (`#price`), Variable production cost (`#productionCost`). Step 2
-  "Attach clients" — **Add client** button per attachment: pick a client
-  (custom dropdown = "Business Unit"), then **Quantity per year** — one input
-  *per planning-horizon year* (currently 2 columns, e.g. 2027/2028 — this
-  scales with the project's planning horizon set at project creation).
-  A product can be created with zero attached clients.
+- **Create product** is a **2-step wizard** (dialog with step tabs). Step 1
+  "Product" (redesigned 2026-09-21, see BUG_PATTERNS.md session log): Name
+  (`#name`), Description (`#description`), Revenue Type (custom dropdown:
+  One-time/Subscription/Hourly/Donate), Selling price (`#price`); when
+  Revenue Type = Subscription, a **Subscription type** dropdown appears
+  (`Monthly subscription` / `Annual subscription` — Monthly is ×12'd in
+  Financial, Annual is a single yearly payment); **Sourcing** dropdown
+  (`Make` / `Buy`); **Cost type** dropdown (`Cost of goods sold - held in
+  stock` [default] / `Other direct cost - services, fees` — classifies
+  where the product's cost lands in the Income statement: COGS creates
+  Inventory in the balance sheet, Other direct cost is deducted below Gross
+  profit instead — its own live helper text under the dropdown toggles with
+  the selection); Variable production cost (`#productionCost`); and a
+  read-only, auto-computed **Margin per unit** (`#productMargin` = selling
+  price − production cost). Step 1 can render up to 4 custom dropdowns
+  simultaneously — `selectFromCustomDropdown()`'s `.first()` match is no
+  longer safe here; use `selectFromLabeledDropdown()` (scopes by field
+  label) from `tests/helpers/product.helper.js`. Step 2 "Attach clients" —
+  **Add client** button per attachment: pick a client (custom dropdown =
+  "Business Unit"), then **Quantity per year** — one input *per
+  planning-horizon year* (currently 2 columns, e.g. 2027/2028 — this scales
+  with the project's planning horizon set at project creation). A product
+  can be created with zero attached clients.
 - **Edit** reuses the same 2-step wizard; the Attach Clients tab supports
   adding another client or deleting an existing attachment (own confirm:
   "Yes, delete this client").
+- **Known bugs** (BUG_PATTERNS.md): the "/Month"-always card badge bug is
+  **Fixed** as of 2026-09-23 (Annual cards show "/Year"). Financial →
+  Forecasts & Reports' Income statement still doesn't render an "Other
+  direct costs" row, although the backend already computes it (see below).
+  Also: empty Variable production cost is saved as 0; Escape inside an open
+  dropdown closes the whole drawer.
+- **Financial math (verified via API 2026-09-23)**: the backend API host is
+  `staging-v2.getlaunched.io/api/v1` (frontend `frontv2`). `GET
+  /projects/{id}/financial-evaluation` returns per-year `revenue_breakdown`
+  and `expenses_breakdown.{cogs, other_direct_costs, ...}` with
+  `unit_price × payments_per_year × quantity` per line —
+  `payments_per_year` = 12 for Monthly subscription (applies to variable
+  cost too), 1 for Annual / One-time. Products with `cost_type:
+  other_direct` go to `other_direct_costs`, not COGS. **Since 2026-09-29**
+  they are counted like COGS (a "Direct service costs" category): Gross
+  profit = Revenue − COGS − other_direct_costs; EBITDA = Gross profit −
+  opex. (On 2026-09-23 it was GP = Revenue − COGS and ODC was deducted
+  below GP.) The Income table still doesn't render the row. `GET
+  /balance-sheet`: Inventory = COGS / 365 × DIO, AR = Revenue / 365 × DSO,
+  AP = (COGS + Other direct costs) / 365 × DPO — **only when
+  `/financial-settings` has `is_configured: true`** (i.e. Save changes was
+  clicked on Funding & Setup at least once); otherwise all three are 0.
+  **Income tax (since 2026-10-05, loss carry-forward):** each year in
+  `/financial-evaluation` has `loss_carryforward_opening/used/closing` and
+  `taxable_profit`; taxable = max(0, PBT − opening carry-forward), tax =
+  taxable × `project.tax_rate` (`expenses_breakdown.tax.total`), no time
+  limit on losses. The Income table shows only PBT and Income tax, not the
+  carry-forward rows. Projects are addressed by `uuid` in the API
+  (`/projects/{uuid}/...`); numeric id returns 404.
+  Best way to test financial logic: read these API responses and compare
+  deltas before/after a controlled product change.
 - Validation: Next is blocked on step 1 until required fields are filled.
 - CRUD: Create ✅, Read ✅, Update ✅ (base fields + client attachments),
   Delete — no spec deletes a whole product (gap).
@@ -199,6 +333,18 @@ toggle** for two very different shapes:
     (one input per planning-horizon year, like Products), Engagement %,
     Employment type, Salary, Pay period, Start year, Description.
   Both key members and line staff show as cards; row menu → Edit/Delete.
+  **As of 2026-10-20 (confirmed live):** Line staff = Role name, **"FTE per
+  year" / "FTE pro Jahr"** (one input per year, decimals with up to 2
+  places, ≥ 0, tooltip "1 = one full-time person, 0.5 = half-time"; sent as
+  `staffing[].quantity`; at least one year must be > 0, otherwise the API
+  returns 422 shown as a toast), **Salary per year**, Description. There is no
+  pay period or employment type field any more. Key member = photo, first and
+  last name, background, role name, "No active role in the business",
+  Salary per year, **Employment % per year** (whole numbers only, "Please
+  enter a whole number"). Income "Team & staffing" = salary × FTE ×
+  employment %. Clicking a card title opens a details panel (per-year
+  FTE, Edit/Delete). The "Total salary costs" tile sums nominal salaries
+  only (see BUG_PATTERNS.md).
   Key members feed the **Assignee** dropdown in Action Plan tasks (§3.4) and
   the picture avatar shown on the Dashboard header.
 
@@ -450,7 +596,29 @@ call — plan for async loading states, non-determinism in assertions, and
 possibly cost/rate-limit considerations before adding automated coverage
 of the chat itself.
 
-**"Assist me" is currently unreliable to the point of being effectively
+**Update 2026-09-24: Assist me opens reliably (22/22), and there are now
+two variants:**
+- **In-form Assist me**: a button inside 9 create modals (Client, Product,
+  Competitor, Marketing channel, Team role, Resource, Risk, Action item,
+  MVP) opens a small chat popover inside the modal (placeholder "Ask AI
+  anything...", buttons Close / Add files / Send). The request is `POST
+  /projects/{id}/agent/chat/stream` with `{message, chat_id, mode: "auto",
+  context: {screen, modal: {entity, values}}}`. The SSE response contains
+  `chunk` events (text), an optional `draft` event `{entity, data}` that the
+  frontend applies to the form (nothing saved), and `done`. MVP sends no
+  `modal` context; its agent may emit `{type: "action", operation:
+  "created"}` and save directly (bug). Not present in Evaluation criteria,
+  Add location/supplier, Criteria Configuration, Create entry, Create
+  activity.
+- **Page-level Assist me**: the right side panel ("Viewing: <page>",
+  "Auto" mode chip, Reset / Close). It renders Markdown, and the in-form
+  popover doesn't.
+- Test tip: wait for the `agent/chat/stream` response and read its body
+  (full SSE) instead of sleeping. The first prompt often gets clarifying
+  questions back, so send a follow-up ("придумай усі значення сам і
+  заповни всі поля форми").
+
+**Historical (2026-08-06): "Assist me" was unreliable to the point of being effectively
 broken**: confirmed live 2026-08-06, clicking the "Assist me" button failed
 to open the chat drawer in **5 out of 5** attempts from the Dashboard in a
 single session (`role="dialog"` count stayed at 0 every time; the trigger

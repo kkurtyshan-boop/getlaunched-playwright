@@ -1,22 +1,13 @@
 import { expect } from '@playwright/test';
-import { gotoImplementation } from './navigation';
+import { gotoRiskAnalysis } from './navigation';
 import { RISK_NAME, unique } from '../config';
 
 export const PESTEL_CATEGORIES = ['Political', 'Economic', 'Social', 'Technological', 'Environmental', 'Legal'];
 
-// Navigates into the bootstrapped project's Implementation section and
-// clicks the "Risk analysis" tab explicitly. It's the default tab, but the
-// request explicitly calls for an explicit click "to be safe" rather than
-// assuming the URL alone landed on it (see navigation.js's gotoImplementation,
-// which only goes to `/implementation`, not `/implementation/risk-analysis`).
+// Risk analysis is its own page now (/risk-analysis), not a tab of the
+// former Implementation page.
 export async function openRiskAnalysisTab(page, project) {
-  await gotoImplementation(page, project);
-
-  const tab = page.getByRole('tab', { name: /^risk analysis$/i }).first();
-  if (await tab.isVisible().catch(() => false)) {
-    await tab.click();
-  }
-
+  await gotoRiskAnalysis(page, project);
   await expect(page.getByRole('button', { name: /create risk/i }).first()).toBeVisible({ timeout: 15000 });
 }
 

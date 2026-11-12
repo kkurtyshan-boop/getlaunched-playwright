@@ -3,6 +3,7 @@ import { login } from './helpers';
 import { unique } from './config';
 import {
   saveIpRight,
+  IP_STATUS,
   openOtherTab,
   expandAccordionSection,
   createLocation,
@@ -10,6 +11,9 @@ import {
   createAnalysisCriterion,
   openCardEditModal,
   submitSubsectionUpdate,
+  supplierEmailField,
+  supplierCountryField,
+  setSupplierCountry,
 } from './helpers/other.helper';
 
 // Self-contained: creates its own Patent record, Location (+criterion), and
@@ -32,9 +36,10 @@ test.describe.serial('Edit other (Operations) flow', () => {
 
     await saveIpRight(page, project, {
       type: 'Patent',
-      tracked: true,
-      registrationStatus: 'Pending',
-      notes: unique('Application filed for the core product formula; awaiting review.'),
+      status: IP_STATUS.have,
+      stage: 'Filed',
+      registrationNumber: 'EP-AUTOTEST-001',
+      description: unique('Application filed for the core product formula; awaiting review.'),
     });
 
     const location = await createLocation(page, project, { name: unique('Autotest Edit Location') });
@@ -58,23 +63,17 @@ test.describe.serial('Edit other (Operations) flow', () => {
     supplierCriterionName = supplierCriterion.name;
   });
 
-  test('01. Edit patent registration status and notes', async ({ page, project }) => {
-    // saveIpRight retries the Registration Status dropdown against an
-    // app-level accordion-collapse race (bounded stall + re-expand), which
-    // can exceed the default 30s on its own — give it room like test 00.
+  test('01. Edit patent stage and description', async ({ page, project }) => {
     test.setTimeout(90_000);
     await login(page);
 
-    const updatedNotes = unique('Patent granted; protection valid for 20 years.');
-
-    // saveIpRight reopens the panel after Save and asserts the Registration
-    // Status dropdown's own displayed value — a real persistence check, not
-    // just that the form submitted.
+    // saveIpRight reloads and asserts the nav badge, the Stage dropdown and
+    // the description — a real persistence check, not just that it submitted.
     await saveIpRight(page, project, {
       type: 'Patent',
-      tracked: true,
-      registrationStatus: 'Registered',
-      notes: updatedNotes,
+      status: IP_STATUS.have,
+      stage: 'Granted',
+      description: unique('Patent granted; protection valid for 20 years.'),
     });
   });
 
@@ -116,21 +115,22 @@ test.describe.serial('Edit other (Operations) flow', () => {
     const updatedEmail = 'updated.supplier@autotest.example.com';
     const updatedCountry = 'Netherlands';
     const supplierModal = await openCardEditModal(page, region, supplierName);
-    await supplierModal.getByPlaceholder('Type email').fill(updatedEmail);
-    await supplierModal.getByPlaceholder('Type country').fill(updatedCountry);
+    await supplierEmailField(supplierModal).fill(updatedEmail);
+    await setSupplierCountry(page, supplierModal, updatedCountry);
     await submitSubsectionUpdate(supplierModal);
 
     await expect(supplierModal).not.toBeVisible({ timeout: 15000 });
-    // The supplier card itself only renders Name + Email (confirmed live —
-    // Country isn't shown there), so verify the email update on the card
-    // and confirm Country persisted by reopening the edit form instead.
+    // The supplier card renders Name + Country + Role (2026-11 — Email is no
+    // longer shown there), so verify Country on the card and Email by
+    // reopening the edit form.
     const supplierCard = region.locator('li').filter({
       has: page.getByRole('heading', { name: supplierName, exact: true }),
     }).first();
-    await expect(supplierCard).toContainText(updatedEmail, { timeout: 15000 });
+    await expect(supplierCard).toContainText(updatedCountry, { timeout: 15000 });
 
     const reopenedSupplierModal = await openCardEditModal(page, region, supplierName);
-    await expect(reopenedSupplierModal.getByPlaceholder('Type country')).toHaveValue(updatedCountry, { timeout: 15000 });
+    await expect(supplierCountryField(reopenedSupplierModal)).toHaveValue(updatedCountry, { timeout: 15000 });
+    await expect(supplierEmailField(reopenedSupplierModal)).toHaveValue(updatedEmail, { timeout: 15000 });
     await reopenedSupplierModal.getByRole('button', { name: /close|cancel/i }).first().click().catch(() => page.keyboard.press('Escape'));
     await expect(reopenedSupplierModal).not.toBeVisible({ timeout: 10000 }).catch(() => {});
 

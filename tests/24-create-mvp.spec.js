@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/project.fixture';
+import { test, expect, readRunContext } from './fixtures/project.fixture';
 import { login } from './helpers';
 import { unique, MVP_NAME } from './config';
 import { createClient } from './helpers/client.helper';
@@ -8,6 +8,7 @@ import {
   fillMvpForm,
   submitMvpCreateExpectRejection,
   createMvp,
+  cleanupMvps,
 } from './helpers/mvp.helper';
 
 // Generic (non-branded) fixture data covering distinct MVP Types. Each entry
@@ -81,6 +82,16 @@ const MVP_TYPE_SCENARIOS = [
 
 test.describe.serial('MVP flow', () => {
   let segmentName;
+  // Every MVP this run creates — deleted again in afterAll so the shared
+  // project never grows past the 15 MVPs the list can show.
+  const createdMvpNames = [];
+
+  test.afterAll(async ({ browser }) => {
+    // ~20s per delete (navigate + confirm + verify) — the default 30s hook
+    // budget only fits one or two.
+    test.setTimeout(240_000);
+    await cleanupMvps(browser, test.info().project.use.baseURL, readRunContext(), createdMvpNames, login);
+  });
 
   test('00. Set up a target segment client for the MVPs', async ({ page, project }) => {
     await login(page);
@@ -96,8 +107,10 @@ test.describe.serial('MVP flow', () => {
     await login(page);
 
     for (const scenario of MVP_TYPE_SCENARIOS) {
+      const name = unique(`${MVP_NAME} ${scenario.type}`);
+      createdMvpNames.push(name);
       await createMvp(page, project, {
-        name: unique(`${MVP_NAME} ${scenario.type}`),
+        name,
         type: scenario.type,
         segment: segmentName,
         hypothesisIf: scenario.hypothesisIf,

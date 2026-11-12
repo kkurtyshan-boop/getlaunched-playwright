@@ -27,7 +27,6 @@ export const PASSWORD = requiredEnv('TEST_USER_PASSWORD', 'TEST_PASSWORD');
 // auth.setup.js) if it doesn't exist yet — nothing depends on "Dior Brand" or
 // any other pre-existing project.
 export const PROJECT_NAME = process.env.TEST_PROJECT_NAME || process.env.TEST_PROJECT || 'Autotest Project';
-export const PROJECT_WEBSITE = 'https://autotest.example.com';
 export const PROJECT_DESCRIPTION =
   'Disposable project maintained by the automated test suite. Safe to reconfigure — not real business data.';
 

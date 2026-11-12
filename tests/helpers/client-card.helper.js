@@ -1,49 +1,17 @@
 import { expect } from '@playwright/test';
 import { gotoClients } from './navigation';
-import { openCreateClientModal } from './client.helper';
-
-const SELECT_INDEX = { priority: 0, satisfaction: 2, category: 4 };
-
-// Each select renders two buttons, hence the step of 2.
-async function pickNeedSelect(page, row, field, optionName) {
-  const trigger = row.getByRole('button').nth(SELECT_INDEX[field]);
-  await expect(trigger).toBeVisible({ timeout: 15000 });
-  await trigger.scrollIntoViewIfNeeded();
-  await trigger.click();
-
-  const option = page.getByRole('option', { name: new RegExp(`^${optionName}`, 'i') });
-  await expect(option.first()).toBeVisible({ timeout: 15000 });
-  await option.first().click();
-}
+import { openCreateClientModal, fillClientForm, clientSegmentCard } from './client.helper';
 
 export function segmentCard(page, name) {
-  return page.getByTestId('client-segment-card').filter({ hasText: name });
+  return clientSegmentCard(page, name);
 }
 
-// Sets Category on every need too: the form requires it, createClient does not.
+// Creates a segment through the shared client form filler (Priority,
+// Satisfaction level and Category for every need).
 export async function createSegment(page, project, { name, description, needs = [] }) {
   await gotoClients(page, project);
   const modal = await openCreateClientModal(page);
-
-  await modal.getByPlaceholder('Type client name').first().fill(name);
-  await modal.getByPlaceholder('Write your story...').first().fill(description);
-
-  for (let i = 0; i < needs.length; i++) {
-    if (i === 0) {
-      await modal.getByRole('button', { name: /Add needs/i }).click();
-    } else {
-      await modal.locator('button.text-primary:has(svg)').last().click();
-    }
-
-    const nameField = modal.getByPlaceholder('Type need name').nth(i);
-    await expect(nameField).toBeVisible({ timeout: 15000 });
-    await nameField.fill(needs[i].name);
-
-    const row = nameField.locator('xpath=ancestor::div[contains(@class, "grid-cols-2")][1]');
-    await pickNeedSelect(page, row, 'priority', needs[i].priority);
-    await pickNeedSelect(page, row, 'satisfaction', needs[i].satisfaction);
-    await pickNeedSelect(page, row, 'category', needs[i].category);
-  }
+  await fillClientForm(page, modal, { name, description, needs });
 
   await modal.getByRole('button', { name: /^create$/i }).last().click();
   await expect(segmentCard(page, name)).toBeVisible({ timeout: 15000 });

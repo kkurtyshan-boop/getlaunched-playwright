@@ -3,6 +3,7 @@ import { login } from './helpers';
 import { unique, CLIENT_NAME } from './config';
 import { gotoClients } from './helpers/navigation';
 import { openCreateClientModal, fillClientForm } from './helpers/client.helper';
+import { segmentCard, needColumn, deleteSegment } from './helpers/client-card.helper';
 
 // Generic fixture data (no "Dior Brand" business narrative) — one client
 // with a full needs list, one with zero needs (a supported case per
@@ -18,9 +19,9 @@ const CLIENTS_DATA = [
     baseName: CLIENT_NAME,
     description: 'Segment created by the automated test suite, with a full needs list.',
     needs: [
-      { name: 'Autotest need 1', priority: 'Low', satisfaction: 'Not Satisfied' },
-      { name: 'Autotest need 2', priority: 'High', satisfaction: 'Partially Satisfied' },
-      { name: 'Autotest need 3', priority: 'Critical', satisfaction: 'Fully Satisfied' },
+      { name: 'Autotest need 1', priority: 'Low', satisfaction: 'Not Satisfied', category: 'Job' },
+      { name: 'Autotest need 2', priority: 'High', satisfaction: 'Partially Satisfied', category: 'Pain' },
+      { name: 'Autotest need 3', priority: 'Critical', satisfaction: 'Fully Satisfied', category: 'Gain' },
     ],
   },
   {
@@ -32,6 +33,15 @@ const CLIENTS_DATA = [
 ];
 
 test.describe.serial('Create client flow', () => {
+  // Segments created here are deleted again after each test (no teardown
+  // otherwise — the shared project already holds dozens of clients).
+  const created = [];
+  test.afterEach(async ({ page, project }) => {
+    if (!created.length) return;
+    await gotoClients(page, project);
+    while (created.length) await deleteSegment(page, created.pop());
+  });
+
   test('01. Validation for empty client form', async ({ page, project }) => {
     await login(page);
     await gotoClients(page, project);
@@ -60,7 +70,19 @@ test.describe.serial('Create client flow', () => {
       await fillClientForm(page, modal, client);
 
       await modal.getByRole('button', { name: /^create$/i }).last().click();
-      await expect(page.locator('body')).toContainText(client.name, { timeout: 15000 });
+      await expect(modal).not.toBeVisible({ timeout: 15000 });
+      created.push(client.name);
+
+      // The new segment card shows each need in its Job / Pain / Gain column.
+      const card = segmentCard(page, client.name);
+      await expect(card).toBeVisible({ timeout: 15000 });
+      await expect(card).toContainText(client.description);
+      for (const n of client.needs) {
+        await expect(needColumn(card, n.category.toLowerCase()).getByTestId('need-item').filter({ hasText: n.name })).toHaveCount(1);
+      }
+      if (!client.needs.length) {
+        await expect(card).toContainText('Add needs to see how your offer fits this segment');
+      }
     });
   }
 });

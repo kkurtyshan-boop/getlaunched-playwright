@@ -134,15 +134,15 @@ export async function fillResourceCostPerYear(modal, resource) {
   }
 }
 
-// Shared create-form filler for both Investment and Running costs — as of
-// 2026-08-24 the two types render an identical field set (Resource name,
-// Category, Payment type, Cost per year, Start year, Description); the
-// only functional difference is that Payment type stays disabled/fixed to
-// "One-time payment" for Investment. There is no longer a single "Cost"
-// field or an "Amortization period" field for Investment — confirmed live
-// by inspecting the Create/Edit modal directly (PROJECT_KNOWLEDGE.md §3.3
-// and BUG_PATTERNS.md's "Amortization Period Capped at 100" describe the
-// pre-2026-08-24 shape and are now stale on this point).
+// Shared create-form filler. As of 2026-11-11 the two types differ again:
+//   Investment    — Resource name, Category, Payment type (disabled, fixed
+//                   "One-time payment"), Year, Useful life (years, default
+//                   5 — depreciation period), Investment amount, Description
+//   Running costs — Resource name, Category, Payment type (Monthly /
+//                   Annually), Start year, Cost per year (one input per
+//                   planning-horizon year), Description
+// In both, the year dropdown is the 3rd button[data-open] (Category=0,
+// Payment type=1, Year/Start year=2).
 export async function fillResourceForm(page, modal, resource) {
   const nameField = modal.getByPlaceholder('Type resource name').first();
   await expect(nameField).toBeVisible({ timeout: 15000 });
@@ -158,11 +158,32 @@ export async function fillResourceForm(page, modal, resource) {
   // fill step needs to know which columns to skip.
   resource.startYear = await selectDropdownOptionByIndex(page, modal, 2, resource.startYearIndex ?? 0);
 
-  await fillResourceCostPerYear(modal, resource);
+  if (resource.type === 'running') {
+    await fillResourceCostPerYear(modal, resource);
+  } else {
+    await fillInvestmentFields(modal, resource);
+  }
 
   const descriptionField = modal.getByPlaceholder('Write your story...').first();
   await expect(descriptionField).toBeVisible({ timeout: 15000 });
   await descriptionField.fill(resource.description);
+}
+
+export function investmentAmountField(modal) {
+  return modal.getByRole('textbox', { name: /^investment amount/i });
+}
+
+export function usefulLifeField(modal) {
+  return modal.getByRole('textbox', { name: /^useful life/i });
+}
+
+async function fillInvestmentFields(modal, { investmentAmount, usefulLife }) {
+  if (usefulLife !== undefined) {
+    await usefulLifeField(modal).fill(usefulLife);
+  }
+  if (investmentAmount !== undefined) {
+    await investmentAmountField(modal).fill(investmentAmount);
+  }
 }
 
 // Raw "Create" click with no success assertion — used both by the
@@ -228,6 +249,8 @@ export async function applyResourceEdits(page, modal, changes) {
     changes.startYear = await selectDropdownOptionByIndex(page, modal, 2, changes.startYearIndex);
   }
 
+  await fillInvestmentFields(modal, changes);
+
   if (changes.costsPerYear) {
     // If Start year wasn't also being changed, read it back from the
     // already-selected (pre-filled) Start year button so the before-start
@@ -256,11 +279,16 @@ export async function createResource(page, project, overrides = {}) {
   const type = overrides.type === 'running' ? 'running' : 'investment';
 
   await openResourcesTab(page, project);
-  const modal = await openCreateResourceModal(page);
 
-  if (type === 'running') {
-    await switchToRunningCostsInModal(page, modal);
-  }
+  // Pick the list filter first: "Create new resource" then opens the drawer
+  // already in that mode. Switching Investment → Running costs INSIDE the
+  // drawer leaves an empty yearly_costs[0] entry behind (from the Investment
+  // amount field) that silently fails validation — see BUG_PATTERNS.md
+  // "Running-Cost Resources Cannot Be Created". The list-first path is what
+  // a user naturally does and works.
+  await switchResourceListTab(page, type === 'running' ? 'Running costs' : 'Investments');
+  const modal = await openCreateResourceModal(page);
+  await expect(modal.getByRole('radio', { name: type === 'running' ? /running costs/i : /^investment$/i })).toBeChecked({ timeout: 10000 });
 
   const resource = {
     type,
@@ -268,6 +296,8 @@ export async function createResource(page, project, overrides = {}) {
     category: overrides.category || (type === 'running' ? 'Goods and Materials' : 'Equipment'),
     paymentType: overrides.paymentType || 'Monthly',
     costsPerYear: overrides.costsPerYear,
+    investmentAmount: type === 'investment' ? overrides.investmentAmount || '10000' : undefined,
+    usefulLife: type === 'investment' ? overrides.usefulLife : undefined,
     startYearIndex: overrides.startYearIndex ?? 0,
     description:
       overrides.description ||

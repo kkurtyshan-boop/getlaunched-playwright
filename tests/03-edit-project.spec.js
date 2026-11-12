@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login } from './helpers';
 import { unique } from './config';
 import { createProjectViaUi, ProjectLimitReachedError } from './helpers/project';
+import { selectDropdownByLabel } from './helpers/dom';
 
 // Self-contained: creates its own project rather than depending on
 // 02-create-project.spec.js having run first (the old globalThis coupling
@@ -33,24 +34,20 @@ test('Edit and delete project', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: /edit project|create project/i }).first()).toBeVisible({ timeout: 15000 });
 
-  const editedWebsite = page.locator('input[placeholder*="https://"]').first();
-  await expect(editedWebsite).toBeVisible({ timeout: 15000 });
-  await editedWebsite.clear();
-  await editedWebsite.fill('https://updatedbusiness.com');
+  const form = page.locator('main');
 
-  const editedDescription = page.locator('textarea[placeholder*="Write your story"]').first();
+  // The old Website input moved into the optional "Links" section, and
+  // every <select> is now a custom dropdown — edit description, income tax
+  // and planning horizon instead.
+  const editedDescription = form.getByRole('textbox', { name: /^short description/i });
   await expect(editedDescription).toBeVisible({ timeout: 15000 });
-  await editedDescription.clear();
   await editedDescription.fill('Updated project description for edit project test');
 
-  const editedIncomeTax = page.locator('input[placeholder*="Type tax"]').first();
+  const editedIncomeTax = form.getByRole('textbox', { name: /^income tax/i });
   await expect(editedIncomeTax).toBeVisible({ timeout: 15000 });
-  await editedIncomeTax.clear();
   await editedIncomeTax.fill('30');
 
-  const editedSelects = page.locator('select');
-  await expect(editedSelects.nth(4)).toBeVisible({ timeout: 15000 });
-  await editedSelects.nth(4).selectOption({ index: 2 });
+  await selectDropdownByLabel(page, form, /^planning years/i, '3');
 
   const updateButton = page.getByRole('button', { name: /update project/i }).last();
   await expect(updateButton).toBeVisible({ timeout: 15000 });

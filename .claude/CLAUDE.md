@@ -6,7 +6,7 @@ Guidance for Claude Code when working in this test repo.
 
 Playwright E2E suite for the GetLaunched app. Numbered specs drive one
 bootstrapped project, **"Autotest Project"**, through Magic Triangle →
-Operations → Implementation. No seeded DB, no teardown — tests run against a
+Operations → Risk analysis / Action plan. No seeded DB, no teardown — tests run against a
 live backend. The project itself is created (or adopted from an existing
 leftover project, if the account can't create a new one) automatically by
 `tests/auth.setup.js` — see `tests/helpers/project.js`. Specs never depend on
@@ -29,8 +29,11 @@ npx playwright test --project=chromium -g "validation"                  # by tit
 
 1. **Never hardcode the host.** Use relative paths: `page.goto('/sign-in')`,
    `page.goto('/')`. The host comes from `BASE_URL` via `baseURL` in the config.
-2. **Never hardcode credentials.** Import from `tests/helpers.js`
-   (`EMAIL`, `PASSWORD`, `PROJECT_NAME`) — they read env with sane defaults.
+2. **Never hardcode credentials.** Import `EMAIL`, `PASSWORD`, `PROJECT_NAME`
+   (and fixture-data values like `PRODUCT_NAME`, `unique()`) from
+   `tests/config.js` — `tests/helpers.js` re-exports the credentials for older
+   imports. `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` have no default: copy
+   `.env.example` to `.env`, otherwise the suite throws at startup.
 3. **Never write a per-file `login()`.** Import `login` from `./helpers`.
    Auth runs once in `auth.setup.js`; `login()` is a no-op when a session
    already exists.
@@ -63,8 +66,9 @@ Any test that creates several records in one `test()` needs an explicit
 ## Known app quirks
 
 See the "Known quirks" section in `README.md` (drag-and-drop needs a manual
-mouse sequence, MVP needs a "Core" feature, Amortization max 100, IP Rights nav
-buttons carry a status badge, etc.).
+mouse sequence, MVP needs a "Core" feature, IP Rights nav buttons carry a
+status badge, etc.). UI changes confirmed on 2026-11-11 are summarized in
+`PROJECT_KNOWLEDGE.md` §0.
 
 ## Data hygiene
 

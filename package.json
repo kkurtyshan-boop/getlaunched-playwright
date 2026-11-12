@@ -1,8 +1,7 @@
 {
-  "name": "getlaunched---autotest",
+  "name": "getlaunched-playwright",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Playwright E2E suite for the GetLaunched app",
   "scripts": {
     "test": "playwright test --project=chromium",
     "test:headed": "npx playwright test --project=chromium --headed",
@@ -19,5 +18,6 @@
     "dotenv": "^17.4.2",
     "eslint": "^10.10.0",
     "globals": "^17.12.0"
-  }
+  },
+  "private": true
 }
