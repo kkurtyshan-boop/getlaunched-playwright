@@ -1,4 +1,16 @@
 import { expect } from '@playwright/test';
+import { reauthIfSignedOut } from '../helpers.js';
+
+async function gotoAndSettle(page, path) {
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+}
+
+export async function gotoSignedIn(page, path) {
+  await gotoAndSettle(page, path);
+  if (await reauthIfSignedOut(page)) await gotoAndSettle(page, path);
+  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 15000 });
+}
 
 // Direct URL navigation into a bootstrapped project, per the URL scheme
 // confirmed in .claude/skills/new-spec/PROJECT_KNOWLEDGE.md §2:
@@ -8,14 +20,11 @@ import { expect } from '@playwright/test';
 // project cards, doesn't depend on any specific project name, and is one
 // line instead of ~15 repeated in every file.
 async function gotoProjectPath(page, project, path) {
-  await page.goto(`/project/${project.id}${path}`, { waitUntil: 'domcontentloaded' });
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-  await expect(page).not.toHaveURL(/\/sign-in/i, { timeout: 15000 });
+  await gotoSignedIn(page, `/project/${project.id}${path}`);
 }
 
 export async function gotoProjectsList(page) {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  await gotoSignedIn(page, '/');
 }
 
 export async function openProject(page, project) {

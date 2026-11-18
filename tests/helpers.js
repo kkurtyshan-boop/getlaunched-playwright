@@ -27,9 +27,22 @@ export async function login(page) {
     return;
   }
 
+  await submitSignIn(page);
+}
+
+// Every full page load spends the rotating refresh token, so one interrupted refresh signs the page out mid-test.
+export async function reauthIfSignedOut(page) {
+  if (!/^\/sign-in/i.test(new URL(page.url()).pathname)) return false;
+  await submitSignIn(page);
+  return true;
+}
+
+async function submitSignIn(page) {
+  const email = page.locator('input[type="email"]').first();
   const password = page.locator('input[type="password"]').first();
   const signInButton = page.getByRole('button', { name: /sign in/i }).first();
 
+  await expect(email).toBeVisible({ timeout: 15000 });
   await email.fill(EMAIL);
   await expect(password).toBeVisible({ timeout: 15000 });
   await password.fill(PASSWORD);

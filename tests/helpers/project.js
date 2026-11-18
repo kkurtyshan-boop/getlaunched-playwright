@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test';
 import {
   PROJECT_NAME,
-  PROJECT_WEBSITE,
   PROJECT_DESCRIPTION,
   FOUNDATION_YEAR,
   CALC_START_YEAR,
@@ -90,7 +89,20 @@ export async function deleteProjectById(page, id) {
 // no confirmed API endpoint for project creation, only for list/delete, so
 // creation stays UI-driven (also exercises the real onboarding form, which
 // is the point of this suite).
-export async function createProjectViaUi(page, { name, website = PROJECT_WEBSITE, description = PROJECT_DESCRIPTION } = {}) {
+function formField(page, label) {
+  return page.getByText(label, { exact: true }).locator('xpath=..');
+}
+
+async function pickFormSelect(page, label, option) {
+  await formField(page, label).locator('button[data-open]').first().click();
+  const listbox = page.getByRole('listbox').last();
+  await expect(listbox).toBeVisible({ timeout: 10000 });
+  const item = option ? listbox.getByRole('option', { name: option, exact: true }) : listbox.getByRole('option').first();
+  await item.click();
+  await expect(listbox).toBeHidden({ timeout: 10000 });
+}
+
+export async function createProjectViaUi(page, { name, description = PROJECT_DESCRIPTION } = {}) {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const createProjectButton = page
@@ -102,26 +114,21 @@ export async function createProjectViaUi(page, { name, website = PROJECT_WEBSITE
 
   await expect(page.getByRole('heading', { name: /create project/i })).toBeVisible({ timeout: 15000 });
 
-  await page.locator('input[placeholder*="Type name"]').first().fill(name);
-  await page.locator('input[placeholder*="https://"]').first().fill(website);
-  await page.locator('textarea[placeholder*="Write your story"]').first().fill(description);
+  await page.getByPlaceholder('Type name...').fill(name);
+  await page.getByPlaceholder('Write your story...').fill(description);
 
-  const selects = page.locator('select');
-  await selects.nth(0).selectOption({ index: 1 });
-  await selects.nth(1).selectOption({ index: 1 });
+  await pickFormSelect(page, 'Legal form');
+  await pickFormSelect(page, 'Development stage');
 
-  const currencyField = page.locator('[role="combobox"]').nth(1);
-  await currencyField.click();
+  await formField(page, 'Currency').getByRole('combobox').click();
   await page.getByRole('option').first().click();
 
-  await page.locator('input[placeholder*="Type tax"]').first().fill('25');
+  await page.getByPlaceholder('Type tax').fill('25');
 
-  // nth(2) foundation year, nth(3) calculation start year, nth(4) planning
-  // horizon length. Many downstream specs assume exactly
-  // PLANNING_HORIZON_YEARS year-columns (2027/2028 today) — see config.js.
-  await selects.nth(2).selectOption(FOUNDATION_YEAR);
-  await selects.nth(3).selectOption(CALC_START_YEAR);
-  await selects.nth(4).selectOption(String(PLANNING_HORIZON_YEARS));
+  // Many downstream specs assume exactly PLANNING_HORIZON_YEARS year-columns — see config.js.
+  await pickFormSelect(page, 'Year of foundation', FOUNDATION_YEAR);
+  await pickFormSelect(page, 'Start calculation from', CALC_START_YEAR);
+  await pickFormSelect(page, 'Planning years', String(PLANNING_HORIZON_YEARS));
 
   await page.getByRole('button', { name: /^create project$/i }).last().click();
 
@@ -222,10 +229,10 @@ export async function ensureTestProject(page, name = PROJECT_NAME) {
   }
 
   if (!leftover) {
-    console.warn(
-      `[helpers/project] No leftover/test-looking project found to adopt — falling back to the first project ` +
-        `in the account ("${adoptee.name || adoptee.title}"). This may be a real business project; consider ` +
-        'freeing a slot manually.'
+    throw new Error(
+      `Project "${name}" does not exist, the account is at its project limit, and no test-looking project ` +
+        `(test/qa/autotest…) exists to adopt. Refusing to rename "${adoptee.name || adoptee.title}": free up a ` +
+        'project slot manually.'
     );
   }
 
